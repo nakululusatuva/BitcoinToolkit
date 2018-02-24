@@ -17,11 +17,9 @@ Usage
 
 Feature
 --------------------------------------------------------------------------------
-### Current  
-
-	1. Generate bitcoin address.
-### Future  
-
-	1. Address validation.
-	2. Private key validation.
-	3. Private key format converting.
+###  Current
+	* Generate bitcoin address.
+###  Future
+	* Address validation.
+	* Private key validation.
+	* Private key format converting.
