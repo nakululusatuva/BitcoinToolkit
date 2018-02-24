@@ -2,8 +2,8 @@ BTCtool - A Combination of Bitcoin Tools
 ================================================================================
 Dependence
 --------------------------------------------------------------------------------
-* OpenSSL-1.0.2n
-	sudo apt-get install libssl-dev
+* OpenSSL-1.0.2n  
+	Install: sudo apt-get install libssl-dev
 
 Testing Enviroment
 --------------------------------------------------------------------------------
