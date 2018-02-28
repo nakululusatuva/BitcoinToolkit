@@ -325,12 +325,31 @@ int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	for (int32_t i = 0; i < payload_copy_len; i+=4)
 	{
 		int32_t num = i - i / 4;
+		decoded[num] = (payload_copy[i] << 2) | ((payload_copy[i+1] & 0x30) >> 4);
+		decoded[num+1] = ((payload_copy[i+1] & 0x0F) << 4) | ((payload_copy[i+2] & 0x3C) >> 2);
+		decoded[num+2] = ((payload_copy[i+2] & 0x03) << 6) | (payload_copy[i+3] & 0x3F);
 	}
 
 	if (ending != 0)
-	{
+	{	
 		BYTE payload_copy_end[4] = {0x00, 0x00, 0x00, 0x00};
-		for (int32_t i = 0; i < 4; ++i)
-			payload_copy_end[i] = payload[payload_copy_len + i];
+		for (int32_t i = 0; i < 4-ending; ++i)
+		{
+			int32_t j = 0;
+			for ( ; j < 64; ++j)
+			{
+				if (payload[payload_copy_len + i] == base64table[j])
+				{
+					payload_copy_end[i] = j;
+					break;
+				}
+			}	
+		}
+		decoded[payload_copy_len - payload_copy_len / 4] = (payload_copy_end[0] << 2) | ((payload_copy_end[1] & 0x30) >> 4);
+		decoded[payload_copy_len - payload_copy_len / 4 + 1] = ((payload_copy_end[1] & 0x0F) << 4) | ((payload_copy_end[2] & 0x3C) >> 2);
 	}
+
+	decoded[decoded_len] = '\0';
+
+	return 0;
 }
