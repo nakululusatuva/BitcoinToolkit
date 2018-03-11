@@ -20,7 +20,8 @@ int32_t get_new_address(int32_t compress, BYTE version)
 
 	if (new.cmpr_flag == 0)
 	{
-		generate_ecdsa_secp256k1_key_pair(new.private_key, new.public_key, new.cmpr_flag);
+		generate_ecdsa_secp256k1_private_key(new.private_key);
+		ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.public_key, new.cmpr_flag);
 		hex_to_wif(new.private_key, new.priv_wif, new.cmpr_flag, new.ver_byte);
 		pub_to_address(new.public_key, new.cmpr_flag, new.net_byte, new.address);
 
@@ -43,7 +44,8 @@ int32_t get_new_address(int32_t compress, BYTE version)
 
 	else if (new.cmpr_flag == 1)
 	{
-		generate_ecdsa_secp256k1_key_pair(new.private_key, new.public_key_cmpr, new.cmpr_flag);
+		generate_ecdsa_secp256k1_private_key(new.private_key);
+		ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.public_key_cmpr, new.cmpr_flag);
 		hex_to_wif(new.private_key, new.priv_wif_cmpr, new.cmpr_flag, new.ver_byte);
 		pub_to_address(new.public_key_cmpr, new.cmpr_flag, new.net_byte, new.address);
 
@@ -72,7 +74,7 @@ int32_t main(int32_t argc, char const *argv[])
 {
 	struct timespec start, end;
 	clock_gettime(CLOCK_MONOTONIC, &start);
-	
+
 	get_new_address(0, 0x80);
 
 	clock_gettime(CLOCK_MONOTONIC, &end);

@@ -15,7 +15,7 @@ typedef struct address_st {
 	uint8_t  address[35];			// 34 charaters long + '\0' ending.
 } ADDRESS;
 
-/** Generate a ECDSA-secp256k1 key pair.
+/** Generate ECDSA-secp256k1 public key from private key.
 *	\param	priv 		32 bytes, store the private key.
 *	\param	pub 		65/33 bytes, store the public key.
 *	\param	comp_flag	Get compressed public key? 0=no 1=yes.
@@ -23,7 +23,12 @@ typedef struct address_st {
 *			-1 on wrong cmpr_flag.
 *			-2 otherwise.
 **/
-int32_t generate_ecdsa_secp256k1_key_pair(uint8_t *priv, uint8_t *pub, int32_t cmpr_flag);
+int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_flag);
+
+/** Generate ECDSA-secp256k1 private key.
+*	\param	priv 		32 bytes, store the private key.
+**/
+void generate_ecdsa_secp256k1_private_key(BYTE *priv);
 
 /** Convert private key from hexadecimal to wallet import format.
 *	\param	priv 		ECDSA-secp256k1 private key byte array.

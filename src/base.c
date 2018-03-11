@@ -1,11 +1,14 @@
 #include <openssl/bn.h>
+#include <openssl/sha.h>
 #include "std.h"
+#include "string.h"
 
 int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
 	const uint8_t *base6table = "012345";
 
-	BYTE payload_hexstr[payload_len*2];
+	uint8_t payload_hexstr[payload_len*2];
+	uint8_t raw_encoded[payload_len*2];
 
 	BIGNUM *bn  = BN_new();		BIGNUM *bn0 = BN_new();		BIGNUM *bn6 = BN_new();
 	BN_init(bn);				BN_init(bn0);				BN_init(bn6);
@@ -16,36 +19,46 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_CTX *ctx = BN_CTX_new();
 	BN_CTX_init(ctx);
 
-	/* Get leading 0x00 byte count. */
-	int32_t leading_zero_count = 0;
-	for (int32_t i = 0; i < payload_len; ++i)
-	{
-		if (payload[i] == 0x00)
-			leading_zero_count += 1;
-		else break;
-	}
-
-	/* Convert the payload from string to a big number. */
+	/* Convert the payload from byte array to hex string. */
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
-		return -2;
+		return -1;
 
 	BN_hex2bn(&bn, payload_hexstr);
 	BN_set_word(bn0,0);
 	BN_set_word(bn6,6);
 	BN_set_word(dv,1);
 
+	/* Get the raw encoded payload (need to be reversed). */
+	int32_t encoded_len = 0;
+	while(BN_cmp(dv, bn0) > 0)
+	{	
+		BN_div(dv, rem, bn, bn6, ctx);
+		BN_copy(bn, dv);
+		raw_encoded[encoded_len] = base6table[BN_get_word(rem)];
+		encoded_len++;
+	}
+
+	if (encoded == NULL)
+		return encoded_len;
+
+	for (int32_t i = 0; i < encoded_len; ++i)
+		encoded[encoded_len - 1 -i] = raw_encoded[i];
+	encoded[encoded_len] = '\0';
+
 	BN_clear_free(bn);		BN_clear_free(bn0);		BN_clear_free(bn6);
 	BN_clear_free(dv);		BN_clear_free(rem);
 	BN_CTX_free(ctx);
+
+	return 0;
 }
 
 int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
 	const uint8_t *base6table = "012345";
 
-	BYTE raw_payload[payload_len];
+	uint8_t raw_payload[payload_len];
 
-	/* Get b6 value of each charaters in payload string, and check the validation. */
+	/* Check Validation */
 	for (int32_t i = 0; i < payload_len; ++i)
 	{
 		int32_t j = 0;
@@ -60,16 +73,53 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		if (j == 6)
 			return -1;
 	}
-}
 
-int32_t base32encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
-{
+	/* Convert b6 value array to a big number. */
+	// to_add = b6_value * 6 ^ power;
+	// to_add = b6_value * powered;
+	// bignum = bignum + to_add;
+	BIGNUM *bn 	   = BN_new();	 BIGNUM *bn6 	 = BN_new();		BIGNUM *b6value = BN_new();
+	BN_init(bn);				 BN_init(bn6);						BN_init(b6value);
+	BN_is_zero(bn);				 BN_set_word(bn6, 6);
 
-}
+	BIGNUM *power  = BN_new(); 	 BIGNUM *powered = BN_new();
+	BN_init(power);				 BN_init(powered);
 
-int32_t base32decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
-{
+	BIGNUM *to_add = BN_new();	 BIGNUM *buffer  = BN_new();
+	BN_init(to_add);			 BN_init(buffer);
+	BN_is_zero(to_add);			 BN_is_zero(buffer);
 
+	BN_CTX *ctx1 = BN_CTX_new(); BN_CTX *ctx2 = BN_CTX_new();
+
+	for (int32_t i = 0; i < payload_len; ++i)
+	{
+		BN_set_word(b6value, raw_payload[i]);
+		BN_set_word(power, payload_len - 1 - i);
+		BN_exp(powered, bn6, power, ctx1);
+		BN_mul(to_add, b6value, powered, ctx2);
+		BN_add(bn, buffer, to_add);
+		BN_swap(bn, buffer);
+	}
+	BN_swap(bn, buffer);
+
+	/* Convert the big number to hexadecimal string. */
+	int8_t *raw_decoded_hexstr;
+	raw_decoded_hexstr = BN_bn2hex(bn);
+
+	/* Convert raw decoded hexadecimal string to byte array. */
+	int32_t decoded_len = get_strlen(raw_decoded_hexstr) / 2;
+	if (decoded == NULL)
+		return decoded_len;
+
+	hexstr_to_bytearr(raw_decoded_hexstr, get_strlen(raw_decoded_hexstr), decoded);
+	OPENSSL_free(raw_decoded_hexstr);
+
+	BN_clear_free(bn);			BN_clear_free(bn6);		BN_clear_free(b6value);
+	BN_clear_free(power);		BN_clear_free(powered);
+	BN_clear_free(to_add);		BN_clear_free(buffer);
+	BN_CTX_free(ctx1);			BN_CTX_free(ctx2);
+
+	return 0;
 }
 
 int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
@@ -202,7 +252,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	BN_swap(bn, buffer);
 
 	/* Convert the big number to hexadecimal string. */
-	char *raw_decoded_hexstr;
+	int8_t *raw_decoded_hexstr;
 	raw_decoded_hexstr = BN_bn2hex(bn);
 
 	/* Convert raw decoded hexadecimal string to byte array. */
@@ -229,12 +279,47 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 
 int32_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
+	BYTE first_sha256[32], second_sha256[32], to_base58[payload_len + 4];
 
+	SHA256(payload, payload_len, first_sha256);
+	SHA256(first_sha256, 32, second_sha256);
+
+	for (int32_t i = 0; i < payload_len; ++i)
+		to_base58[i] = payload[i];
+	for (int32_t i = 0; i < 4; ++i)
+		to_base58[payload_len + i] = second_sha256[i];
+
+	if (encoded == NULL)
+		return base58encode(to_base58, payload_len + 4, NULL);
+
+	base58encode(to_base58, payload_len + 4, encoded);
+
+	return 0;
 }
 
-int32_t base58check_decode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
+	BYTE raw_payload[payload_len - 4], raw_checksum[4];
+	BYTE first_sha256[32], second_sha256[32];
 
+	for (int32_t i = 0; i < payload_len - 4; ++i)
+		raw_payload[i] = payload[i];
+	for (int32_t i = 0; i < 4; ++i)
+		raw_checksum[i] = payload[payload_len -4 + i];
+
+	SHA256(raw_payload, payload_len - 4, first_sha256);
+	SHA256(first_sha256, 32, second_sha256);
+
+	for (int32_t i = 0; i < 4; ++i)
+	{
+		if (second_sha256[i] != raw_checksum[i])
+			return -1;
+	}
+
+	if (decoded == NULL)
+		return base58decode(raw_payload, payload_len - 4, NULL);
+
+	base58decode(raw_payload, payload_len - 4, decoded);
 }
 
 int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
@@ -299,8 +384,10 @@ int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	}
 
 	int32_t decoded_len = ending ? (payload_len - 4) / 4 * 3 + 3 - ending : payload_len / 4 * 3;
+
 	if (decoded == NULL)
 		return decoded_len;
+	
 	int32_t payload_copy_len = (ending == 0 ? payload_len : payload_len - 4);
 	BYTE payload_copy[payload_copy_len];
 

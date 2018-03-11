@@ -5,8 +5,8 @@
 #include <openssl/ripemd.h>
 #include "std.h"
 #include "base.h"
+#include "string.h"
 
-void genpriv(int8_t *priv_str);
 int8_t selector(int32_t item);
 
 int32_t hex_to_wif(BYTE *priv, uint8_t *wif, int32_t cmpr_flag, BYTE ver_byte)
@@ -117,7 +117,7 @@ int32_t pub_to_address(BYTE *public_key, int32_t cmpr_flag, BYTE network_byte, u
 
 	SHA256(first_checksum_sha, 32, second_checksum_sha);
 
-	/* Append the checksum to the extended hashed public key */
+	/* Step 4 : Append the checksum to the extended hashed public key */
 	for (int32_t i = 0; i < 21; ++i)
 		to_base58[i] = net_byte_added[i];
 	for (int32_t i = 0; i < 4; ++i)
@@ -171,12 +171,12 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160)
 	return 0;
 }
 
-int32_t generate_ecdsa_secp256k1_key_pair(BYTE *priv, BYTE *pub, int32_t cmpr_flag)
+int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_flag)
 {
 	int32_t ret;
 	int32_t pub_len = 0;
 	int32_t NID_secp256k1 = 714;
-	int8_t priv_str[65];
+	int8_t priv_str[64];
 	uint8_t pub_internal[130];
 	uint8_t *p_pub = pub_internal;
 
@@ -195,10 +195,8 @@ int32_t generate_ecdsa_secp256k1_key_pair(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 	if (cmpr_flag != 0 && cmpr_flag != 1)
 		return -1;
 
-	/* Generate a private key in string */
-	genpriv(priv_str);
-
-	/* Convert private key from string to BIGNUM */
+	/* Convert private key from Byte array to BIGNUM */
+	bytearr_to_hexstr(priv, 32, priv_str);
 	BN_init(privkey);
 	if (BN_hex2bn(&privkey, priv_str) != 0x40)
 		return -2;
@@ -221,20 +219,18 @@ int32_t generate_ecdsa_secp256k1_key_pair(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 		return -2;
 
 	/* Convert private key from string to byte array */
-	hexstr_to_bytearr(priv_str, 64, priv);
+//	hexstr_to_bytearr(priv_str, 64, priv);
 	for (int32_t i = 0; i < (cmpr_flag?33:65); ++i)
 		pub[i] = pub_internal[i];
 
 	return 0;
 }
 
-void genpriv(int8_t *priv_str)
+void generate_ecdsa_secp256k1_private_key(BYTE *priv)
 {
-//	struct timespec start, end;
-//	clock_gettime(CLOCK_MONOTONIC, &start);
-
-	int32_t item, i = 0;
 	int8_t bin[256];
+	uint8_t priv_str[64];
+	int32_t item, i = 0;
 
 	/* Get ns level time stamp for random seed*/
 	/* Function 'clock_gettime' might only works on Linux */
@@ -251,10 +247,8 @@ void genpriv(int8_t *priv_str)
 		priv_str[i/4] = selector(item);
 		i += 4;
 	}while(i < 256);
-	priv_str[64] = '\0';
-	
-//	clock_gettime(CLOCK_MONOTONIC, &end);
-//	printf("%ld ns\n", end.tv_nsec - start.tv_nsec);
+
+	hexstr_to_bytearr(priv_str, 64, priv);
 }
 
 int8_t selector(int32_t item)

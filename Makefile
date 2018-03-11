@@ -6,15 +6,12 @@ DIR_BUILD 	= ./build
 DIR_SRC 	= ./src
 
 SRC 	= $(wildcard ${DIR_SRC}/*.c)
-BUILD 	= $(patsubst %.c,${DIR_BUILD}/%.o,$(notdir ${SRC})) ${DIR_BUILD}/std.o
+BUILD 	= $(patsubst %.c,${DIR_BUILD}/%.o,$(notdir ${SRC}))
 
 $(TARGET) : $(BUILD)
 	$(CC) $^ -o $@ -lssl -lcrypto
 
 ${DIR_BUILD}/%.o : ${DIR_SRC}/%.c
-	$(CC) -c $< -I ${DIR_HEADERS} -o $@
-
-${DIR_BUILD}/std.o : ${DIR_SRC}/std/*.c
 	$(CC) -c $^ -I ${DIR_HEADERS} -o $@
 
 clean:
