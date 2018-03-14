@@ -19,7 +19,7 @@ int32_t get_strlen(int8_t *string);
 *			-2 on not hexadecimal charaters.
 *	\example: "0A1B2C" -> '0x0A', '0X1B', '0X2C'
 **/
-int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr);
+int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr);
 
 /** Convert a byte array to a hexadecimal string.
 *	\param	arr 		Byte array, byte value range: 0x00 ~ 0xFF.
@@ -29,6 +29,6 @@ int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr);
 *			-1 on byte value out range.
 *	\example: '0x0A', '0X1B', '0X2C' -> "0A1B2C"
 **/
-int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str);
+int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, int8_t *str);
 
 #endif

@@ -14,7 +14,7 @@ int32_t get_strlen(int8_t *string)
 	return length;
 }
 
-int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
+int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr)
 {
 	int8_t high, low;
 
@@ -48,7 +48,7 @@ int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 	return 0;
 }
 
-int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
+int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, int8_t *str)
 {
 	uint8_t high, low;
 

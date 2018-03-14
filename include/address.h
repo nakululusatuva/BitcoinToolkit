@@ -5,8 +5,8 @@
 
 typedef struct address_st {
 	int32_t  cmpr_flag;
-	BYTE 	 ver_byte;				//  1 byte long.
-	BYTE 	 net_byte;				//  1 byte long.
+	BYTE 	 ver_byte;				//  1 byte long, used in WIF privkey.
+	BYTE 	 net_byte;				//  1 byte long, used in address.
 	BYTE 	 private_key[32];		// 32 byte long.
 	BYTE 	 public_key[65];		// 65 byte long.
 	BYTE 	 public_key_cmpr[33];	// 33 byte long.
@@ -68,7 +68,9 @@ int32_t pub_to_address(BYTE *public_key, int32_t cmpr_flag, BYTE network_byte, u
 *	\param	address 	Bitcoin address string.
 *	\param	hash160 	hash160 value of the bitcoin address.
 *	\return  0 on success.
-*			-1 on invalid bitcoin address.
+*			-1 on invalid charaters in the address.
+*			-2 on invalid address length.
+*			-3 on invalid checksum.
 **/
 int32_t address_to_hash160(uint8_t *address, BYTE *hash160);
 

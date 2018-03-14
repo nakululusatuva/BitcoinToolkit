@@ -9,10 +9,10 @@ SRC 	= $(wildcard ${DIR_SRC}/*.c)
 BUILD 	= $(patsubst %.c,${DIR_BUILD}/%.o,$(notdir ${SRC}))
 
 $(TARGET) : $(BUILD)
-	$(CC) $^ -o $@ -lssl -lcrypto
+	$(CC) $^ -o $@ -lssl -lcrypto -Wall
 
 ${DIR_BUILD}/%.o : ${DIR_SRC}/%.c
-	$(CC) -c $^ -I ${DIR_HEADERS} -o $@
+	$(CC) -c $^ -I ${DIR_HEADERS} -o $@ -Wall
 
 clean:
 	@rm ${DIR_BUILD}/*.o

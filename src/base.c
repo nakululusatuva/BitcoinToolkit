@@ -5,10 +5,10 @@
 
 int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
-	const uint8_t *base6table = "012345";
+	const uint8_t base6table[6] = {'0', '1', '2', '3', '4', '5'};
 
-	uint8_t payload_hexstr[payload_len*2];
-	uint8_t raw_encoded[payload_len*2];
+	int8_t payload_hexstr[payload_len*2];
+	int8_t raw_encoded[payload_len*2];
 
 	BIGNUM *bn  = BN_new();		BIGNUM *bn0 = BN_new();		BIGNUM *bn6 = BN_new();
 	BN_init(bn);				BN_init(bn0);				BN_init(bn6);
@@ -19,16 +19,16 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_CTX *ctx = BN_CTX_new();
 	BN_CTX_init(ctx);
 
-	/* Convert the payload from byte array to hex string. */
+	// Convert the payload from byte array to hex string.
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
 		return -1;
 
-	BN_hex2bn(&bn, payload_hexstr);
+	BN_hex2bn(&bn, (const char*)payload_hexstr);
 	BN_set_word(bn0,0);
 	BN_set_word(bn6,6);
 	BN_set_word(dv,1);
 
-	/* Get the raw encoded payload (need to be reversed). */
+	// Get the raw encoded payload (need to be reversed).
 	int32_t encoded_len = 0;
 	while(BN_cmp(dv, bn0) > 0)
 	{	
@@ -54,11 +54,11 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
-	const uint8_t *base6table = "012345";
+	const uint8_t base6table[6] = {'0', '1', '2', '3', '4', '5'};
 
 	uint8_t raw_payload[payload_len];
 
-	/* Check Validation */
+	// Check Validation.
 	for (int32_t i = 0; i < payload_len; ++i)
 	{
 		int32_t j = 0;
@@ -74,10 +74,12 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			return -1;
 	}
 
-	/* Convert b6 value array to a big number. */
-	// to_add = b6_value * 6 ^ power;
-	// to_add = b6_value * powered;
-	// bignum = bignum + to_add;
+	/*
+	*  Convert b6 value array to a big number.
+	*  to_add = b6_value * 6 ^ power;
+	*  to_add = b6_value * powered;
+	*  bignum = bignum + to_add;
+	*/
 	BIGNUM *bn 	   = BN_new();	 BIGNUM *bn6 	 = BN_new();		BIGNUM *b6value = BN_new();
 	BN_init(bn);				 BN_init(bn6);						BN_init(b6value);
 	BN_is_zero(bn);				 BN_set_word(bn6, 6);
@@ -102,16 +104,16 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	}
 	BN_swap(bn, buffer);
 
-	/* Convert the big number to hexadecimal string. */
-	int8_t *raw_decoded_hexstr;
+	// Convert the big number to hexadecimal string.
+	char *raw_decoded_hexstr;
 	raw_decoded_hexstr = BN_bn2hex(bn);
 
-	/* Convert raw decoded hexadecimal string to byte array. */
-	int32_t decoded_len = get_strlen(raw_decoded_hexstr) / 2;
+	// Convert raw decoded hexadecimal string to byte array.
+	int32_t decoded_len = get_strlen((int8_t*)raw_decoded_hexstr) / 2;
 	if (decoded == NULL)
 		return decoded_len;
 
-	hexstr_to_bytearr(raw_decoded_hexstr, get_strlen(raw_decoded_hexstr), decoded);
+	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
 	OPENSSL_free(raw_decoded_hexstr);
 
 	BN_clear_free(bn);			BN_clear_free(bn6);		BN_clear_free(b6value);
@@ -124,10 +126,14 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 
 int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
-	const uint8_t *base58table = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+	const uint8_t base58table[58] =
+		{'1', '2', '3', '4', '5', '6', '7', '8', '9','A', 'B', 'C', 'D', 'E', 'F',
+		'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+		'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
+		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-	uint8_t payload_hexstr[payload_len*2];
-	uint8_t raw_encoded[payload_len*2];
+	int8_t payload_hexstr[payload_len*2];
+	int8_t raw_encoded[payload_len*2];
 
 	BIGNUM *bn  = BN_new();		BIGNUM *bn0 = BN_new();		BIGNUM *bn58 = BN_new();
 	BN_init(bn);				BN_init(bn0);				BN_init(bn58);
@@ -138,7 +144,7 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_CTX *ctx = BN_CTX_new();
 	BN_CTX_init(ctx);
 
-	/* Get leading 0x00 byte count. */
+	// Get leading 0x00 byte count.
 	int32_t leading_zero_count = 0;
 	for (int32_t i = 0; i < payload_len; ++i)
 	{
@@ -147,16 +153,16 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		else break;
 	}
 
-	/* Convert the payload from string to a big number. */
+	// Convert the payload from string to a big number.
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
 		return -1;
 
-	BN_hex2bn(&bn, payload_hexstr);
+	BN_hex2bn(&bn, (const char*)payload_hexstr);
 	BN_set_word(bn0,0);
 	BN_set_word(bn58,58);
 	BN_set_word(dv,1);
 
-	/* Get the raw encoded payload (need to be reversed). */
+	// Get the raw encoded payload (need to be reversed).
 	int32_t raw_encoded_len = 0;
 	while(BN_cmp(dv, bn0) > 0)
 	{	
@@ -166,7 +172,7 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		raw_encoded_len++;
 	}
 
-	/* Add the leading '1' charater and reverse the raw encoded data. */
+	// Add the leading '1' charater and reverse the raw encoded data.
 	int32_t encoded_len = raw_encoded_len + leading_zero_count;
 
 	if (encoded == NULL)
@@ -188,9 +194,13 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
-	const uint8_t *base58table = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+	const uint8_t base58table[58] =
+		{'1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+		'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+		'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
+		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-	/* Get the count of leading '1' charater. */
+	// Get the count of leading '1' charater.
 	int32_t leading_one_count = 0;
 
 	for (int32_t i = 0; ; ++i)
@@ -203,11 +213,11 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	int32_t raw_payload_len = payload_len - leading_one_count;
 	uint8_t raw_payload[raw_payload_len];
 
-	/* Get the leading '1' striped raw payload. */
+	// Get the leading '1' striped raw payload.
 	for (int32_t i = 0; i < payload_len; ++i)
 		raw_payload[i] = payload[leading_one_count + i];
 
-	/* Get b58 value of each charaters in raw payload string, and check the validation. */
+	// Get b58 value of each charaters in raw payload string, and check the validation.
 	for (int32_t i = 0; i < raw_payload_len; ++i)
 	{
 		int32_t j = 0;
@@ -223,10 +233,12 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			return -1;
 	}
 
-	/* Convert b58 value array to a big number. */
-	// to_add = b58_value * 58 ^ power;
-	// to_add = b58_value * powered;
-	// bignum = bignum + to_add;
+	/*
+	*  Convert b58 value array to a big number.
+	*  to_add = b58_value * 58 ^ power;
+	*  to_add = b58_value * powered;
+	*  bignum = bignum + to_add;
+	*/
 	BIGNUM *bn 	   = BN_new();	 BIGNUM *bn58 	 = BN_new();		BIGNUM *b58value = BN_new();
 	BN_init(bn);				 BN_init(bn58);						BN_init(b58value);
 	BN_is_zero(bn);				 BN_set_word(bn58, 58);
@@ -251,19 +263,19 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	}
 	BN_swap(bn, buffer);
 
-	/* Convert the big number to hexadecimal string. */
-	int8_t *raw_decoded_hexstr;
+	// Convert the big number to hexadecimal string.
+	char *raw_decoded_hexstr;
 	raw_decoded_hexstr = BN_bn2hex(bn);
 
-	/* Convert raw decoded hexadecimal string to byte array. */
-	int32_t decoded_len = get_strlen(raw_decoded_hexstr) / 2 + leading_one_count;
+	// Convert raw decoded hexadecimal string to byte array.
+	int32_t decoded_len = get_strlen((int8_t*)raw_decoded_hexstr) / 2 + leading_one_count;
 	if (decoded == NULL)
 		return decoded_len;
 
-	hexstr_to_bytearr(raw_decoded_hexstr, get_strlen(raw_decoded_hexstr), decoded);
+	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
 	OPENSSL_free(raw_decoded_hexstr);
 
-	/* Add the leading 0x00 byte. */
+	// Add the leading 0x00 byte.
 	for (int32_t i = 0; i < decoded_len; ++i)
 		decoded[decoded_len - 1 -i] = decoded[decoded_len - 1 - leading_one_count -i];
 	for (int32_t i = 0; i < leading_one_count; ++i)
@@ -320,11 +332,18 @@ int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		return base58decode(raw_payload, payload_len - 4, NULL);
 
 	base58decode(raw_payload, payload_len - 4, decoded);
+
+	return 0;
 }
 
 int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
-	const uint8_t *base64table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	const uint8_t base64table[64] =
+		{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+		'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+		'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+		't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+		'8', '9', '+', '/'};
 
 	int32_t encoded_len;
 	int32_t ending = payload_len % 3;
@@ -342,8 +361,6 @@ int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		}
 	}
 
-//	00 01 02     03 04 05     06 07 08     09 10 11     12 13 14    15 16
-//	00 01 02 03  04 05 06 07  08 09 10 11  12 13 14 15  16 17 18 19 20 21 22 00
 	for (int32_t i = 0; i < payload_len - ending; i+=3)
 	{
 		int32_t num = i + i / 3;
@@ -373,7 +390,12 @@ int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
-	const uint8_t *base64table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	const uint8_t base64table[64] =
+		{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+		'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+		'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+		't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+		'8', '9', '+', '/'};
 
 	int32_t ending = 0;
 	for (int32_t i = payload_len - 1; i >= 0; --i )
@@ -391,7 +413,7 @@ int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	int32_t payload_copy_len = (ending == 0 ? payload_len : payload_len - 4);
 	BYTE payload_copy[payload_copy_len];
 
-	/* Get b64 value of each charaters in payload string, and check the validation. */
+	// Get b64 value of each charaters in payload string, and check the validation.
 	for (int32_t i = 0; i < payload_copy_len; ++i)
 	{
 		int32_t j = 0;
@@ -407,8 +429,6 @@ int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			return -1;
 	}
 
-//	00 01 02 03  04 05 06 07  08 09 10 11  12 13 14 15  16 17 18 19 20 21 22 00
-//	00 01 02     03 04 05     06 07 08     09 10 11     12 13 14    15 16
 	for (int32_t i = 0; i < payload_copy_len; i+=4)
 	{
 		int32_t num = i - i / 4;
