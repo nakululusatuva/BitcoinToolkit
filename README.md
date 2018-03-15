@@ -1,4 +1,4 @@
-#   BTCtool - A Combination of Bitcoin Tools
+#   Bitcoin Tool Kit- A Combination of Useful Bitcoin Tools
 
 ##  Dependence
 
