@@ -1,4 +1,4 @@
-#include "std.h"
+#include "common.h"
 
 int32_t get_strlen(int8_t *string)
 {

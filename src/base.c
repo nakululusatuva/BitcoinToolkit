@@ -1,6 +1,6 @@
 #include <openssl/bn.h>
 #include <openssl/sha.h>
-#include "std.h"
+#include "common.h"
 #include "string.h"
 
 int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
@@ -10,11 +10,11 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	int8_t payload_hexstr[payload_len*2];
 	int8_t raw_encoded[payload_len*2];
 
-	BIGNUM *bn  = BN_new();		BIGNUM *bn0 = BN_new();		BIGNUM *bn6 = BN_new();
-	BN_init(bn);				BN_init(bn0);				BN_init(bn6);
+	BIGNUM *bn  = BN_new();     BIGNUM *bn0 = BN_new();     BIGNUM *bn6 = BN_new();
+	BN_init(bn);                BN_init(bn0);               BN_init(bn6);
 
-	BIGNUM *dv  = BN_new();		BIGNUM *rem = BN_new();
-	BN_init(dv);				BN_init(rem);
+	BIGNUM *dv  = BN_new();     BIGNUM *rem = BN_new();
+	BN_init(dv);                BN_init(rem);
 
 	BN_CTX *ctx = BN_CTX_new();
 	BN_CTX_init(ctx);
@@ -45,8 +45,8 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		encoded[encoded_len - 1 -i] = raw_encoded[i];
 	encoded[encoded_len] = '\0';
 
-	BN_clear_free(bn);		BN_clear_free(bn0);		BN_clear_free(bn6);
-	BN_clear_free(dv);		BN_clear_free(rem);
+	BN_clear_free(bn);      BN_clear_free(bn0);     BN_clear_free(bn6);
+	BN_clear_free(dv);      BN_clear_free(rem);
 	BN_CTX_free(ctx);
 
 	return 0;
@@ -80,16 +80,16 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	*  to_add = b6_value * powered;
 	*  bignum = bignum + to_add;
 	*/
-	BIGNUM *bn 	   = BN_new();	 BIGNUM *bn6 	 = BN_new();		BIGNUM *b6value = BN_new();
-	BN_init(bn);				 BN_init(bn6);						BN_init(b6value);
-	BN_is_zero(bn);				 BN_set_word(bn6, 6);
+	BIGNUM *bn     = BN_new();   BIGNUM *bn6     = BN_new();   BIGNUM *b6value = BN_new();
+	BN_init(bn);                 BN_init(bn6);                 BN_init(b6value);
+	BN_is_zero(bn);              BN_set_word(bn6, 6);
 
-	BIGNUM *power  = BN_new(); 	 BIGNUM *powered = BN_new();
-	BN_init(power);				 BN_init(powered);
+	BIGNUM *power  = BN_new();   BIGNUM *powered = BN_new();
+	BN_init(power);              BN_init(powered);
 
-	BIGNUM *to_add = BN_new();	 BIGNUM *buffer  = BN_new();
-	BN_init(to_add);			 BN_init(buffer);
-	BN_is_zero(to_add);			 BN_is_zero(buffer);
+	BIGNUM *to_add = BN_new();   BIGNUM *buffer  = BN_new();
+	BN_init(to_add);             BN_init(buffer);
+	BN_is_zero(to_add);          BN_is_zero(buffer);
 
 	BN_CTX *ctx1 = BN_CTX_new(); BN_CTX *ctx2 = BN_CTX_new();
 
@@ -116,10 +116,10 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
 	OPENSSL_free(raw_decoded_hexstr);
 
-	BN_clear_free(bn);			BN_clear_free(bn6);		BN_clear_free(b6value);
-	BN_clear_free(power);		BN_clear_free(powered);
-	BN_clear_free(to_add);		BN_clear_free(buffer);
-	BN_CTX_free(ctx1);			BN_CTX_free(ctx2);
+	BN_clear_free(bn);          BN_clear_free(bn6);         BN_clear_free(b6value);
+	BN_clear_free(power);       BN_clear_free(powered);
+	BN_clear_free(to_add);      BN_clear_free(buffer);
+	BN_CTX_free(ctx1);          BN_CTX_free(ctx2);
 
 	return 0;
 }
@@ -135,11 +135,11 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	int8_t payload_hexstr[payload_len*2];
 	int8_t raw_encoded[payload_len*2];
 
-	BIGNUM *bn  = BN_new();		BIGNUM *bn0 = BN_new();		BIGNUM *bn58 = BN_new();
-	BN_init(bn);				BN_init(bn0);				BN_init(bn58);
+	BIGNUM *bn  = BN_new();     BIGNUM *bn0 = BN_new();     BIGNUM *bn58 = BN_new();
+	BN_init(bn);                BN_init(bn0);               BN_init(bn58);
 
-	BIGNUM *dv  = BN_new();		BIGNUM *rem = BN_new();
-	BN_init(dv);				BN_init(rem);
+	BIGNUM *dv  = BN_new();     BIGNUM *rem = BN_new();
+	BN_init(dv);                BN_init(rem);
 
 	BN_CTX *ctx = BN_CTX_new();
 	BN_CTX_init(ctx);
@@ -185,8 +185,8 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		encoded[encoded_len - 1 -i] = raw_encoded[i];
 	encoded[encoded_len] = '\0';
 
-	BN_clear_free(bn);		BN_clear_free(bn0);		BN_clear_free(bn58);
-	BN_clear_free(dv);		BN_clear_free(rem);
+	BN_clear_free(bn);      BN_clear_free(bn0);     BN_clear_free(bn58);
+	BN_clear_free(dv);      BN_clear_free(rem);
 	BN_CTX_free(ctx);
 
 	return 0;
@@ -239,16 +239,16 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	*  to_add = b58_value * powered;
 	*  bignum = bignum + to_add;
 	*/
-	BIGNUM *bn 	   = BN_new();	 BIGNUM *bn58 	 = BN_new();		BIGNUM *b58value = BN_new();
-	BN_init(bn);				 BN_init(bn58);						BN_init(b58value);
-	BN_is_zero(bn);				 BN_set_word(bn58, 58);
+	BIGNUM *bn     = BN_new();	 BIGNUM *bn58    = BN_new();   BIGNUM *b58value = BN_new();
+	BN_init(bn);                 BN_init(bn58);                BN_init(b58value);
+	BN_is_zero(bn);              BN_set_word(bn58, 58);
 
-	BIGNUM *power  = BN_new(); 	 BIGNUM *powered = BN_new();
-	BN_init(power);				 BN_init(powered);
+	BIGNUM *power  = BN_new();   BIGNUM *powered = BN_new();
+	BN_init(power);              BN_init(powered);
 
-	BIGNUM *to_add = BN_new();	 BIGNUM *buffer  = BN_new();
-	BN_init(to_add);			 BN_init(buffer);
-	BN_is_zero(to_add);			 BN_is_zero(buffer);
+	BIGNUM *to_add = BN_new();   BIGNUM *buffer  = BN_new();
+	BN_init(to_add);             BN_init(buffer);
+	BN_is_zero(to_add);          BN_is_zero(buffer);
 
 	BN_CTX *ctx1 = BN_CTX_new(); BN_CTX *ctx2 = BN_CTX_new();
 
@@ -281,10 +281,10 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	for (int32_t i = 0; i < leading_one_count; ++i)
 		decoded[i] = 0x00;
 
-	BN_clear_free(bn);			BN_clear_free(bn58);		BN_clear_free(b58value);
-	BN_clear_free(power);		BN_clear_free(powered);
-	BN_clear_free(to_add);		BN_clear_free(buffer);
-	BN_CTX_free(ctx1);			BN_CTX_free(ctx2);
+	BN_clear_free(bn);          BN_clear_free(bn58);        BN_clear_free(b58value);
+	BN_clear_free(power);       BN_clear_free(powered);
+	BN_clear_free(to_add);      BN_clear_free(buffer);
+	BN_CTX_free(ctx1);          BN_CTX_free(ctx2);
 
 	return 0;
 }
