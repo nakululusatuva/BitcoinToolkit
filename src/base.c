@@ -73,7 +73,6 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		if (j == 6)
 			return -1;
 	}
-
 	/*
 	*  Convert b6 value array to a big number.
 	*  to_add = b6_value * 6 ^ power;
@@ -232,14 +231,13 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		if (j == 58)
 			return -1;
 	}
-
 	/*
 	*  Convert b58 value array to a big number.
 	*  to_add = b58_value * 58 ^ power;
 	*  to_add = b58_value * powered;
 	*  bignum = bignum + to_add;
 	*/
-	BIGNUM *bn     = BN_new();	 BIGNUM *bn58    = BN_new();   BIGNUM *b58value = BN_new();
+	BIGNUM *bn     = BN_new();   BIGNUM *bn58    = BN_new();   BIGNUM *b58value = BN_new();
 	BN_init(bn);                 BN_init(bn58);                BN_init(b58value);
 	BN_is_zero(bn);              BN_set_word(bn58, 58);
 

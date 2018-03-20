@@ -6,6 +6,7 @@
 #include "base.h"
 #include "string.h"
 #include "common.h"
+#include "address.h"
 
 int8_t selector(int32_t item);
 
@@ -35,8 +36,7 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 	// Convert private key from Byte array to BIGNUM.
 	bytearr_to_hexstr(priv, 32, priv_str);
 	BN_init(privkey);
-	if (BN_hex2bn(&privkey, (const char*)priv_str) != 0x40)
-		return -2;
+	BN_hex2bn(&privkey, (const char*)priv_str);
 
 	// Generate public key.
 	EC_POINT_mul(group, pubkey, privkey, NULL, NULL, ctx);
@@ -107,7 +107,7 @@ int8_t selector(int32_t item)
 	else return -1;
 }
 
-int32_t hex_to_wif(BYTE *priv, uint8_t *wif, int32_t cmpr_flag, BYTE ver_byte)
+int32_t hex_to_wif(BYTE *private_key, uint8_t *wif, int32_t cmpr_flag, BYTE ver_byte)
 {
 	BYTE *extended, extended_key[33], extended_key_cmpr[34];
 
@@ -135,7 +135,7 @@ int32_t hex_to_wif(BYTE *priv, uint8_t *wif, int32_t cmpr_flag, BYTE ver_byte)
 	else return -2;
 
 	for (int32_t i = 1; i <= 32; ++i)
-		extended[i] = priv[i-1];
+		extended[i] = private_key[i-1];
 
 	// Step 2 : Double sha256 the extended key for checksum.
 	SHA256(extended, (cmpr_flag ? 34 : 33), first_sha256);
@@ -185,6 +185,28 @@ int32_t wif_to_hex(uint8_t *wif, BYTE *private_key)
 
 	for (int32_t i = 0; i < 32; ++i)
 		private_key[i] = to_sha256[i+1];
+
+	return 0;
+}
+
+int32_t b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *private_key)
+{
+	int32_t raw_len;
+	int32_t prefix_zero_count;
+
+	raw_len = base6decode(b6, b6_len, NULL);
+	prefix_zero_count = 32 - raw_len;
+
+	if (private_key == NULL)
+		return raw_len;
+
+	BYTE copy[raw_len];
+	base6decode(b6, b6_len, copy);
+
+	for (int32_t i = 0; i < prefix_zero_count; ++i)
+		private_key[i] = 0x00;
+	for (int32_t i = 0; i < raw_len; ++i)
+		private_key[i + prefix_zero_count] = copy[i];
 
 	return 0;
 }
@@ -267,4 +289,240 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160)
 		hash160[i] = hash160_t[i+1];
 
 	return 0;
+}
+
+int32_t privkey_validation(int8_t *privkey, size_t length)
+{
+	const uint8_t base6table[6] =
+		{'0', '1', '2', '3', '4', '5'};
+
+	const uint8_t hextable[16] =
+		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+	const uint8_t base58table[58] =
+		{'1', '2', '3', '4', '5', '6', '7', '8', '9','A', 'B', 'C', 'D', 'E', 'F',
+		'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+		'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
+		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+
+	int8_t copy[length];
+	for (int32_t i = 0; i < length; ++i)
+		copy[i] = privkey[i];
+
+	// Check if WIF.
+	if (length == 51 || length == 52)
+	{
+		for (int32_t i = 0; i < length; ++i)
+		{
+			int32_t j = 0;
+			for ( ; j < 58; ++j)
+			{
+				if (copy[i] == base58table[j])
+					break;
+			}
+			if (j == 58)
+				return -2;
+		}
+		//Check WIF type.
+		if (copy[0] == '5')
+			return 1;
+		else if (copy[0] == 'K' || copy[0] == 'L')
+			return 2;
+		else if (copy[0] == '9')
+			return 3;
+		else if (copy[0] == 'c')
+			return 4;
+	}
+
+	// Check if hexadecimal.
+	else if (length == 64)
+	{
+		for (int32_t i = 0; i < length; ++i)
+		{
+			int32_t j = 0;
+			for ( ; j < 16; ++j)
+			{
+				if (copy[i] == hextable[j])
+					break;
+			}
+			if (j == 16)
+				return -3;
+		}
+		return 5;
+	}
+
+	// Check if base6.
+	else if (length == 99 || length == 100)
+	{
+		for (int32_t i = 0; i < length; ++i)
+		{
+			int32_t j = 0;
+			for ( ; j < 6; ++j)
+			{
+				if (copy[i] == base6table[j])
+					break;
+			}
+			if (j == 6)
+				return -4;
+		}
+		return 6;
+	}
+	
+	return -1;
+}
+
+void privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, BYTE *hex)
+{
+	int32_t ret;
+	ret = privkey_validation(key, get_strlen(key));
+
+	// WIF private key?
+	if (ret == 1 || ret == 2 || ret == 3 || ret ==4)
+	{
+		wif_to_hex((uint8_t*)key, hex);
+		
+		if (ret == 1) {
+			*cmpr = 0;
+			*ver = 0x80;
+			*net = 0x00;
+		}
+		else if (ret == 2) {
+			*cmpr = 1;
+			*ver = 0x80;
+			*net = 0x00;
+		}
+		else if (ret == 3) {
+			*cmpr = 0;
+			*ver = 0xEF;
+			*net = 0x6F;
+		}
+		else if (ret == 4) {
+			*cmpr = 1;
+			*ver = 0xEF;
+			*net = 0x6F;
+		}
+	}
+
+	// Hex or B6 private key?
+	else if (ret == 5 || ret == 6)
+	{
+		// Get network type.
+		for (int i = 0; i < 1; )
+		{
+			int8_t ch;
+			printf("You want a mainnet or testnet address? (m/t): ");
+			scanf("%c", &ch);
+			if (ch == 'm') {
+				*ver = 0x80;
+				*net = 0x00;
+				i = 1;
+			}
+			else if (ch == 't') {
+				*ver = 0xEF;
+				*net = 0x6F;
+				i = 1;
+			}
+			else printf("Invalid Option!\n");
+		}
+
+		// Get compressed flag.
+		for (int i = 0; i < 1; )
+		{
+			int8_t ch;
+			printf("You want a compressed address? (y/n): ");
+			scanf("%c", &ch);
+			if (ch == 'n') {
+				*cmpr = 0;
+				i = 1;
+			}
+			else if (ch == 'y') {
+				*cmpr = 1;
+				i = 1;
+			}
+			else printf("Invalid Option!\n");
+		}
+
+		if (ret == 5)
+			hexstr_to_bytearr(key, get_strlen(key), hex);
+		else if (ret == 6)
+			b6_to_hex((uint8_t*)key, get_strlen(key), hex);
+	}
+}
+
+int32_t generate_address(int32_t cmpr, BYTE ver, BYTE net)
+{
+	if (cmpr != 0 && cmpr != 1)
+		return -1;
+	else if (ver != 0x80 && ver != 0xEF)
+		return -2;
+	else if (net != 0x00 && net != 0x6F)
+		return -3;
+	else{
+		ADDRESS new;
+		new.cmpr_flag = cmpr;
+		new.ver_byte = ver;
+		new.net_byte = net;
+
+		generate_ecdsa_secp256k1_private_key(new.private_key);
+		ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag);
+		hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
+		pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
+
+		print_address(new);
+
+		return 0;
+	}
+}
+
+int32_t generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *hex)
+{
+	if (cmpr != 0 && cmpr != 1)
+		return -1;
+	else if (ver != 0x80 && ver != 0xEF)
+		return -2;
+	else if (net != 0x00 && net != 0x6F)
+		return -3;
+	else{
+		ADDRESS new;
+		new.cmpr_flag = cmpr;
+		new.ver_byte = ver;
+		new.net_byte = net;
+		for (int32_t i = 0; i < 32; ++i)
+			new.private_key[i] = hex[i];
+
+		ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag);
+		hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
+		pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
+
+		print_address(new);
+
+		return 0;
+	}
+}
+
+void print_address(ADDRESS addr)
+{
+	printf("Address:\n");
+	printf("%s\n\n", addr.address);
+
+	printf("Private Key WIF:\n");
+	printf("%s\n\n", addr.cmpr_flag?addr.priv_wif_cmpr:addr.priv_wif);
+
+	printf("Public Key Hexadecimal:\n");
+	if (addr.cmpr_flag == 0)
+	{
+		for (int32_t i = 0; i < 65; ++i)
+		printf("%02X", addr.public_key[i]);
+	}
+	else if (addr.cmpr_flag == 1)
+	{
+		for (int32_t i = 0; i < 33; ++i)
+		printf("%02X", addr.public_key_cmpr[i]);
+	}
+	printf("\n\n");
+
+	printf("Private Key Hexadecimal:\n");
+	for (int32_t i = 0; i < 32; ++i)
+		printf("%02X", addr.private_key[i]);
+	printf("\n\n");
 }

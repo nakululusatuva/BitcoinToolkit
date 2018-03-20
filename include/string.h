@@ -10,6 +10,10 @@
 **/
 int32_t get_strlen(int8_t *string);
 
+/**
+**/
+int32_t get_strcmp(int8_t *a, int8_t *b);
+
 /** Convert a hexadecimal string to a byte array.
 *   \param  str         Hexadecimal string.
 *   \param  str_len     String length, must be even.
@@ -22,7 +26,7 @@ int32_t get_strlen(int8_t *string);
 int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr);
 
 /** Convert a byte array to a hexadecimal string.
-*   \param  arr         Byte array, byte value range: 0x00 ~ 0xFF.
+*   \param  arr         Byte array, byte value range: -128 ~ 127.
 *   \param  arr_len     The length of arr.
 *   \param  str         Store the hexadecimal string.
 *   \return  0 on success.

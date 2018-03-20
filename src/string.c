@@ -14,6 +14,11 @@ int32_t get_strlen(int8_t *string)
 	return length;
 }
 
+int32_t get_strcmp(int8_t *a, int8_t *b)
+{
+	
+}
+
 int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr)
 {
 	int8_t high, low;
