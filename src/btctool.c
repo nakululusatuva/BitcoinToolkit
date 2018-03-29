@@ -21,6 +21,7 @@ void usage(const char *version, const char *name)
 		"  -g <privkey>              Get an address from private key\n"
 		"                            Supported format: [B6] [WIF] [Hexadecimal]\n"
 		"  --base6e -S <string>      Base6 encode\n"
+		"  --base6d -L <string>      Base6 decode\n"
 		, version, name);
 }
 
@@ -95,34 +96,29 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'S': {
-				int32_t encoded_len;
-				size_t copy_len;
-				size_t optarg_len = get_strlen((int8_t*)optarg);
+				size_t payload_len;
+				payload_len = get_strlen((int8_t*)optarg);
 
-				if (optarg_len % 2 == 1)
-					copy_len = optarg_len + 1;
-				else
-					copy_len = optarg_len;
-				int8_t copy[copy_len];
-
-				if (copy_len != optarg_len) {
-					copy[0] = '0';
-					for (int32_t i = 1; i < copy_len; ++i)
-						copy[i] = optarg[i-1];
-				}
-				else {
-					for (int32_t i = 0; i < copy_len; ++i)
-						copy[i] = optarg[i];
-				}
-
-				BYTE byte_copy[copy_len/2];
-				hexstr_to_bytearr(copy, copy_len, byte_copy);
-
-				encoded_len = base6encode(byte_copy, copy_len/2, NULL);
+				int32_t encoded_len = base6encode((BYTE*)optarg, payload_len, NULL);
 				uint8_t encoded[encoded_len];
-				base6encode(byte_copy, copy_len/2, encoded);
+				base6encode((BYTE*)optarg, payload_len, encoded);
 
 				printf("%s\n", encoded);
+				break;
+			}
+
+			case 'L': {
+				size_t payload_len;
+				payload_len = get_strlen((int8_t*)optarg);
+
+				int32_t decoded_len = base6decode((uint8_t*)optarg, payload_len, NULL);
+				BYTE decoded[decoded_len];
+				base6decode((uint8_t*)optarg, payload_len, decoded);
+
+				for (int i = 0; i < decoded_len; ++i)
+					printf("%c", decoded[i]);
+				printf("\n");
+				break;
 			}
 
 			default: {
