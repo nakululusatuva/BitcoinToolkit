@@ -13,15 +13,17 @@ void usage(const char *version, const char *name)
 		"Bticoin-ToolKit %s\n"
 		"Usage: %s [-sctk] [-a <address>] [-g <privkey>]\n"
 		"Options:\n"
-		"  -s                        Get a standard mainnet address\n"
-		"  -c                        Get a compressed mainnet address\n"
-		"  -t                        Get a standard testnet address\n"
-		"  -k                        Get a compressed testnet address\n"
-		"  -a <address>              Check addess validaion\n"
-		"  -g <privkey>              Get an address from private key\n"
-		"                            Supported format: [B6] [WIF] [Hexadecimal]\n"
-		"  --base6e -S <string>      Base6 encode\n"
-		"  --base6d -L <string>      Base6 decode\n"
+		"  -s                            Get a standard mainnet address\n"
+		"  -c                            Get a compressed mainnet address\n"
+		"  -t                            Get a standard testnet address\n"
+		"  -k                            Get a compressed testnet address\n"
+		"  -a <address>                  Check addess validaion\n"
+		"  -g <privkey>                  Get an address from private key\n"
+		"                                Supported format: [B6] [WIF] [Hexadecimal]\n"
+		"  --base6e  -S <string>             Base6  encode\n"
+		"  --base6d  -L <string>             Base6  decode\n"
+		"  --base58e -F <string>             Base58 encode\n"
+		"  --base58d -W <string>             Base58 decode\n"
 		, version, name);
 }
 
@@ -122,6 +124,18 @@ int32_t main(int32_t argc, char* const* argv)
 				for (int i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
+				break;
+			}
+
+			case 'F': {
+				size_t payload_len;
+				payload_len = get_strlen((int8_t*)optarg);
+
+				int32_t encoded_len = base58encode((BYTE*)optarg, payload_len, NULL);
+				uint8_t encoded[encoded_len];
+				encoded_len = base58encode((BYTE*)optarg, payload_len, encoded);
+
+				printf("%s\n", encoded);
 				break;
 			}
 
