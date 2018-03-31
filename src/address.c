@@ -327,17 +327,33 @@ int32_t privkey_validation(int8_t *privkey, size_t length)
 		//Check WIF type.
 		if (copy[0] == '5')
 		{
-			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_SM))
+			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_SM)>0)
 				return -5;
 			else
 				return 1;
 		}
-		else if (copy[0] == 'K' || copy[0] == 'L')
-			return 2;
-		else if (copy[0] == '9')
-			return 3;
-		else if (copy[0] == 'c')
-			return 4;
+		else if (copy[0] == 'K' || copy[0] == 'L') {
+			BYTE decoded[32];
+			int8_t decoded_str[65];
+			wif_to_hex((uint8_t*)privkey, decoded);
+			bytearr_to_hexstr(decoded, 32, decoded_str);
+			if (strcmp((const char*)decoded_str, (const char*)MAX_PRIVKEY_HEX)>0)
+				return -5;
+			else
+				return 2;
+		}
+		else if (copy[0] == '9') {
+			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_ST)>0)
+				return -5;
+			else
+				return 3;
+		}
+		else if (copy[0] == 'c') {
+			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_CT)>0)
+				return -5;
+			else
+				return 4;
+		}
 	}
 
 	// Check if hexadecimal.
@@ -354,7 +370,10 @@ int32_t privkey_validation(int8_t *privkey, size_t length)
 			if (j == 16)
 				return -3;
 		}
-		return 5;
+		if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_HEX)>0)
+			return -5;
+		else
+			return 5;
 	}
 
 	// Check if base6.
@@ -371,7 +390,10 @@ int32_t privkey_validation(int8_t *privkey, size_t length)
 			if (j == 6)
 				return -4;
 		}
-		return 6;
+		if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_B6)>0)
+			return -5;
+		else
+			return 6;
 	}
 	
 	return -1;
@@ -381,7 +403,7 @@ void privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, 
 {
 	int32_t ret;
 	ret = privkey_validation(key, get_strlen(key));
-
+printf("%d\n", ret);
 	// WIF private key?
 	if (ret == 1 || ret == 2 || ret == 3 || ret ==4)
 	{
