@@ -14,29 +14,6 @@ int32_t get_strlen(int8_t *string)
 	return length;
 }
 
-int32_t get_strcmp(int8_t *a, int8_t *b)
-{
-	int32_t i;
-	int32_t a_len = get_strlen(a);
-	int32_t b_len = get_strlen(b);
-
-	if (a_len != b_len)
-		return -1;
-	else if (a_len == b_len)
-	{
-		for (i = 0; i < a_len; ++i)
-		{
-			if (a[i] != b[i]) {
-				return -2;
-				break;
-			}
-		}
-		if (i == a_len)
-			return 0;
-	}
-	return 0;
-}
-
 int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr)
 {
 	int8_t high, low;

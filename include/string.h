@@ -10,15 +10,6 @@
 **/
 int32_t get_strlen(int8_t *string);
 
-/** Check if the strings are the same.
-*   \param  a           String.
-*   \param  b           String.
-*   \return  0 on Strings are the same.
-*           -1 on Strings' length don not match.
-*           -2 on Strings are not the same.
-**/
-int32_t get_strcmp(int8_t *a, int8_t *b);
-
 /** Convert a hexadecimal string to a byte array.
 *   \param  str         Hexadecimal string.
 *   \param  str_len     String length, must be even.
