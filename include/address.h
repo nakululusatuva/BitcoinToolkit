@@ -97,6 +97,7 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160);
 *           -2 on Invalid WIF private key.
 *           -3 on INvalid Hexadecimal private key.
 *           -4 on Invalid Base6 private key.
+*           -5 on ecdsa-secp256k1 private key value out range.
 **/
 int32_t privkey_validation(int8_t *privkey, size_t length);
 
