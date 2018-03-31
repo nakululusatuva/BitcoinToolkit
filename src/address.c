@@ -403,7 +403,7 @@ void privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, 
 {
 	int32_t ret;
 	ret = privkey_validation(key, get_strlen(key));
-printf("%d\n", ret);
+
 	// WIF private key?
 	if (ret == 1 || ret == 2 || ret == 3 || ret ==4)
 	{
