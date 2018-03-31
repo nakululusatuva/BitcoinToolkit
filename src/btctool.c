@@ -106,6 +106,11 @@ int32_t main(int32_t argc, char* const* argv)
 				payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base6encode((BYTE*)optarg, payload_len, NULL);
+				if (encoded_len == -1) {
+					printf("Charater's value out range!\n");
+					break;
+				}
+
 				uint8_t encoded[encoded_len];
 				base6encode((BYTE*)optarg, payload_len, encoded);
 
@@ -118,6 +123,11 @@ int32_t main(int32_t argc, char* const* argv)
 				payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base6decode((uint8_t*)optarg, payload_len, NULL);
+				if (decoded_len == -1) {
+					printf("Invalid charater(s) in the base6 string!\n");
+					break;
+				}
+
 				BYTE decoded[decoded_len];
 				base6decode((uint8_t*)optarg, payload_len, decoded);
 
@@ -132,6 +142,11 @@ int32_t main(int32_t argc, char* const* argv)
 				payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base58encode((BYTE*)optarg, payload_len, NULL);
+				if (encoded_len == -1) {
+					printf("Charater's value out range!\n");
+					break;
+				}
+
 				uint8_t encoded[encoded_len];
 				encoded_len = base58encode((BYTE*)optarg, payload_len, encoded);
 
@@ -144,6 +159,11 @@ int32_t main(int32_t argc, char* const* argv)
 				payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base58decode((uint8_t*)optarg, payload_len, NULL);
+				if (decoded_len == -1) {
+					printf("Invalid charater(s) in the base58 string!\n");
+					break;
+				}
+
 				BYTE decoded[decoded_len];
 				base58decode((uint8_t*)optarg, payload_len, decoded);
 
