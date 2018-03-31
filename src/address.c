@@ -475,16 +475,26 @@ void privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, 
 		else if (ret == 6)
 			b6_to_hex((uint8_t*)key, get_strlen(key), hex);
 	}
-	else if (ret == -1)
+	else if (ret == -1) {
+		*cmpr = -1;
 		printf("Unsupported format!\n");
-	else if (ret == -2)
+	}
+	else if (ret == -2) {
+		*cmpr = -1;
 		printf("Invalid WIF private key!\n");
-	else if (ret == -3)
+	}
+	else if (ret == -3) {
+		*cmpr = -1;
 		printf("Invalid hexadecimal private key!\n");
-	else if (ret == -4)
+	}
+	else if (ret == -4) {
+		*cmpr = -1;
 		printf("Invalid Base6 private key!\n");
-	else if (ret == -5)
+	}
+	else if (ret == -5) {
+		*cmpr = -1;
 		printf("ecdsa-secp256k1 private key value out range!\n");
+	}
 }
 
 int32_t generate_address(int32_t cmpr, BYTE ver, BYTE net)

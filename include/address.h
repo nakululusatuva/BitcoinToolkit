@@ -126,7 +126,7 @@ int32_t generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *
 
 /** Convert the private key from any format to hexadecimal byte array.
 *   \param  key         Any format private key string.
-*   \param  cmpr        Store the compress flag, the value is 0 or 1.
+*   \param  cmpr        Store the compress flag, the value is 0 or 1, -1 on error.
 *   \param  ver         Store the version byte, 1 byte long.
 *   \param  net         Store the network byte, 1 byte lnog.
 *   \param  hex         Store the hexadecimal byte array, 32 bytes long
