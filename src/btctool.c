@@ -91,8 +91,12 @@ int32_t main(int32_t argc, char* const* argv)
 				int32_t cmpr;
 				BYTE net, ver, hex[32];
 				privkey_anyformat_to_hex((int8_t*)optarg, &cmpr, &ver, &net, hex);
-				generate_address_by_private_key(cmpr, ver, net, hex);
-				break;
+				if (cmpr == -1)
+					break;
+				else {
+					generate_address_by_private_key(cmpr, ver, net, hex);
+					break;
+				}
 			}
 
 			case 'S': {
