@@ -139,6 +139,20 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
+			case 'W': {
+				size_t payload_len;
+				payload_len = get_strlen((int8_t*)optarg);
+
+				int32_t decoded_len = base58decode((uint8_t*)optarg, payload_len, NULL);
+				BYTE decoded[decoded_len];
+				base58decode((uint8_t*)optarg, payload_len, decoded);
+
+				for (int32_t i = 0; i < decoded_len; ++i)
+					printf("%c", decoded[i]);
+				printf("\n");
+				break;
+			}
+
 			default: {
 				usage(version, argv[0]);
 				exit(0);
