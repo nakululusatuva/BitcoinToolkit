@@ -1,11 +1,12 @@
 #include <time.h>
+#include <string.h>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
 #include "base.h"
-#include "string.h"
 #include "common.h"
+#include "strings.h"
 #include "address.h"
 
 int8_t selector(int32_t item);
@@ -325,7 +326,12 @@ int32_t privkey_validation(int8_t *privkey, size_t length)
 		}
 		//Check WIF type.
 		if (copy[0] == '5')
-			return 1;
+		{
+			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_SM))
+				return -5;
+			else
+				return 1;
+		}
 		else if (copy[0] == 'K' || copy[0] == 'L')
 			return 2;
 		else if (copy[0] == '9')

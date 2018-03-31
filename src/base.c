@@ -1,7 +1,7 @@
 #include <openssl/bn.h>
 #include <openssl/sha.h>
 #include "common.h"
-#include "string.h"
+#include "strings.h"
 
 int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {

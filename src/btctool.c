@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include "base.h"
-#include "string.h"
+#include "strings.h"
 #include "common.h"
 #include "address.h"
 
