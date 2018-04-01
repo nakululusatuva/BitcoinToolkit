@@ -114,6 +114,7 @@ int32_t main(int32_t argc, char* const* argv)
 				uint8_t encoded[encoded_len];
 				base6encode((BYTE*)optarg, payload_len, encoded);
 
+				printf("--------------------------------------------------------------------------------\nEncoded:\n");
 				printf("%s\n", encoded);
 				break;
 			}
@@ -131,6 +132,7 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE decoded[decoded_len];
 				base6decode((uint8_t*)optarg, payload_len, decoded);
 
+				printf("--------------------------------------------------------------------------------\nDecoded:\n");
 				for (int i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
@@ -150,6 +152,7 @@ int32_t main(int32_t argc, char* const* argv)
 				uint8_t encoded[encoded_len];
 				encoded_len = base58encode((BYTE*)optarg, payload_len, encoded);
 
+				printf("--------------------------------------------------------------------------------\nEncoded:\n");
 				printf("%s\n", encoded);
 				break;
 			}
@@ -167,6 +170,7 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE decoded[decoded_len];
 				base58decode((uint8_t*)optarg, payload_len, decoded);
 
+				printf("--------------------------------------------------------------------------------\nDecoded:\n");
 				for (int32_t i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
@@ -186,8 +190,29 @@ int32_t main(int32_t argc, char* const* argv)
 				uint8_t encoded[encoded_len];
 				base64encode((BYTE*)optarg, payload_len, encoded);
 
+				printf("--------------------------------------------------------------------------------\nEncoded:\n");
 				for (int32_t i = 0; i < encoded_len; ++i)
 					printf("%c", encoded[i]);
+				printf("\n");
+				break;
+			}
+
+			case 'R': {
+				size_t payload_len;
+				payload_len = get_strlen((int8_t*)optarg);
+
+				int32_t decoded_len = base64decode((uint8_t*)optarg, payload_len, NULL);
+				if (decoded_len == -1) {
+					printf("Invalid charater(s) in the base58 string!\n");
+					break;
+				}
+
+				BYTE decoded[decoded_len];
+				base64decode((uint8_t*)optarg, payload_len, decoded);
+
+				printf("--------------------------------------------------------------------------------\nDecoded:\n");
+				for (int32_t i = 0; i < decoded_len; ++i)
+					printf("%c", decoded[i]);
 				printf("\n");
 				break;
 			}
