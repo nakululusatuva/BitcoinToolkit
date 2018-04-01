@@ -102,8 +102,7 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'S': {
-				size_t payload_len;
-				payload_len = get_strlen((int8_t*)optarg);
+				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base6encode((BYTE*)optarg, payload_len, NULL);
 				if (encoded_len == -1) {
@@ -120,8 +119,7 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'L': {
-				size_t payload_len;
-				payload_len = get_strlen((int8_t*)optarg);
+				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base6decode((uint8_t*)optarg, payload_len, NULL);
 				if (decoded_len == -1) {
@@ -140,8 +138,7 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'F': {
-				size_t payload_len;
-				payload_len = get_strlen((int8_t*)optarg);
+				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base58encode((BYTE*)optarg, payload_len, NULL);
 				if (encoded_len == -1) {
@@ -158,8 +155,7 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'W': {
-				size_t payload_len;
-				payload_len = get_strlen((int8_t*)optarg);
+				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base58decode((uint8_t*)optarg, payload_len, NULL);
 				if (decoded_len == -1) {
@@ -178,8 +174,7 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'U': {
-				size_t payload_len;
-				payload_len = get_strlen((int8_t*)optarg);
+				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base64encode((BYTE*)optarg, payload_len, NULL);
 				if (encoded_len == -1) {
@@ -198,17 +193,58 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'R': {
-				size_t payload_len;
-				payload_len = get_strlen((int8_t*)optarg);
+				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base64decode((uint8_t*)optarg, payload_len, NULL);
 				if (decoded_len == -1) {
-					printf("Invalid charater(s) in the base58 string!\n");
+					printf("Invalid charater(s) in the base64 string!\n");
 					break;
 				}
 
 				BYTE decoded[decoded_len];
 				base64decode((uint8_t*)optarg, payload_len, decoded);
+
+				printf("--------------------------------------------------------------------------------\nDecoded:\n");
+				for (int32_t i = 0; i < decoded_len; ++i)
+					printf("%c", decoded[i]);
+				printf("\n");
+				break;
+			}
+
+			case 'B': {
+				size_t payload_len = get_strlen((int8_t*)optarg);
+
+				int32_t encoded_len = base58check_encode((BYTE*)optarg, payload_len, NULL);
+				if (encoded_len == -1) {
+					printf("Charater's value out range!\n");
+					break;
+				}
+
+				uint8_t encoded[encoded_len];
+				base58check_encode((BYTE*)optarg, payload_len, encoded);
+
+				printf("--------------------------------------------------------------------------------\nEncoded:\n");
+				for (int32_t i = 0; i < encoded_len; ++i)
+					printf("%c", encoded[i]);
+				printf("\n");
+				break;
+			}
+
+			case 'T': {
+				size_t payload_len = get_strlen((int8_t*)optarg);
+
+				int32_t decoded_len = base58check_decode((uint8_t*)optarg, payload_len, NULL);
+				if (decoded_len == -1) {
+					printf("Invalid charater(s) in the base58 string!\n");
+					break;
+				}
+				else if (decoded_len == -2) {
+					printf("Invalid checksum!\n");
+					break;
+				}
+
+				BYTE decoded[decoded_len];
+				base58check_decode((uint8_t*)optarg, payload_len, decoded);
 
 				printf("--------------------------------------------------------------------------------\nDecoded:\n");
 				for (int32_t i = 0; i < decoded_len; ++i)
