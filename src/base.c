@@ -376,7 +376,7 @@ int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 			buffer[i] = payload[payload_len - ending + i];
 
 		encoded[start] = base64table[buffer[0] >> 2] == 'A' ? '=' : base64table[buffer[0] >> 2];
-		encoded[start+1] = base64table[((buffer[0] & 0x03) << 4) | (buffer[1] >> 4)] == 'A' ? '=' : base64table[((buffer[0] & 0x03) << 4) | (buffer[1] >> 4)];
+		encoded[start+1] = base64table[((buffer[0] & 0x03) << 4) | (buffer[1] >> 4)];
 		encoded[start+2] = base64table[((buffer[1] & 0x0f) << 2) | (buffer[2] >> 6)] == 'A' ? '=' : base64table[((buffer[1] & 0x0f) << 2) | (buffer[2] >> 6)];
 		encoded[start+3] = base64table[buffer[2] & 0x3f] == 'A' ? '=' : base64table[buffer[2] & 0x3f];
 		encoded[start+4] = '\0';
