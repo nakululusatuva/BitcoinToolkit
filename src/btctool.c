@@ -173,6 +173,25 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
+			case 'U': {
+				size_t payload_len;
+				payload_len = get_strlen((int8_t*)optarg);
+
+				int32_t encoded_len = base64encode((BYTE*)optarg, payload_len, NULL);
+				if (encoded_len == -1) {
+					printf("Charater's value out range!\n");
+					break;
+				}
+
+				uint8_t encoded[encoded_len];
+				base64encode((BYTE*)optarg, payload_len, encoded);
+
+				for (int32_t i = 0; i < encoded_len; ++i)
+					printf("%c", encoded[i]);
+				printf("\n");
+				break;
+			}
+
 			default: {
 				usage(version, argv[0]);
 				exit(0);
