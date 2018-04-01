@@ -1,4 +1,4 @@
-#   Bitcoin Tool Kit- A Combination of Useful Bitcoin Tools
+#   Bitcoin Tool Kit- A Combination of Bitcoin Tools
 
 ##  Dependence
 
@@ -11,10 +11,18 @@
 
 ## Features
 
+### Current
+
 * Generate bitcoin address.
 * BaseX Encode/Decode
 * Check address validation and get the hash160 value
 * Check private key validaion and get the address
+
+### Future
+
+* Create and sign the raw transactions.
+* Broadcast the signed transaction.
+* Get the balance and UTXO on an address.
 
 ##  Usage
 
@@ -36,12 +44,6 @@
   	--base58d -W <string>             Base58 decode
 	
 	/* String arguments with single quotes are recommended. */
-
-## Future Features
-
-* Create and sign the raw transactions.
-* Broadcast the signed transaction.
-* Get the balance and UTXO on an address.
 
 ## License
 
