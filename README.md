@@ -27,10 +27,12 @@
 ##  Usage
 
 	sudo apt install libssl-dev
+
 	make
+    
 	./btctool [-sctk] [-a <address>] [-g <privkey>] [--base6e -S <string>]
-            [--base6d -L <string>] [--base58e -F <string>] [--base58d -W <string>]
-            [--base58checke -B <string>] [--base58checkd -T <string>]
+              [--base6d -L <string>] [--base58e -F <string>] [--base58d -W <string>]
+              [--base58checke -B <string>] [--base58checkd -T <string>]
 	
 	Options:
     -s                           Get a standard mainnet address.

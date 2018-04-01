@@ -214,7 +214,12 @@ int32_t b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *private_key)
 
 int32_t pub_to_address(BYTE *public_key, int32_t cmpr_flag, BYTE network_byte, uint8_t *address)
 {
-	if (network_byte != 0x00 && network_byte != 0x6f && network_byte != 0x34)
+	/* April 1st 2018 21:46
+	** delete start
+		if (network_byte != 0x00 && network_byte != 0x6f && network_byte != 0x34)
+	** delete end
+	*/
+	if (network_byte != 0x00 && network_byte != 0x6f)
 		return -1;
 	if (cmpr_flag != 0 && cmpr_flag != 1)
 		return -2;
