@@ -19,7 +19,7 @@
 ##  Usage
 
 	sudo apt install libssl-dev
-    make
+	make
 	./btctool
 	
 	Options:
@@ -34,6 +34,8 @@
   	--base6d  -L <string>             Base6  decode
   	--base58e -F <string>             Base58 encode
   	--base58d -W <string>             Base58 decode
+	
+	/* String arguments with single quotes are recommended. */
 
 ## Future Features
 
