@@ -11,7 +11,9 @@ void usage(const char *version, const char *name)
 {
 	fprintf(stderr,
 		"Bticoin-ToolKit %s\n"
-		"Usage: %s [-sctk] [-a <address>] [-g <privkey>]\n"
+		"Usage: %s [-sctk] [-a <address>] [-g <privkey>] [--base6e -S <string>]\n"
+		"       [--base6d -L <string>] [--base58e -F <string>] [--base58d -W <string>]\n"
+		"       [--base58checke -B <string>] [--base58checkd -T <string>]\n"
 		"Options:\n"
 		"  -s                           Get a standard mainnet address.\n"
 		"  -c                           Get a compressed mainnet address.\n"
@@ -24,6 +26,8 @@ void usage(const char *version, const char *name)
 		"  --base6d  -L <string>             Base6  decode\n"
 		"  --base58e -F <string>             Base58 encode\n"
 		"  --base58d -W <string>             Base58 decode\n"
+		"  --base58checke -B <string>        Base58Check encode\n"
+		"  --base58checkd -T <string>        Base58Check decode\n"
 		, version, name);
 }
 

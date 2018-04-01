@@ -28,20 +28,24 @@
 
 	sudo apt install libssl-dev
 	make
-	./btctool
+	./btctool [-sctk] [-a <address>] [-g <privkey>] [--base6e -S <string>]
+            [--base6d -L <string>] [--base58e -F <string>] [--base58d -W <string>]
+            [--base58checke -B <string>] [--base58checkd -T <string>]
 	
 	Options:
-  	-s                           Get a standard mainnet address.
-  	-c                           Get a compressed mainnet address.
-  	-t                           Get a standard testnet address.
-  	-k                           Get a compressed testnet address.
-  	-a <address>                 Check addess validaion and get the hash160 value.
-  	-g <privkey>                 Check private key validaion and get the address.
+    -s                           Get a standard mainnet address.
+    -c                           Get a compressed mainnet address.
+    -t                           Get a standard testnet address.
+    -k                           Get a compressed testnet address.
+    -a <address>                 Check addess validaion and get the hash160 value.
+    -g <privkey>                 Check private key validaion and get the address.
                                  Supported format: [B6] [WIF] [Hexadecimal]
-  	--base6e  -S <string>             Base6  encode
-  	--base6d  -L <string>             Base6  decode
-  	--base58e -F <string>             Base58 encode
-  	--base58d -W <string>             Base58 decode
+    --base6e  -S <string>             Base6  encode
+    --base6d  -L <string>             Base6  decode
+    --base58e -F <string>             Base58 encode
+    --base58d -W <string>             Base58 decode
+    --base58checke -B <string>        Base58Check encode
+    --base58checkd -T <string>        Base58Check decode
 	
 	/* String arguments with single quotes are recommended. */
 
