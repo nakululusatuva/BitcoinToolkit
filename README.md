@@ -11,9 +11,9 @@
 
 ## Features
 
-* Generate Bitcoin Address.
+* Generate bitcoin address.
 * BaseX Encode/Decode
-* Check Address Validation and Get hash160 Value
+* Check address validation and get the hash160 value
 * Check private key validaion and get the address
 
 ##  Usage
