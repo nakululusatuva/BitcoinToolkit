@@ -54,19 +54,27 @@ int32_t main(int32_t argc, char* const* argv)
 		switch(opt)
 		{
 			case 's':
+				printf("--------------------------------------------------------------------------------\n");
 				generate_address(0, 0x80, 0x00);
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 
 			case 'c':
+				printf("--------------------------------------------------------------------------------\n");
 				generate_address(1, 0x80, 0x00);
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 
 			case 't':
+				printf("--------------------------------------------------------------------------------\n");
 				generate_address(0, 0xEF, 0x6F);
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 
 			case 'k':
+				printf("--------------------------------------------------------------------------------\n");
 				generate_address(1, 0xEF, 0x6F);
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 
 			case 'a': {	
@@ -74,6 +82,7 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE hash160[20];
 				ret = address_to_hash160((uint8_t*)optarg, hash160);
 
+				printf("--------------------------------------------------------------------------------\n");
 				if (ret == 0) {
 					printf("Correct Address!\n");
 					printf("hash160 Value: ");
@@ -87,16 +96,20 @@ int32_t main(int32_t argc, char* const* argv)
 					printf("Invalid Address Length!\n");
 				else if (ret == -3)
 					printf("Invalid Checksum!\n");
+				printf("--------------------------------------------------------------------------------\n");
+				break;
 			}
 
 			case 'g': {
 				int32_t cmpr;
 				BYTE net, ver, hex[32];
+				printf("--------------------------------------------------------------------------------\n");
 				privkey_anyformat_to_hex((int8_t*)optarg, &cmpr, &ver, &net, hex);
 				if (cmpr == -1)
 					break;
 				else {
 					generate_address_by_private_key(cmpr, ver, net, hex);
+					printf("--------------------------------------------------------------------------------\n");
 					break;
 				}
 			}
@@ -115,6 +128,7 @@ int32_t main(int32_t argc, char* const* argv)
 
 				printf("--------------------------------------------------------------------------------\nEncoded:\n");
 				printf("%s\n", encoded);
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -134,6 +148,7 @@ int32_t main(int32_t argc, char* const* argv)
 				for (int i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -151,6 +166,7 @@ int32_t main(int32_t argc, char* const* argv)
 
 				printf("--------------------------------------------------------------------------------\nEncoded:\n");
 				printf("%s\n", encoded);
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -170,6 +186,7 @@ int32_t main(int32_t argc, char* const* argv)
 				for (int32_t i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -189,6 +206,7 @@ int32_t main(int32_t argc, char* const* argv)
 				for (int32_t i = 0; i < encoded_len; ++i)
 					printf("%c", encoded[i]);
 				printf("\n");
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -208,6 +226,7 @@ int32_t main(int32_t argc, char* const* argv)
 				for (int32_t i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -227,6 +246,7 @@ int32_t main(int32_t argc, char* const* argv)
 				for (int32_t i = 0; i < encoded_len; ++i)
 					printf("%c", encoded[i]);
 				printf("\n");
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -250,6 +270,7 @@ int32_t main(int32_t argc, char* const* argv)
 				for (int32_t i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
+				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
