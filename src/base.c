@@ -289,7 +289,8 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 
 int32_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
-	BYTE first_sha256[32], second_sha256[32], to_base58[payload_len + 4];
+	int32_t to_base58_len = payload_len + 4;
+	BYTE first_sha256[32], second_sha256[32], to_base58[to_base58_len];
 
 	SHA256(payload, payload_len, first_sha256);
 	SHA256(first_sha256, 32, second_sha256);
@@ -300,36 +301,50 @@ int32_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		to_base58[payload_len + i] = second_sha256[i];
 
 	if (encoded == NULL)
-		return base58encode(to_base58, payload_len + 4, NULL);
+		return base58encode(to_base58, to_base58_len, NULL);
 
-	base58encode(to_base58, payload_len + 4, encoded);
+	int32_t ret = base58encode(to_base58, to_base58_len, encoded);
+	if (ret == -1)
+		return -1;
 
 	return 0;
 }
 
 int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
-	BYTE raw_payload[payload_len - 4], raw_checksum[4];
+	int32_t b58decoded_len = base58decode(payload, payload_len, NULL);
+	if (b58decoded_len == -1)
+		return -1;
+	int32_t data_len = b58decoded_len-4;
+	BYTE b58decoded[b58decoded_len];
+
+	base58decode(payload, payload_len, b58decoded);
+
+	BYTE payload_data[data_len], payload_checksum[4];
 	BYTE first_sha256[32], second_sha256[32];
 
-	for (int32_t i = 0; i < payload_len - 4; ++i)
-		raw_payload[i] = payload[i];
+	for (int32_t i = 0; i < data_len; ++i)
+		payload_data[i] = b58decoded[i];
 	for (int32_t i = 0; i < 4; ++i)
-		raw_checksum[i] = payload[payload_len -4 + i];
+		payload_checksum[i] = b58decoded[data_len+i];
 
-	SHA256(raw_payload, payload_len - 4, first_sha256);
+	SHA256(payload_data, data_len, first_sha256);
 	SHA256(first_sha256, 32, second_sha256);
 
 	for (int32_t i = 0; i < 4; ++i)
 	{
-		if (second_sha256[i] != raw_checksum[i])
-			return -1;
+		if (payload_checksum[i] != second_sha256[i])
+			return -2;
 	}
 
 	if (decoded == NULL)
-		return base58decode(raw_payload, payload_len - 4, NULL);
-
-	base58decode(raw_payload, payload_len - 4, decoded);
+		return data_len;
+	else {
+		for (int i = 0; i < data_len; ++i) {
+			decoded[i] = payload_data[i];
+		}
+		return 0;
+	}
 
 	return 0;
 }
