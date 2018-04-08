@@ -1,3 +1,24 @@
+/******************************** MIT License **********************************
+Copyright (c) 2018 Yirain Suen
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*******************************************************************************/
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,19 +36,19 @@ void usage(const char *version, const char *name)
 		"       [--base6d -L <string>] [--base58e -F <string>] [--base58d -W <string>]\n"
 		"       [--base58checke -B <string>] [--base58checkd -T <string>]\n"
 		"Options:\n"
-		"  -s                           Get a standard mainnet address.\n"
-		"  -c                           Get a compressed mainnet address.\n"
-		"  -t                           Get a standard testnet address.\n"
-		"  -k                           Get a compressed testnet address.\n"
-		"  -a <address>                 Check addess validaion and get the hash160 value.\n"
-		"  -g <privkey>                 Check private key validaion and get the address.\n"
+		"    -s                         Get a standard mainnet address.\n"
+		"    -c                         Get a compressed mainnet address.\n"
+		"    -t                         Get a standard testnet address.\n"
+		"    -k                         Get a compressed testnet address.\n"
+		"    -a <address>               Check addess validaion and get the hash160 value.\n"
+		"    -g <privkey>               Check private key validaion and get the address.\n"
 		"                               Supported format: [B6] [WIF] [Hexadecimal]\n"
-		"  --base6e  -S <string>             Base6  encode\n"
-		"  --base6d  -L <string>             Base6  decode\n"
-		"  --base58e -F <string>             Base58 encode\n"
-		"  --base58d -W <string>             Base58 decode\n"
-		"  --base58checke -B <string>        Base58Check encode\n"
-		"  --base58checkd -T <string>        Base58Check decode\n"
+		"    --base6e  -S <string>           Base6  encode\n"
+		"    --base6d  -L <string>           Base6  decode\n"
+		"    --base58e -F <string>           Base58 encode\n"
+		"    --base58d -W <string>           Base58 decode\n"
+		"    --base58checke -B <string>      Base58Check encode\n"
+		"    --base58checkd -T <string>      Base58Check decode\n"
 		, version, name);
 }
 
@@ -57,29 +78,41 @@ int32_t main(int32_t argc, char* const* argv)
 	{
 		switch(opt)
 		{
-			case 's':
+			case 's': {
+				ADDRESS addr;
 				printf("--------------------------------------------------------------------------------\n");
-				generate_address(0, 0x80, 0x00);
+				addr = generate_address(0, 0x80, 0x00);
+				print_address(addr);
 				printf("--------------------------------------------------------------------------------\n");
 				break;
+			}
 
-			case 'c':
+			case 'c': {
+				ADDRESS addr;
 				printf("--------------------------------------------------------------------------------\n");
-				generate_address(1, 0x80, 0x00);
+				addr = generate_address(1, 0x80, 0x00);
+				print_address(addr);
 				printf("--------------------------------------------------------------------------------\n");
 				break;
+			}
 
-			case 't':
+			case 't': {
+				ADDRESS addr;
 				printf("--------------------------------------------------------------------------------\n");
-				generate_address(0, 0xEF, 0x6F);
+				addr = generate_address(0, 0xEF, 0x6F);
+				print_address(addr);
 				printf("--------------------------------------------------------------------------------\n");
 				break;
+			}
 
-			case 'k':
+			case 'k': {
+				ADDRESS addr;
 				printf("--------------------------------------------------------------------------------\n");
-				generate_address(1, 0xEF, 0x6F);
+				addr = generate_address(1, 0xEF, 0x6F);
+				print_address(addr);
 				printf("--------------------------------------------------------------------------------\n");
 				break;
+			}
 
 			case 'a': {	
 				int32_t ret;
@@ -105,14 +138,35 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'g': {
+				int32_t ret;
 				int32_t cmpr;
 				BYTE net, ver, hex[32];
 				printf("--------------------------------------------------------------------------------\n");
-				privkey_anyformat_to_hex((int8_t*)optarg, &cmpr, &ver, &net, hex);
-				if (cmpr == -1)
+				ret = privkey_anyformat_to_hex((int8_t*)optarg, &cmpr, &ver, &net, hex);
+				if (ret == -1) {
+					printf("Unsupported format!\n");
 					break;
+				}
+				else if (ret == -2) {
+					printf("Invalid WIF private key!\n");
+					break;
+				}
+				else if (ret == -3 ){
+					printf("Invalid hexadecimal private key!\n");
+					break;
+				}
+				else if (ret == -4) {
+					printf("Invalid Base6 private key!\n");
+					break;
+				}
+				else if (ret == -5) {
+					printf("ecdsa-secp256k1 private key value out range!\n");
+					break;
+				}
 				else {
-					generate_address_by_private_key(cmpr, ver, net, hex);
+					ADDRESS addr;
+					addr = generate_address_by_private_key(cmpr, ver, net, hex);
+					print_address(addr);
 					printf("--------------------------------------------------------------------------------\n");
 					break;
 				}

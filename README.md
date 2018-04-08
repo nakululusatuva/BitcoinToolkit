@@ -3,11 +3,13 @@
 ##  Dependence
 
 * OpenSSL-1.0.2g
+* Libcurl-7.47.0
+* cJSON-1.7.5
 
-##  Testing Enviroment
+##  Enviroment
 
-* Operating System: Ubuntu Linux 16.04.3 / 4.10.0-28-generic x86_64
-* Compiler Version: GCC 5.4.0 20160609
+* Linux Kernel 4.10.0-28-generic_x64
+* GCC 5.4.0
 
 ## Features
 
@@ -27,6 +29,7 @@
 ##  Usage
 
 	sudo apt install libssl-dev
+    sudo apt install libcurl4-openssl-dev
 
 	make
     

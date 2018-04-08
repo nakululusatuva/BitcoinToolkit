@@ -5,11 +5,11 @@
 
 typedef struct address_st {
 	int32_t  cmpr_flag;             //  0 = no, 1 = yes.
-	BYTE 	 ver_byte;              //  1 byte long, 0x80 or 0xEF, used in WIF privkey.
-	BYTE 	 net_byte;              //  1 byte long, 0x00 or 0x6F, used in address.
-	BYTE 	 private_key[32];       // 32 byte long.
-	BYTE 	 public_key[65];        // 65 byte long.
-	BYTE 	 public_key_cmpr[33];   // 33 byte long.
+	BYTE     ver_byte;              //  1 byte long, 0x80 or 0xEF, used in WIF privkey.
+	BYTE     net_byte;              //  1 byte long, 0x00 or 0x6F, used in address.
+	BYTE     private_key[32];       // 32 byte long.
+	BYTE     public_key[65];        // 65 byte long.
+	BYTE     public_key_cmpr[33];   // 33 byte long.
 	uint8_t  priv_wif[52];          // 51 charaters long + '\0' ending.
 	uint8_t  priv_wif_cmpr[53];     // 52 charaters long + '\0' ending.
 	uint8_t  address[35];           // 34 charaters long + '\0' ending.
@@ -102,41 +102,47 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160);
 int32_t privkey_validation(int8_t *privkey, size_t length);
 
 /** Generate an address by given parameter.
-*   \param  cmpr        Compress flag, 0 = no, 1 = yes.
+*   \param  cmpr        Compress flag, -1 = Invalid compress flag.
+*                                      -2 = Invalid version byte.
+*                                      -3 = Invalid network byte
 *   \param  ver         Version byte, 0x80 = mainnet, 0xEF = testnet.
 *   \param  net         Network byte, 0x00 = mainnet, 0x6F = testnet.
-*   \return  0 on success.
-*           -1 on Invalid compress flag.
-*           -2 on Invalid version byte.
-*           -3 on Invalid network byte.
 **/
-int32_t generate_address(int32_t cmpr, BYTE ver, BYTE net);
+ADDRESS generate_address(int32_t cmpr, BYTE ver, BYTE net);
 
 /** Generate an address by given parameter and private key.
-*   \param  cmpr        Compress flag, 0 = no, 1 = yes.
+*   \param  cmpr        Compress flag, -1 = Invalid compress flag.
+*                                      -2 = Invalid version byte.
+*                                      -3 = Invalid network byte
 *   \param  ver         Version byte, 0x80 = mainnet, 0xEF = testnet.
 *   \param  net         Network byte, 0x00 = mainnet, 0x6F = testnet.
 *   \param  hex         Private key hexadecimal, 32 bytes long.
-*   \return  0 on success.
-*           -1 on Invalid compress flag.
-*           -2 on Invalid version byte.
-*           -3 on Invalid network byte.
 **/
-int32_t generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *hex);
+ADDRESS generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *hex);
 
 /** Convert the private key from any format to hexadecimal byte array.
 *   \param  key         Any format private key string.
-*   \param  cmpr        Store the compress flag, the value is 0 or 1, -1 on error.
+*   \param  cmpr        Store the compress flag, the value is 0 or 1.
 *   \param  ver         Store the version byte, 1 byte long.
 *   \param  net         Store the network byte, 1 byte lnog.
 *   \param  hex         Store the hexadecimal byte array, 32 bytes long
+*   \return  0 on cmpr_flag/ver_byte/net_byte are known.
+*            1 on cmpr_flag/ver_byte/net_byte are N/A.
 **/
-void privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, BYTE *hex);
+int32_t privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, BYTE *hex);
 
 /** Print the address which stored in an ADDRESS structure.
 *   \param  addr        An ADDRESS structure that stored the address.
 *   It prints the address, public key, private key WIF and private key hexadecimal.
 **/
 void print_address(ADDRESS addr);
+
+/** Initialize the ADDRESS structure.
+*   \param addr         The ADDRESS structure.
+*   \value              cmpr_flag = 127
+*                       ver_byte  = 127
+*                       net_byte  = 127
+**/
+void ADDRESS_init(ADDRESS *addr);
 
 #endif

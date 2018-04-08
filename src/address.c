@@ -34,7 +34,7 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 	if (cmpr_flag != 0 && cmpr_flag != 1)
 		return -1;
 
-	// Convert private key from Byte array to BIGNUM.
+	// Convert private key from byte array to BIGNUM.
 	bytearr_to_hexstr(priv, 32, priv_str);
 	BN_init(privkey);
 	BN_hex2bn(&privkey, (const char*)priv_str);
@@ -404,75 +404,83 @@ int32_t privkey_validation(int8_t *privkey, size_t length)
 	return -1;
 }
 
-void privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, BYTE *hex)
+int32_t privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, BYTE *hex)
 {
 	int32_t ret;
 	ret = privkey_validation(key, get_strlen(key));
 
 	// WIF private key?
-	if (ret == 1 || ret == 2 || ret == 3 || ret ==4)
-	{
+	if (ret == 1) {
 		wif_to_hex((uint8_t*)key, hex);
-		
-		if (ret == 1) {
-			*cmpr = 0;
-			*ver = 0x80;
-			*net = 0x00;
-		}
-		else if (ret == 2) {
-			*cmpr = 1;
-			*ver = 0x80;
-			*net = 0x00;
-		}
-		else if (ret == 3) {
-			*cmpr = 0;
-			*ver = 0xEF;
-			*net = 0x6F;
-		}
-		else if (ret == 4) {
-			*cmpr = 1;
-			*ver = 0xEF;
-			*net = 0x6F;
-		}
+		*cmpr = 0;
+		*ver = 0x80;
+		*net = 0x00;
+		return 0;
+	}
+	else if (ret == 2) {
+		wif_to_hex((uint8_t*)key, hex);
+		*cmpr = 1;
+		*ver = 0x80;
+		*net = 0x00;
+		return 0;
+	}
+	else if (ret == 3) {
+		wif_to_hex((uint8_t*)key, hex);
+		*cmpr = 0;
+		*ver = 0xEF;
+		*net = 0x6F;
+		return 0;
+	}
+	else if (ret == 4) {
+		wif_to_hex((uint8_t*)key, hex);
+		*cmpr = 1;
+		*ver = 0xEF;
+		*net = 0x6F;
+		return 0;
 	}
 
+	/**** DELETE START Apr 7 23:33 2018 ****
 	// Hex or B6 private key?
 	else if (ret == 5 || ret == 6)
 	{
-		// Get network type.
-		for (int i = 0; i < 1; )
-		{
-			int8_t ch;
-			printf("You want a mainnet or testnet address? (m/t): ");
-			scanf("%c", &ch);
-			if (ch == 'm') {
+		uint8_t byte;
+		uint8_t flag;
+
+		printf("You want a mainnet or testnet address? (m/t):");
+		while(1) {
+			while((byte = getchar()) != '\n' && byte != EOF);
+			byte = getchar();
+			if (byte == 0x6D) {// 'm'
 				*ver = 0x80;
 				*net = 0x00;
-				i = 1;
+				break;
 			}
-			else if (ch == 't') {
+			else if (byte == 0x74) {// 't'
 				*ver = 0xEF;
 				*net = 0x6F;
-				i = 1;
+				break;
 			}
-			else printf("Invalid Option!\n");
+			else {
+				printf("Invalid Option!");
+				continue;
+			}
 		}
 
-		// Get compressed flag.
-		for (int i = 0; i < 1; )
-		{
-			int8_t ch;
-			printf("You want a compressed address? (y/n): ");
-			scanf("%c", &ch);
-			if (ch == 'n') {
+		printf("You want a compressed address? (y/n):");
+		while(1) {
+			flag = getchar();
+			if (flag == 0x6E) {// 'n'
 				*cmpr = 0;
-				i = 1;
+				break;
 			}
-			else if (ch == 'y') {
+			else if (flag == 0x79) {// 'y'
 				*cmpr = 1;
-				i = 1;
+				break;
 			}
-			else printf("Invalid Option!\n");
+			else {
+				printf("Invalid Option!");
+				continue;
+			}
 		}
 
 		if (ret == 5)
@@ -480,38 +488,52 @@ void privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, 
 		else if (ret == 6)
 			b6_to_hex((uint8_t*)key, get_strlen(key), hex);
 	}
-	else if (ret == -1) {
-		*cmpr = -1;
-		printf("Unsupported format!\n");
+	**** DELETE END ****/
+
+	/**** ADD START Apr 7 23:33 2018 ****/
+	// Hex or B6 private key?
+	else if (ret == 5) {
+		hexstr_to_bytearr(key, get_strlen(key), hex);
+		return 1;
 	}
-	else if (ret == -2) {
-		*cmpr = -1;
-		printf("Invalid WIF private key!\n");
+	else if (ret == 6) {
+		b6_to_hex((uint8_t*)key, get_strlen(key), hex);
+		return 1;
 	}
-	else if (ret == -3) {
-		*cmpr = -1;
-		printf("Invalid hexadecimal private key!\n");
-	}
-	else if (ret == -4) {
-		*cmpr = -1;
-		printf("Invalid Base6 private key!\n");
-	}
-	else if (ret == -5) {
-		*cmpr = -1;
-		printf("ecdsa-secp256k1 private key value out range!\n");
-	}
+	/**** DELETE END ****/
+
+	else if (ret == -1)
+		return -1;
+	else if (ret == -2)
+		return -2;
+	else if (ret == -3)
+		return -3;
+	else if (ret == -4)
+		return -4;
+	else if (ret == -5)
+		return -5;
+
+	return 0;
 }
 
-int32_t generate_address(int32_t cmpr, BYTE ver, BYTE net)
+void ADDRESS_init(ADDRESS *addr)
 {
+	addr->cmpr_flag = 127;
+	addr->ver_byte = 127;
+	addr->net_byte = 127;
+}
+
+ADDRESS generate_address(int32_t cmpr, BYTE ver, BYTE net)
+{
+	ADDRESS new;
+	ADDRESS_init(&new);
 	if (cmpr != 0 && cmpr != 1)
-		return -1;
+		new.cmpr_flag = -1;
 	else if (ver != 0x80 && ver != 0xEF)
-		return -2;
+		new.cmpr_flag = -2;
 	else if (net != 0x00 && net != 0x6F)
-		return -3;
+		new.cmpr_flag = -3;
 	else{
-		ADDRESS new;
 		new.cmpr_flag = cmpr;
 		new.ver_byte = ver;
 		new.net_byte = net;
@@ -521,22 +543,22 @@ int32_t generate_address(int32_t cmpr, BYTE ver, BYTE net)
 		hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
 		pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
 
-		print_address(new);
-
-		return 0;
+		return new;
 	}
+	return new;
 }
 
-int32_t generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *hex)
+ADDRESS generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *hex)
 {
+	ADDRESS new;
+	ADDRESS_init(&new);
 	if (cmpr != 0 && cmpr != 1)
-		return -1;
+		new.cmpr_flag = -1;
 	else if (ver != 0x80 && ver != 0xEF)
-		return -2;
+		new.cmpr_flag = -2;
 	else if (net != 0x00 && net != 0x6F)
-		return -3;
+		new.cmpr_flag = -3;
 	else{
-		ADDRESS new;
 		new.cmpr_flag = cmpr;
 		new.ver_byte = ver;
 		new.net_byte = net;
@@ -547,10 +569,9 @@ int32_t generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *
 		hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
 		pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
 
-		print_address(new);
-
-		return 0;
+		return new;
 	}
+	return new;
 }
 
 void print_address(ADDRESS addr)

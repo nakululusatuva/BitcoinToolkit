@@ -422,7 +422,7 @@ int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 
 	if (decoded == NULL)
 		return decoded_len;
-	
+
 	int32_t payload_copy_len = (ending == 0 ? payload_len : payload_len - 4);
 	BYTE payload_copy[payload_copy_len];
 
