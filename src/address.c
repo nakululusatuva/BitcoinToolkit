@@ -48,7 +48,7 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 	EC_KEY_set_conv_form(keys, forms[cmpr_flag]);
 	pub_len = i2o_ECPublicKey(keys, &p_pub);
 
-	BN_clear_free(privkey);
+	BN_free(privkey);
 	EC_POINT_free(pubkey);
 	BN_CTX_free(ctx);
 	EC_KEY_free(keys);

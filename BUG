@@ -1,5 +1,5 @@
 Listing of the known bugs.
 
-No.     Type                Location
-============================================================
-0x01    Memory Leak         ./src/address.c Line 190
+No.   Type          Description                       Location
+================================================================================
+0x01  Memory Leak   BIGNUM can't be free correctly    Anywhere with BIGNUM

@@ -45,8 +45,8 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		encoded[encoded_len - 1 -i] = raw_encoded[i];
 	encoded[encoded_len] = '\0';
 
-	BN_clear_free(bn);      BN_clear_free(bn0);     BN_clear_free(bn6);
-	BN_clear_free(dv);      BN_clear_free(rem);
+	BN_free(bn);         BN_free(bn0);        BN_free(bn6);
+	BN_free(dv);         BN_free(rem);
 	BN_CTX_free(ctx);
 
 	return 0;
@@ -115,10 +115,10 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
 	OPENSSL_free(raw_decoded_hexstr);
 
-	BN_clear_free(bn);          BN_clear_free(bn6);         BN_clear_free(b6value);
-	BN_clear_free(power);       BN_clear_free(powered);
-	BN_clear_free(to_add);      BN_clear_free(buffer);
-	BN_CTX_free(ctx1);          BN_CTX_free(ctx2);
+	BN_free(bn);             BN_free(bn6);            BN_free(b6value);
+	BN_free(power);          BN_free(powered);
+	BN_free(to_add);         BN_free(buffer);
+	BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
 
 	return 0;
 }
@@ -184,8 +184,8 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		encoded[encoded_len - 1 -i] = raw_encoded[i];
 	encoded[encoded_len] = '\0';
 
-	BN_clear_free(bn);      BN_clear_free(bn0);     BN_clear_free(bn58);
-	BN_clear_free(dv);      BN_clear_free(rem);
+	BN_free(bn);         BN_free(bn0);        BN_free(bn58);
+	BN_free(dv);         BN_free(rem);
 	BN_CTX_free(ctx);
 
 	return 0;
@@ -279,10 +279,10 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	for (int32_t i = 0; i < leading_one_count; ++i)
 		decoded[i] = 0x00;
 
-	BN_clear_free(bn);          BN_clear_free(bn58);        BN_clear_free(b58value);
-	BN_clear_free(power);       BN_clear_free(powered);
-	BN_clear_free(to_add);      BN_clear_free(buffer);
-	BN_CTX_free(ctx1);          BN_CTX_free(ctx2);
+	BN_free(bn);             BN_free(bn58);           BN_free(b58value);
+	BN_free(power);          BN_free(powered);
+	BN_free(to_add);         BN_free(buffer);
+	BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
 
 	return 0;
 }
