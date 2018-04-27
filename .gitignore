@@ -1,6 +1,7 @@
 # custom
 todo
 count
+log*
 
 # Prerequisites
 *.d
