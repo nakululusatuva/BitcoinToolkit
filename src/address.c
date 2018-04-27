@@ -26,7 +26,7 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 
 	BIGNUM *privkey = BN_new();
 	EC_KEY *keys = EC_KEY_new_by_curve_name(NID_secp256k1);
-	// Bug. const *group can't be freed by free() or OPENSSL_free(), cause memory leak.
+
 	const EC_GROUP *group = EC_KEY_get0_group(keys);            // Struct group store the G and calculation rules
 	EC_POINT *pubkey = EC_POINT_new(group);	                    // Public key is a point on curve
 	BN_CTX *ctx = BN_CTX_new();
