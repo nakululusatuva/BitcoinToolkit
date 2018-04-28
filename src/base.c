@@ -131,12 +131,12 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		OPENSSL_free(bn);        OPENSSL_free(bn6);       OPENSSL_free(b6value);
 		OPENSSL_free(power);     OPENSSL_free(powered);
 		OPENSSL_free(to_add);    OPENSSL_free(buffer);
+		OPENSSL_free(raw_decoded_hexstr);
 
 		return decoded_len;
 	}
 
 	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
-	OPENSSL_free(raw_decoded_hexstr);
 
 	BN_free(bn);             BN_free(bn6);            BN_free(b6value);
 	BN_free(power);          BN_free(powered);
@@ -146,6 +146,8 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	OPENSSL_free(bn);        OPENSSL_free(bn6);       OPENSSL_free(b6value);
 	OPENSSL_free(power);     OPENSSL_free(powered);
 	OPENSSL_free(to_add);    OPENSSL_free(buffer);
+
+	OPENSSL_free(raw_decoded_hexstr);
 
 	return 0;
 }
@@ -317,11 +319,12 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		OPENSSL_free(power);     OPENSSL_free(powered);
 		OPENSSL_free(to_add);    OPENSSL_free(buffer);
 
+		OPENSSL_free(raw_decoded_hexstr);
+
 		return decoded_len;
 	}
 
 	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
-	OPENSSL_free(raw_decoded_hexstr);
 
 	// Add the leading 0x00 byte.
 	for (int32_t i = 0; i < decoded_len; ++i)
@@ -337,6 +340,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	OPENSSL_free(bn);        OPENSSL_free(bn58);      OPENSSL_free(b58value);
 	OPENSSL_free(power);     OPENSSL_free(powered);
 	OPENSSL_free(to_add);    OPENSSL_free(buffer);
+	OPENSSL_free(raw_decoded_hexstr);
 
 	return 0;
 }
