@@ -21,4 +21,13 @@ typedef version_message_st {
 //	bool     relay;                   //  1 bytes, Optional
 } VERSION_MESSAGE;
 
+// Reference: bitcoin.org/en/developer-reference#message-headers
+//            en.bitcoin.it/wiki/Protocol_documentation#Message_structure
+typedef message_header_st {
+	char     magic[4];          //  4 bytes, Required
+	char     command_name[12];  // 12 bytes, Required
+	uint32_t payload_size;      //  4 bytes, Required
+	char     checksum[4];       //  4 bytes, Required
+} MESSAGE_HEADER;
+
 #endif
