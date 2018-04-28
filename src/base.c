@@ -49,6 +49,10 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_free(dv);         BN_free(rem);
 	BN_CTX_free(ctx);
 
+	free(bn);            free(bn0);           free(bn6);
+	free(dv);            free(rem);
+	free(ctx);
+
 	return 0;
 }
 
@@ -119,6 +123,10 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	BN_free(power);          BN_free(powered);
 	BN_free(to_add);         BN_free(buffer);
 	BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
+	free(bn);                free(bn6);               free(b6value);
+	free(power);             free(powered);
+	free(to_add);            free(buffer);
+	free(ctx1);              free(ctx2);
 
 	return 0;
 }
@@ -187,6 +195,9 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_free(bn);         BN_free(bn0);        BN_free(bn58);
 	BN_free(dv);         BN_free(rem);
 	BN_CTX_free(ctx);
+	free(bn);            free(bn0);           free(bn58);
+	free(dv);            free(rem);
+	free(ctx);
 
 	return 0;
 }
@@ -283,6 +294,10 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	BN_free(power);          BN_free(powered);
 	BN_free(to_add);         BN_free(buffer);
 	BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
+	free(bn);                free(bn58);              free(b58value);
+	free(power);             free(powered);
+	free(to_add);            free(buffer);
+	free(ctx1);              free(ctx2);
 
 	return 0;
 }
