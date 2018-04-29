@@ -1,5 +1,0 @@
-Listing of the known bugs.
-
-No.   Type          Description                       Location                  Status
-=========================================================================================
-0x01  Memory Leak   BIGNUM can't be free correctly    Anywhere with BIGNUM      Fixed
