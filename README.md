@@ -2,9 +2,9 @@
 
 ##  Dependence
 
-* OpenSSL-dev 1.1.0
+* OpenSSL-dev          1.1.0
 * libcurl4-openssl-dev 7.58.0
-* cJSON-1.7.5
+* cJSON                1.7.5
 
 ##  Enviroment
 
