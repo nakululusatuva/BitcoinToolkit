@@ -47,6 +47,8 @@ void usage(const char *version, const char *name)
 		"    --base6d  -L <string>           Base6  decode\n"
 		"    --base58e -F <string>           Base58 encode\n"
 		"    --base58d -W <string>           Base58 decode\n"
+		"    --base64e -U <string>           Base64 encode\n"
+		"    --base64d -R <string>           Base64 decode\n"
 		"    --base58checke -B <string>      Base58Check encode\n"
 		"    --base58checkd -T <string>      Base58Check decode\n"
 		, version, name);
