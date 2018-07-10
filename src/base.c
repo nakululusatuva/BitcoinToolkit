@@ -11,13 +11,8 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	int8_t raw_encoded[payload_len*2];
 
 	BIGNUM *bn  = BN_new();     BIGNUM *bn0 = BN_new();     BIGNUM *bn6 = BN_new();
-	BN_init(bn);                BN_init(bn0);               BN_init(bn6);
-
 	BIGNUM *dv  = BN_new();     BIGNUM *rem = BN_new();
-	BN_init(dv);                BN_init(rem);
-
 	BN_CTX *ctx = BN_CTX_new();
-	BN_CTX_init(ctx);
 
 	// Convert the payload from byte array to hex string.
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
@@ -44,9 +39,6 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		BN_free(dv);         BN_free(rem);
 		BN_CTX_free(ctx);
 
-		OPENSSL_free(bn);    OPENSSL_free(bn0);   OPENSSL_free(bn6);
-		OPENSSL_free(dv);    OPENSSL_free(rem);
-
 		return encoded_len;
 	}
 
@@ -57,9 +49,6 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_free(bn);         BN_free(bn0);        BN_free(bn6);
 	BN_free(dv);         BN_free(rem);
 	BN_CTX_free(ctx);
-	// Free Memory, Bug Fixed Apr. 29 2018
-	OPENSSL_free(bn);    OPENSSL_free(bn0);   OPENSSL_free(bn6);
-	OPENSSL_free(dv);    OPENSSL_free(rem);
 
 	return 0;
 }
@@ -92,14 +81,11 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	*  bignum = bignum + to_add;
 	*/
 	BIGNUM *bn     = BN_new();   BIGNUM *bn6     = BN_new();   BIGNUM *b6value = BN_new();
-	BN_init(bn);                 BN_init(bn6);                 BN_init(b6value);
 	BN_is_zero(bn);              BN_set_word(bn6, 6);
 
 	BIGNUM *power  = BN_new();   BIGNUM *powered = BN_new();
-	BN_init(power);              BN_init(powered);
 
 	BIGNUM *to_add = BN_new();   BIGNUM *buffer  = BN_new();
-	BN_init(to_add);             BN_init(buffer);
 	BN_is_zero(to_add);          BN_is_zero(buffer);
 
 	BN_CTX *ctx1 = BN_CTX_new(); BN_CTX *ctx2 = BN_CTX_new();
@@ -127,11 +113,7 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		BN_free(power);          BN_free(powered);
 		BN_free(to_add);         BN_free(buffer);
 		BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
-
-		OPENSSL_free(bn);        OPENSSL_free(bn6);       OPENSSL_free(b6value);
-		OPENSSL_free(power);     OPENSSL_free(powered);
-		OPENSSL_free(to_add);    OPENSSL_free(buffer);
-		OPENSSL_free(raw_decoded_hexstr);
+		free(raw_decoded_hexstr);
 
 		return decoded_len;
 	}
@@ -142,12 +124,7 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	BN_free(power);          BN_free(powered);
 	BN_free(to_add);         BN_free(buffer);
 	BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
-	// Free Memory, Bug Fixed Apr. 29 2018
-	OPENSSL_free(bn);        OPENSSL_free(bn6);       OPENSSL_free(b6value);
-	OPENSSL_free(power);     OPENSSL_free(powered);
-	OPENSSL_free(to_add);    OPENSSL_free(buffer);
-
-	OPENSSL_free(raw_decoded_hexstr);
+	free(raw_decoded_hexstr);
 
 	return 0;
 }
@@ -164,13 +141,10 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	int8_t raw_encoded[payload_len*2];
 
 	BIGNUM *bn  = BN_new();     BIGNUM *bn0 = BN_new();     BIGNUM *bn58 = BN_new();
-	BN_init(bn);                BN_init(bn0);               BN_init(bn58);
 
 	BIGNUM *dv  = BN_new();     BIGNUM *rem = BN_new();
-	BN_init(dv);                BN_init(rem);
 
 	BN_CTX *ctx = BN_CTX_new();
-	BN_CTX_init(ctx);
 
 	// Get leading 0x00 byte count.
 	int32_t leading_zero_count = 0;
@@ -209,9 +183,6 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		BN_free(dv);         BN_free(rem);
 		BN_CTX_free(ctx);
 
-		OPENSSL_free(bn);    OPENSSL_free(bn0);   OPENSSL_free(bn58);
-		OPENSSL_free(dv);    OPENSSL_free(rem);
-
 		return encoded_len;
 	}
 
@@ -225,9 +196,6 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_free(bn);         BN_free(bn0);        BN_free(bn58);
 	BN_free(dv);         BN_free(rem);
 	BN_CTX_free(ctx);
-	// Free Memory, Bug Fixed Apr. 29 2018
-	OPENSSL_free(bn);    OPENSSL_free(bn0);   OPENSSL_free(bn58);
-	OPENSSL_free(dv);    OPENSSL_free(rem);
 
 	return 0;
 }
@@ -279,14 +247,11 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	*  bignum = bignum + to_add;
 	*/
 	BIGNUM *bn     = BN_new();   BIGNUM *bn58    = BN_new();   BIGNUM *b58value = BN_new();
-	BN_init(bn);                 BN_init(bn58);                BN_init(b58value);
 	BN_is_zero(bn);              BN_set_word(bn58, 58);
 
 	BIGNUM *power  = BN_new();   BIGNUM *powered = BN_new();
-	BN_init(power);              BN_init(powered);
 
 	BIGNUM *to_add = BN_new();   BIGNUM *buffer  = BN_new();
-	BN_init(to_add);             BN_init(buffer);
 	BN_is_zero(to_add);          BN_is_zero(buffer);
 
 	BN_CTX *ctx1 = BN_CTX_new(); BN_CTX *ctx2 = BN_CTX_new();
@@ -314,12 +279,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		BN_free(power);          BN_free(powered);
 		BN_free(to_add);         BN_free(buffer);
 		BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
-
-		OPENSSL_free(bn);        OPENSSL_free(bn58);      OPENSSL_free(b58value);
-		OPENSSL_free(power);     OPENSSL_free(powered);
-		OPENSSL_free(to_add);    OPENSSL_free(buffer);
-
-		OPENSSL_free(raw_decoded_hexstr);
+		free(raw_decoded_hexstr);
 
 		return decoded_len;
 	}
@@ -336,11 +296,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	BN_free(power);          BN_free(powered);
 	BN_free(to_add);         BN_free(buffer);
 	BN_CTX_free(ctx1);       BN_CTX_free(ctx2);
-	// Free Memory, Bug Fixed Apr. 29 2018
-	OPENSSL_free(bn);        OPENSSL_free(bn58);      OPENSSL_free(b58value);
-	OPENSSL_free(power);     OPENSSL_free(powered);
-	OPENSSL_free(to_add);    OPENSSL_free(buffer);
-	OPENSSL_free(raw_decoded_hexstr);
+	free(raw_decoded_hexstr);
 
 	return 0;
 }

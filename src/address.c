@@ -36,7 +36,6 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 
 	// Convert private key from byte array to BIGNUM.
 	bytearr_to_hexstr(priv, 32, priv_str);
-	BN_init(privkey);
 	BN_hex2bn(&privkey, (const char*)priv_str);
 
 	// Generate public key.
@@ -55,7 +54,6 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 		pub[i] = pub_internal[i];
 
 	BN_free(privkey);
-	OPENSSL_free(privkey);
 	EC_POINT_free(pubkey);
 	BN_CTX_free(ctx);
 	EC_KEY_free(keys);
