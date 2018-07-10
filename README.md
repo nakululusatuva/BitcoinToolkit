@@ -2,14 +2,14 @@
 
 ##  Dependence
 
-* OpenSSL-1.0.2g
-* Libcurl-7.47.0
+* OpenSSL-dev 1.1.0
+* libcurl4-openssl-dev 7.58.0
 * cJSON-1.7.5
 
 ##  Enviroment
 
-* Linux Kernel 4.10.0-28-generic_x64
-* GCC 5.4.0
+* Ubuntu 18.04 (Kernel 4.15.0-23)
+* GCC 7.3
 
 ## Features
 
@@ -49,6 +49,8 @@
     --base6d  -L <string>             Base6  decode
     --base58e -F <string>             Base58 encode
     --base58d -W <string>             Base58 decode
+    --base64e -U <string>             Base64 encode"
+    --base64d -R <string>             Base64 decode"
     --base58checke -B <string>        Base58Check encode
     --base58checkd -T <string>        Base58Check decode
 	
