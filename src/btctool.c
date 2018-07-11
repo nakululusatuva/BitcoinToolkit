@@ -23,6 +23,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <time.h>
 #include "base.h"
 #include "strings.h"
 #include "common.h"
@@ -32,9 +33,11 @@ void usage(const char *version, const char *name)
 {
 	fprintf(stderr,
 		"Bticoin-ToolKit %s\n"
-		"Usage: %s [-sctk] [-a <address>] [-g <privkey>] [--base6e -S <string>]\n"
-		"       [--base6d -L <string>] [--base58e -F <string>] [--base58d -W <string>]\n"
-		"       [--base58checke -B <string>] [--base58checkd -T <string>]\n"
+		"Usage: %s [-sctk] [-a <address>] [-g <privkey>]\n"
+		"          [--base6e -S <string>] [--base6d -L <string>]\n"
+		"          [--base58e -F <string>] [--base58d -W <string>]\n"
+		"          [--base64e -U <string>] [--base64d -R <string>]\n"
+		"          [--base58checke -B <string>] [--base58checkd -T <string>]\n"
 		"Options:\n"
 		"    -s                         Get a standard mainnet address.\n"
 		"    -c                         Get a compressed mainnet address.\n"
@@ -56,6 +59,7 @@ void usage(const char *version, const char *name)
 
 int32_t main(int32_t argc, char* const* argv)
 {
+//	BYTE payload[32] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFE,0xBA,0xAE,0xDC,0xE6,0xAF,0x48,0xA0,0x3B,0xBF,0xD2,0x5E,0x8C,0xD0,0x36,0x41,0x40};
 	char* const short_options = "sctka:g:S:L:F:W:B:T:U:R:";
 	struct option long_options[] = {
 		{"base6e", 1, NULL, 'S'},
@@ -140,32 +144,43 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'g': {
-				int32_t ret;
-				int32_t cmpr;
-				BYTE net, ver, hex[32];
-				printf("--------------------------------------------------------------------------------\n");
-				ret = privkey_anyformat_to_hex((int8_t*)optarg, &cmpr, &ver, &net, hex);
+				int32_t ret, optarg_len;
+				int32_t cmpr = 0;
+				BYTE net = 0x00, ver = 0x80, hex[32];
+				optarg_len = get_strlen((int8_t*)optarg);
+
+				ret = privkey_validation((int8_t*)optarg, optarg_len);
 				if (ret == -1) {
-					printf("Unsupported format!\n");
+					printf("EC key value out range!\n");
 					break;
 				}
 				else if (ret == -2) {
-					printf("Invalid WIF private key!\n");
+					printf("Unsupported format!\n");
 					break;
 				}
 				else if (ret == -3 ){
-					printf("Invalid hexadecimal private key!\n");
+					printf("Invalid Base58 key string!\n");
 					break;
 				}
 				else if (ret == -4) {
-					printf("Invalid Base6 private key!\n");
+					printf("Invalid checksum!\n");
 					break;
 				}
 				else if (ret == -5) {
-					printf("ecdsa-secp256k1 private key value out range!\n");
+					printf("Invalid HEX key string!\n");
+					break;
+				}
+				else if (ret == -6) {
+					printf("Invalid B6 key string!\n");
+					break;
+				}
+				else if (ret == -7) {
+					printf("Invalid B64 key string!\n");
 					break;
 				}
 				else {
+					privkey_anyformat_to_hex((int8_t*)optarg, &cmpr, &ver, &net, hex);
+					printf("--------------------------------------------------------------------------------\n");
 					ADDRESS addr;
 					addr = generate_address_by_private_key(cmpr, ver, net, hex);
 					print_address(addr);

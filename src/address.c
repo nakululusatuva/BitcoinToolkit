@@ -16,8 +16,7 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 	int32_t pub_len = 0;
 	int32_t NID_secp256k1 = 714;
 	int8_t priv_str[64];
-	uint8_t pub_internal[130];
-	uint8_t *p_pub = pub_internal;
+	uint8_t *p_pub = pub;
 
 	point_conversion_form_t forms[] = {
 		POINT_CONVERSION_UNCOMPRESSED,
@@ -49,9 +48,6 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv, BYTE *pub, int32_t cmpr_fl
 
 	if (pub_len != 33 && pub_len != 65)
 		return -2;
-
-	for (int32_t i = 0; i < (cmpr_flag?33:65); ++i)
-		pub[i] = pub_internal[i];
 
 	BN_free(privkey);
 	EC_POINT_free(pubkey);
@@ -109,6 +105,8 @@ int8_t selector(int32_t item)
 
 int32_t hex_to_wif(BYTE *private_key, uint8_t *wif, int32_t cmpr_flag, BYTE ver_byte)
 {
+	int extended_length, to_base58_length;
+
 	BYTE *extended, extended_key[33], extended_key_cmpr[34];
 
 	BYTE first_sha256[32], second_sha256[32];
@@ -121,16 +119,20 @@ int32_t hex_to_wif(BYTE *private_key, uint8_t *wif, int32_t cmpr_flag, BYTE ver_
 	// Step 1 : Extend the private key with network byte prefix and compress byte ending.
 	if (cmpr_flag == 0)
 	{
-		extended 	= extended_key;
-		extended[0] = ver_byte;
-		to_base58 	= ready_to_base58;
+		extended 	     = extended_key;
+		extended[0]      = ver_byte;
+		extended_length  = 33;
+		to_base58 	     = ready_to_base58;
+		to_base58_length = 37;
 	}
 	else if (cmpr_flag == 1)
 	{
-		extended 	 = extended_key_cmpr;
-		extended[0]  = ver_byte;
-		extended[33] = 0x01;
-		to_base58 	 = ready_to_base58_cmpr;
+		extended 	     = extended_key_cmpr;
+		extended[0]      = ver_byte;
+		extended_length  = 34;
+		extended[33]     = 0x01;
+		to_base58 	     = ready_to_base58_cmpr;
+		to_base58_length = 38;
 	}
 	else return -2;
 
@@ -138,19 +140,19 @@ int32_t hex_to_wif(BYTE *private_key, uint8_t *wif, int32_t cmpr_flag, BYTE ver_
 		extended[i] = private_key[i-1];
 
 	// Step 2 : Double sha256 the extended key for checksum.
-	SHA256(extended, (cmpr_flag ? 34 : 33), first_sha256);
+	SHA256(extended, extended_length, first_sha256);
 
 	SHA256(first_sha256, 32, second_sha256);
 
 	// Step 3 : Append the first four byte checksum to the extended key.
-	for (int32_t i = 0; i < (cmpr_flag ? 34 : 33); ++i)
+	for (int32_t i = 0; i < extended_length; ++i)
 		to_base58[i] = extended[i];
 
 	for (int32_t i = 0; i < 4; ++i)
-		to_base58[(cmpr_flag ? 38 : 37) - 4 + i] = second_sha256[i];
+		to_base58[to_base58_length - 4 + i] = second_sha256[i];
 
 	// Step 4 : Base58 encode the 'to_base' for wallet import format.
-	base58encode(to_base58, cmpr_flag ? 38 : 37, wif);
+	base58encode(to_base58, to_base58_length, wif);
 
 	return 0;
 }
@@ -298,109 +300,156 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160)
 
 int32_t privkey_validation(int8_t *privkey, size_t length)
 {
-	const uint8_t base6table[6] =
-		{'0', '1', '2', '3', '4', '5'};
-
-	const uint8_t hextable[16] =
-		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-	const uint8_t base58table[58] =
-		{'1', '2', '3', '4', '5', '6', '7', '8', '9','A', 'B', 'C', 'D', 'E', 'F',
-		'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-		'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
-		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-
-	int8_t copy[length];
-	for (int32_t i = 0; i < length; ++i)
-		copy[i] = privkey[i];
-
+	switch(length)
+	{
 	// Check if WIF.
-	if (length == 51 || length == 52)
-	{
-		for (int32_t i = 0; i < length; ++i)
+		case 51:case 52:
 		{
-			int32_t j = 0;
-			for ( ; j < 58; ++j)
-			{
-				if (copy[i] == base58table[j])
-					break;
-			}
-			if (j == 58)
-				return -2;
-		}
-		//Check WIF type.
-		if (copy[0] == '5')
-		{
-			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_SM)>0)
-				return -5;
-			else
-				return 1;
-		}
-		else if (copy[0] == 'K' || copy[0] == 'L') {
-			BYTE decoded[32];
-			int8_t decoded_str[65];
-			wif_to_hex((uint8_t*)privkey, decoded);
-			bytearr_to_hexstr(decoded, 32, decoded_str);
-			if (strcmp((const char*)decoded_str, (const char*)MAX_PRIVKEY_HEX)>0)
-				return -5;
-			else
-				return 2;
-		}
-		else if (copy[0] == '9') {
-			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_ST)>0)
-				return -5;
-			else
-				return 3;
-		}
-		else if (copy[0] == 'c') {
-			if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_WIF_CT)>0)
-				return -5;
-			else
-				return 4;
-		}
-	}
+			// Check if a valid WIF string.
+			BYTE priv_bytearr[32];
+			int32_t ret = wif_to_hex((uint8_t*)privkey, priv_bytearr);
 
-	// Check if hexadecimal.
-	else if (length == 64)
-	{
-		for (int32_t i = 0; i < length; ++i)
-		{
-			int32_t j = 0;
-			for ( ; j < 16; ++j)
+			if (ret == -1)
+				return -3;         // Invalid WIF string.
+			else if (ret == -2)
+				return -3;         // Invalid WIF string.
+			else if (ret == -3)
+				return -4;         // Invalid checksum.
+			else if (ret == 0)     // Valid WIF format string.
 			{
-				if (copy[i] == hextable[j])
-					break;
-			}
-			if (j == 16)
-				return -3;
-		}
-		if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_HEX)>0)
-			return -5;
-		else
-			return 5;
-	}
+				// Check if key's value out range.
+				BIGNUM *priv_bn = BN_new();
+				BIGNUM *EC_MAX  = BN_new();
+				int8_t priv_hexstr[64];
 
-	// Check if base6.
-	else if (length == 99 || length == 100)
-	{
-		for (int32_t i = 0; i < length; ++i)
-		{
-			int32_t j = 0;
-			for ( ; j < 6; ++j)
-			{
-				if (copy[i] == base6table[j])
-					break;
+				bytearr_to_hexstr(priv_bytearr, 32, priv_hexstr);
+				BN_hex2bn(&priv_bn, (const char *)priv_hexstr);
+				BN_hex2bn(&EC_MAX , (const char *)MAX_PRIVKEY_HEX);
+				int32_t ret_cmp = BN_cmp(priv_bn, EC_MAX);
+
+				BN_free(priv_bn);
+				BN_free(EC_MAX);
+				if (ret_cmp == -1)
+					return 0x00;   // Not out range.
+				else return -1;    // out range.
 			}
-			if (j == 6)
-				return -4;
+
+			break;
 		}
-		if (strcmp((const char*)privkey, (const char*)MAX_PRIVKEY_B6)>0)
-			return -5;
-		else
-			return 6;
+
+	// Check if HEX.
+		case 64:
+		{
+			BIGNUM *priv_bn = BN_new();
+			BIGNUM *EC_MAX  = BN_new();
+
+			int32_t ret = BN_hex2bn(&priv_bn, (const char *)privkey);
+
+			// Check if a valid hexadecimal string.
+			if (ret == 64)
+			{
+				// Check if key's value out range.
+				BN_hex2bn(&EC_MAX, (const char *)MAX_PRIVKEY_HEX);
+				int32_t ret_cmp = BN_cmp(priv_bn, EC_MAX);
+				BN_free(priv_bn);
+				BN_free(EC_MAX);
+				if (ret_cmp == -1)
+					return 0x01;   // Not out range.
+				else return -1;    // out range.
+			}
+
+			else if (ret == 0)
+			{
+				// Invalid Hexadecimal string.
+				BN_free(priv_bn);
+				BN_free(EC_MAX);
+				return -5;
+			}
+
+			else {
+				// Invalid Hexadecimal string.
+				BN_free(priv_bn);
+				BN_free(EC_MAX);
+				return -5;
+			}
+
+			break;
+		}
+
+	// Check if B6.
+		case 99:case 100: {
+			int32_t ret = base6decode((uint8_t *)privkey, length, NULL);
+
+			// Check if a valid Base6 string.
+			if (ret == 32)
+			{
+				// Check if key's value out range.
+				BIGNUM *priv_bn = BN_new();
+				BIGNUM *EC_MAX  = BN_new();
+				int8_t priv_hexstr[64];
+				BYTE priv_bytearr[32];
+
+				base6decode((uint8_t *)privkey, length, priv_bytearr);
+				bytearr_to_hexstr(priv_bytearr, 32, priv_hexstr);
+				BN_hex2bn(&priv_bn, (const char *)priv_hexstr);
+				BN_hex2bn(&EC_MAX , (const char *)MAX_PRIVKEY_HEX);
+				int32_t ret_cmp = BN_cmp(priv_bn, EC_MAX);
+
+				BN_free(priv_bn);
+				BN_free(EC_MAX);
+				if (ret_cmp == -1)
+					return 0x02;   // Not out range.
+				else return -1;    // out range.
+			}
+
+			else if (ret == -1)
+				return -6;         // Invalid Base6 string.
+			else return -6;        // Invalid Base6 string.
+
+			break;
+		}
+
+	// Check if Base64.
+		case 44: {
+			int32_t ret = base64decode((uint8_t *)privkey, 44, NULL);
+
+			// Check if a valid Base64 string.
+			if (ret == 32)
+			{
+				// Check if key's value out range.
+				BIGNUM *priv_bn = BN_new();
+				BIGNUM *EC_MAX  = BN_new();
+				int8_t priv_hexstr[64];
+				BYTE priv_bytearr[32];
+
+				base6decode((uint8_t *)privkey, length, priv_bytearr);
+				bytearr_to_hexstr(priv_bytearr, 32, priv_hexstr);
+				BN_hex2bn(&priv_bn, (const char *)priv_hexstr);
+				BN_hex2bn(&EC_MAX , (const char *)MAX_PRIVKEY_HEX);
+				int32_t ret_cmp = BN_cmp(priv_bn, EC_MAX);
+
+				BN_free(priv_bn);
+				BN_free(EC_MAX);
+				if (ret_cmp == -1)
+					return 0x03;   // Not out range.
+				else return -1;    // out range.
+			}
+
+			else if (ret == -1)
+				return -7;         // Invalid Base64 string.
+			else return -7;        // Invalid Base64 string.
+
+			break;
+		}
+
+	// Check if BIP38
+		case 58: {
+			break;
+		}
+
+		default: return -2;
 	}
-	
-	return -1;
+	return -2;
 }
 
 int32_t privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *net, BYTE *hex)
@@ -408,168 +457,110 @@ int32_t privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *ne
 	int32_t ret;
 	ret = privkey_validation(key, get_strlen(key));
 
-	// WIF private key?
-	if (ret == 1) {
-		wif_to_hex((uint8_t*)key, hex);
-		*cmpr = 0;
-		*ver = 0x80;
-		*net = 0x00;
-		return 0;
-	}
-	else if (ret == 2) {
-		wif_to_hex((uint8_t*)key, hex);
-		*cmpr = 1;
-		*ver = 0x80;
-		*net = 0x00;
-		return 0;
-	}
-	else if (ret == 3) {
-		wif_to_hex((uint8_t*)key, hex);
-		*cmpr = 0;
-		*ver = 0xEF;
-		*net = 0x6F;
-		return 0;
-	}
-	else if (ret == 4) {
-		wif_to_hex((uint8_t*)key, hex);
-		*cmpr = 1;
-		*ver = 0xEF;
-		*net = 0x6F;
-		return 0;
-	}
-
-	/**** DELETE START Apr 7 23:33 2018 ****
-	// Hex or B6 private key?
-	else if (ret == 5 || ret == 6)
+	switch(ret)
 	{
-		uint8_t byte;
-		uint8_t flag;
-
-		printf("You want a mainnet or testnet address? (m/t):");
-		while(1) {
-			while((byte = getchar()) != '\n' && byte != EOF);
-			byte = getchar();
-			if (byte == 0x6D) {// 'm'
-				*ver = 0x80;
-				*net = 0x00;
-				break;
-			}
-			else if (byte == 0x74) {// 't'
-				*ver = 0xEF;
-				*net = 0x6F;
-				break;
-			}
-			else {
-				printf("Invalid Option!");
-				continue;
-			}
-		}
-
-		printf("You want a compressed address? (y/n):");
-		while(1) {
-			flag = getchar();
-			if (flag == 0x6E) {// 'n'
+	// WIF key
+		case 0x00:
+		{
+			if (key[0] == '5')
+			{
+				*ver  = 0x80;
+				*net  = 0x00;
 				*cmpr = 0;
-				break;
+				wif_to_hex((uint8_t *)key, hex);
+				return 0;
 			}
-			else if (flag == 0x79) {// 'y'
+			else if (key[0] == 'K' || key[0] == 'L')
+			{
+				*ver  = 0x80;
+				*net  = 0x00;
 				*cmpr = 1;
-				break;
+				wif_to_hex((uint8_t *)key, hex);
+				return 0;
 			}
-			else {
-				printf("Invalid Option!");
-				continue;
+			else if (key[0] == '9')
+			{
+				*ver  = 0xEF;
+				*net  = 0x6F;
+				*cmpr = 0;
+				wif_to_hex((uint8_t *)key, hex);
+				return 0;
 			}
+			else if (key[0] == 'c')
+			{
+				*ver  = 0xEF;
+				*net  = 0x6F;
+				*cmpr = 1;
+				wif_to_hex((uint8_t *)key, hex);
+				return 0;
+			}
+			break;
 		}
 
-		if (ret == 5)
-			hexstr_to_bytearr(key, get_strlen(key), hex);
-		else if (ret == 6)
+	// HEX key
+		case 0x01:
+		{
+			hexstr_to_bytearr(key, 64, hex);
+			return 1;
+			break;
+		}
+
+	// B6 key
+		case 0x02:
+		{
 			b6_to_hex((uint8_t*)key, get_strlen(key), hex);
-	}
-	**** DELETE END ****/
+			return 1;
+			break;
+		}
 
-	/**** ADD START Apr 7 23:33 2018 ****/
-	// Hex or B6 private key?
-	else if (ret == 5) {
-		hexstr_to_bytearr(key, get_strlen(key), hex);
-		return 1;
-	}
-	else if (ret == 6) {
-		b6_to_hex((uint8_t*)key, get_strlen(key), hex);
-		return 1;
-	}
-	/**** DELETE END ****/
+	// B64 key
+		case 0x03:
+		{
+			base64decode((uint8_t*)key, 44, hex);
+			return 1;
+			break;
+		}
 
-	else if (ret == -1)
-		return -1;
-	else if (ret == -2)
-		return -2;
-	else if (ret == -3)
-		return -3;
-	else if (ret == -4)
-		return -4;
-	else if (ret == -5)
-		return -5;
+	// BIP38 key
+		case 0x04:
+		{
+			break;
+		}
+	}
 
 	return 0;
-}
-
-void ADDRESS_init(ADDRESS *addr)
-{
-	addr->cmpr_flag = 127;
-	addr->ver_byte = 127;
-	addr->net_byte = 127;
 }
 
 ADDRESS generate_address(int32_t cmpr, BYTE ver, BYTE net)
 {
 	ADDRESS new;
-	ADDRESS_init(&new);
-	if (cmpr != 0 && cmpr != 1)
-		new.cmpr_flag = -1;
-	else if (ver != 0x80 && ver != 0xEF)
-		new.cmpr_flag = -2;
-	else if (net != 0x00 && net != 0x6F)
-		new.cmpr_flag = -3;
-	else{
-		new.cmpr_flag = cmpr;
-		new.ver_byte = ver;
-		new.net_byte = net;
 
-		generate_ecdsa_secp256k1_private_key(new.private_key);
-		ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag);
-		hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
-		pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
+	new.cmpr_flag = cmpr;
+	new.ver_byte = ver;
+	new.net_byte = net;
 
-		return new;
-	}
+	generate_ecdsa_secp256k1_private_key(new.private_key);
+	ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag);
+	hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
+	pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
+
 	return new;
 }
 
 ADDRESS generate_address_by_private_key(int32_t cmpr, BYTE ver, BYTE net, BYTE *hex)
 {
 	ADDRESS new;
-	ADDRESS_init(&new);
-	if (cmpr != 0 && cmpr != 1)
-		new.cmpr_flag = -1;
-	else if (ver != 0x80 && ver != 0xEF)
-		new.cmpr_flag = -2;
-	else if (net != 0x00 && net != 0x6F)
-		new.cmpr_flag = -3;
-	else{
-		new.cmpr_flag = cmpr;
-		new.ver_byte = ver;
-		new.net_byte = net;
-		for (int32_t i = 0; i < 32; ++i)
-			new.private_key[i] = hex[i];
 
-		ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag);
-		hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
-		pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
+	new.cmpr_flag = cmpr;
+	new.ver_byte = ver;
+	new.net_byte = net;
+	for (int32_t i = 0; i < 32; ++i)
+		new.private_key[i] = hex[i];
 
-		return new;
-	}
+	ecdsa_secp256k1_privkey_to_pubkey(new.private_key, new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag);
+	hex_to_wif(new.private_key, new.cmpr_flag?new.priv_wif_cmpr:new.priv_wif, new.cmpr_flag, new.ver_byte);
+	pub_to_address(new.cmpr_flag?new.public_key_cmpr:new.public_key, new.cmpr_flag, new.net_byte, new.address);
+
 	return new;
 }
 

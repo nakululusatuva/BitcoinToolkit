@@ -87,17 +87,6 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160);
 *   \param  privkey     Private key string in [B6], [WIF], [Hexadecimal] format.
 *   \param  length      Length of param 'privkey'.
 *   \return  0 on Unsupported format.
-*            1 on Standard mainnet private key.
-*            2 on Compressed mainnet private key.
-*            3 on Standard testnet private key.
-*            4 on Compressed testnet private key.
-*            5 on Hexadecimal private key.
-*            6 on Base6 private key.
-*           -1 on Unsupported format.
-*           -2 on Invalid WIF private key.
-*           -3 on Invalid Hexadecimal private key.
-*           -4 on Invalid Base6 private key.
-*           -5 on ecdsa-secp256k1 private key value out range.
 **/
 int32_t privkey_validation(int8_t *privkey, size_t length);
 
@@ -136,13 +125,5 @@ int32_t privkey_anyformat_to_hex(int8_t *key, int32_t *cmpr, BYTE *ver, BYTE *ne
 *   It prints the address, public key, private key WIF and private key hexadecimal.
 **/
 void print_address(ADDRESS addr);
-
-/** Initialize the ADDRESS structure.
-*   \param addr         The ADDRESS structure.
-*   \value              cmpr_flag = 127
-*                       ver_byte  = 127
-*                       net_byte  = 127
-**/
-void ADDRESS_init(ADDRESS *addr);
 
 #endif
