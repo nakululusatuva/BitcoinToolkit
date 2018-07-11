@@ -33,8 +33,10 @@
 
 	make
     
-	./btctool [-sctk] [-a <address>] [-g <privkey>] [--base6e -S <string>]
-              [--base6d -L <string>] [--base58e -F <string>] [--base58d -W <string>]
+	./btctool [-sctk] [-a <address>] [-g <privkey>]
+              [--base6e -S <string>] [--base6d -L <string>]
+              [--base58e -F <string>] [--base58d -W <string>]
+              [--base64e -U <string>] [--base64d -R <string>]
               [--base58checke -B <string>] [--base58checkd -T <string>]
 	
 	Options:
