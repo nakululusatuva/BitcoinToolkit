@@ -86,37 +86,29 @@ int32_t main(int32_t argc, char* const* argv)
 		{
 			case 's': {
 				ADDRESS addr;
-				printf("--------------------------------------------------------------------------------\n");
-				addr = generate_address(0, 0x80, 0x00);
+				addr = generate_address(0, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
 				print_address(addr);
-				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
 			case 'c': {
 				ADDRESS addr;
-				printf("--------------------------------------------------------------------------------\n");
-				addr = generate_address(1, 0x80, 0x00);
+				addr = generate_address(1, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
 				print_address(addr);
-				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
 			case 't': {
 				ADDRESS addr;
-				printf("--------------------------------------------------------------------------------\n");
-				addr = generate_address(0, 0xEF, 0x6F);
+				addr = generate_address(0, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
 				print_address(addr);
-				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
 			case 'k': {
 				ADDRESS addr;
-				printf("--------------------------------------------------------------------------------\n");
-				addr = generate_address(1, 0xEF, 0x6F);
+				addr = generate_address(1, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
 				print_address(addr);
-				printf("--------------------------------------------------------------------------------\n");
 				break;
 			}
 
@@ -125,7 +117,6 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE hash160[20];
 				ret = address_to_hash160((uint8_t*)optarg, hash160);
 
-				printf("--------------------------------------------------------------------------------\n");
 				if (ret == 0) {
 					printf("Correct Address!\n");
 					printf("hash160 Value: ");
@@ -139,14 +130,16 @@ int32_t main(int32_t argc, char* const* argv)
 					printf("Invalid Address Length!\n");
 				else if (ret == -3)
 					printf("Invalid Checksum!\n");
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
 			case 'g': {
 				int32_t ret, optarg_len;
-				int32_t cmpr = 0;
-				BYTE net = 0x00, ver = 0x80, hex[32];
+				int32_t cmpr_flag = 0;
+				BYTE privkey_type = PRIVATE_KEY_MAINNET_BYTE_PREFIX,
+					 address_type = ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX,
+					 privkey_raw[32];
 				optarg_len = get_strlen((int8_t*)optarg);
 
 				ret = privkey_validation((int8_t*)optarg, optarg_len);
@@ -179,12 +172,12 @@ int32_t main(int32_t argc, char* const* argv)
 					break;
 				}
 				else {
-					privkey_anyformat_to_hex((int8_t*)optarg, &cmpr, &ver, &net, hex);
-					printf("--------------------------------------------------------------------------------\n");
+					anyformat_to_raw((int8_t*)optarg, &cmpr_flag, &privkey_type, &address_type, privkey_raw);
+					
 					ADDRESS addr;
-					addr = generate_address_by_private_key(cmpr, ver, net, hex);
+					addr = generate_address_by_private_key(cmpr_flag, privkey_type, address_type, privkey_raw);
 					print_address(addr);
-					printf("--------------------------------------------------------------------------------\n");
+					
 					break;
 				}
 			}
@@ -201,9 +194,8 @@ int32_t main(int32_t argc, char* const* argv)
 				uint8_t encoded[encoded_len];
 				base6encode((BYTE*)optarg, payload_len, encoded);
 
-				printf("--------------------------------------------------------------------------------\nEncoded:\n");
 				printf("%s\n", encoded);
-				printf("--------------------------------------------------------------------------------\n");
+
 				break;
 			}
 
@@ -219,11 +211,11 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE decoded[decoded_len];
 				base6decode((uint8_t*)optarg, payload_len, decoded);
 
-				printf("--------------------------------------------------------------------------------\nDecoded:\n");
+				printf("Decoded:\n");
 				for (int i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
@@ -239,9 +231,9 @@ int32_t main(int32_t argc, char* const* argv)
 				uint8_t encoded[encoded_len];
 				encoded_len = base58encode((BYTE*)optarg, payload_len, encoded);
 
-				printf("--------------------------------------------------------------------------------\nEncoded:\n");
+				printf("Encoded:\n");
 				printf("%s\n", encoded);
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
@@ -257,11 +249,11 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE decoded[decoded_len];
 				base58decode((uint8_t*)optarg, payload_len, decoded);
 
-				printf("--------------------------------------------------------------------------------\nDecoded:\n");
+				printf("Decoded:\n");
 				for (int32_t i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
@@ -277,11 +269,11 @@ int32_t main(int32_t argc, char* const* argv)
 				uint8_t encoded[encoded_len];
 				base64encode((BYTE*)optarg, payload_len, encoded);
 
-				printf("--------------------------------------------------------------------------------\nEncoded:\n");
+				printf("Encoded:\n");
 				for (int32_t i = 0; i < encoded_len; ++i)
 					printf("%c", encoded[i]);
 				printf("\n");
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
@@ -297,11 +289,11 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE decoded[decoded_len];
 				base64decode((uint8_t*)optarg, payload_len, decoded);
 
-				printf("--------------------------------------------------------------------------------\nDecoded:\n");
+				printf("Decoded:\n");
 				for (int32_t i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
@@ -317,11 +309,11 @@ int32_t main(int32_t argc, char* const* argv)
 				uint8_t encoded[encoded_len];
 				base58check_encode((BYTE*)optarg, payload_len, encoded);
 
-				printf("--------------------------------------------------------------------------------\nEncoded:\n");
+				printf("Encoded:\n");
 				for (int32_t i = 0; i < encoded_len; ++i)
 					printf("%c", encoded[i]);
 				printf("\n");
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
@@ -341,11 +333,11 @@ int32_t main(int32_t argc, char* const* argv)
 				BYTE decoded[decoded_len];
 				base58check_decode((uint8_t*)optarg, payload_len, decoded);
 
-				printf("--------------------------------------------------------------------------------\nDecoded:\n");
+				printf("Decoded:\n");
 				for (int32_t i = 0; i < decoded_len; ++i)
 					printf("%c", decoded[i]);
 				printf("\n");
-				printf("--------------------------------------------------------------------------------\n");
+				
 				break;
 			}
 
