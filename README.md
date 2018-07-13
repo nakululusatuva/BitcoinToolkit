@@ -32,30 +32,24 @@
     sudo apt install libcurl4-openssl-dev
 
 	make
-    
-	./btctool [-sctk] [-a <address>] [-g <privkey>]
-              [--base6e -S <string>] [--base6d -L <string>]
-              [--base58e -F <string>] [--base58d -W <string>]
-              [--base64e -U <string>] [--base64d -R <string>]
-              [--base58checke -B <string>] [--base58checkd -T <string>]
-	
-	Options:
-    -s                           Get a standard mainnet address.
-    -c                           Get a compressed mainnet address.
-    -t                           Get a standard testnet address.
-    -k                           Get a compressed testnet address.
-    -a <address>                 Check addess validaion and get the hash160 value.
-    -g <privkey>                 Check private key validaion and get the address.
-                                 Supported format: [B6] [WIF] [Hexadecimal]
-    --base6e  -S <string>             Base6  encode
-    --base6d  -L <string>             Base6  decode
-    --base58e -F <string>             Base58 encode
-    --base58d -W <string>             Base58 decode
-    --base64e -U <string>             Base64 encode"
-    --base64d -R <string>             Base64 decode"
-    --base58checke -B <string>        Base58Check encode
-    --base58checkd -T <string>        Base58Check decode
-	
+
+    Usage: ./btctool <option> <argument>
+     -s                            Get mainnet standard P2PKH address.
+     -c                            Get mainnet compress P2PKH address.
+     -t                            Get testnet standard P2PKH address.
+     -k                            Get testnet compress P2PKH address.
+     -a <address>                  Check addess validaion and get the hash160 value.
+     -g <privkey>                  Check private key validaion and get the address.
+                                   Supported format: [B6] [WIF] [Hexadecimal]
+     --base6e  -S <string>         Base6  encode
+     --base6d  -L <string>         Base6  decode
+     --base58e -F <string>         Base58 encode
+     --base58d -W <string>         Base58 decode
+     --base64e -U <string>         Base64 encode
+     --base64d -R <string>         Base64 decode
+     --base58checke -B <string>    Base58Check encode
+     --base58checkd -T <string>    Base58Check decode
+
 	/* String arguments with single quotes are recommended. */
 
 ## License
