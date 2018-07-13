@@ -1,7 +1,7 @@
 #define BITCOIN_TOOLKIT_VERSION "v0.0.1"
 
-#ifndef STD_TYPE
-#define STD_TYPE
+#ifndef _DADA_TYPE_
+#define _DATA_TYPE_
 
 typedef signed char int8_t;
 typedef short       int16_t;
@@ -16,5 +16,4 @@ typedef unsigned long int uint64_t;
 typedef uint8_t  BYTE;
 typedef uint64_t size_t;
 
-typedef enum{true, false} bool;
 #endif

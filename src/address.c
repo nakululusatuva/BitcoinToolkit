@@ -4,9 +4,8 @@
 #include <openssl/ec.h>
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
-#include "base.h"
+#include "codec/codec.h"
 #include "common.h"
-#include "strings.h"
 #include "address.h"
 
 int8_t selector(int32_t item);
@@ -120,19 +119,19 @@ int32_t raw_to_wif(BYTE *privkey_raw, uint8_t *privkey_wif, int32_t cmpr_flag, B
 	// Step 1 : Extend the private key with prefix privkey_type byte and suffix compress byte.
 	if (cmpr_flag == 0)
 	{
-		extended 	     = extended_key;
+		extended          = extended_key;
 		extended[0]      = privkey_type;
 		extended_length  = 33;
-		to_base58 	     = ready_to_base58;
+		to_base58        = ready_to_base58;
 		to_base58_length = 37;
 	}
 	else if (cmpr_flag == 1)
 	{
-		extended 	     = extended_key_cmpr;
+		extended         = extended_key_cmpr;
 		extended[0]      = privkey_type;
 		extended_length  = 34;
 		extended[33]     = PRIVATE_KEY_COMPRESS_BYTE_SUFFIX;
-		to_base58 	     = ready_to_base58_cmpr;
+		to_base58        = ready_to_base58_cmpr;
 		to_base58_length = 38;
 	}
 	else return -2;
@@ -542,17 +541,9 @@ ADDRESS generate_address(int32_t cmpr_flag, BYTE privkey_type, BYTE address_type
 	new.address_type = address_type;
 
 	generate_ecdsa_secp256k1_private_key(new.privkey);
-	ecdsa_secp256k1_privkey_to_pubkey(new.privkey,
-									  new.cmpr_flag ? new.pubkey_cmpr : new.pubkey,
-									  new.cmpr_flag);
-	raw_to_wif(new.privkey,
-			   new.cmpr_flag ? new.privkey_wif_cmpr : new.privkey_wif,
-			   new.cmpr_flag,
-			   new.privkey_type);
-	pub_to_address(new.cmpr_flag ? new.pubkey_cmpr : new.pubkey,
-				   new.cmpr_flag,
-				   new.address_type,
-				   new.address);
+	ecdsa_secp256k1_privkey_to_pubkey(new.privkey, new.cmpr_flag ? new.pubkey_cmpr : new.pubkey, new.cmpr_flag);
+	raw_to_wif(new.privkey, new.cmpr_flag ? new.privkey_wif_cmpr : new.privkey_wif, new.cmpr_flag, new.privkey_type);
+	pub_to_address(new.cmpr_flag ? new.pubkey_cmpr : new.pubkey, new.cmpr_flag, new.address_type, new.address);
 
 	return new;
 }
@@ -567,17 +558,9 @@ ADDRESS generate_address_by_private_key(int32_t cmpr_flag, BYTE privkey_type, BY
 	for (int32_t i = 0; i < 32; ++i)
 		new.privkey[i] = hex[i];
 
-	ecdsa_secp256k1_privkey_to_pubkey(new.privkey,
-									  new.cmpr_flag ? new.pubkey_cmpr : new.pubkey,
-									  new.cmpr_flag);
-	raw_to_wif(new.privkey,
-			   new.cmpr_flag ? new.privkey_wif_cmpr : new.privkey_wif,
-			   new.cmpr_flag,
-			   new.privkey_type);
-	pub_to_address(new.cmpr_flag ? new.pubkey_cmpr : new.pubkey,
-				   new.cmpr_flag,
-				   new.address_type,
-				   new.address);
+	ecdsa_secp256k1_privkey_to_pubkey(new.privkey, new.cmpr_flag ? new.pubkey_cmpr : new.pubkey, new.cmpr_flag);
+	raw_to_wif(new.privkey, new.cmpr_flag ? new.privkey_wif_cmpr : new.privkey_wif, new.cmpr_flag, new.privkey_type);
+	pub_to_address(new.cmpr_flag ? new.pubkey_cmpr : new.pubkey, new.cmpr_flag, new.address_type, new.address);
 
 	return new;
 }

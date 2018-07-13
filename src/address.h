@@ -20,13 +20,13 @@
 
 typedef struct address_st {
 	int32_t  cmpr_flag;             //  0 = no, 1 = yes.
-	BYTE     privkey_type;              //  1 byte long, 0x80 or 0xEF, used in WIF privkey.
-	BYTE     address_type;              //  1 byte long, 0x00 or 0x6F, used in address.
-	BYTE     privkey[32];       // 32 byte long.
-	BYTE     pubkey[65];        // 65 byte long.
-	BYTE     pubkey_cmpr[33];   // 33 byte long.
-	uint8_t  privkey_wif[52];          // 51 charaters long + '\0' ending.
-	uint8_t  privkey_wif_cmpr[53];     // 52 charaters long + '\0' ending.
+	BYTE     privkey_type;          //  1 byte long.
+	BYTE     address_type;          //  1 byte long.
+	BYTE     privkey[32];           // 32 byte long.
+	BYTE     pubkey[65];            // 65 byte long.
+	BYTE     pubkey_cmpr[33];       // 33 byte long.
+	uint8_t  privkey_wif[52];       // 51 charaters long + '\0' ending.
+	uint8_t  privkey_wif_cmpr[53];  // 52 charaters long + '\0' ending.
 	uint8_t  address[35];           // 34 charaters long + '\0' ending.
 } ADDRESS;
 
