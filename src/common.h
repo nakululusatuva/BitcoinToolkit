@@ -3,6 +3,8 @@
 #ifndef _DADA_TYPE_
 #define _DATA_TYPE_
 
+#include <stdbool.h>
+
 typedef signed char int8_t;
 typedef short       int16_t;
 typedef int         int32_t;

@@ -32,34 +32,32 @@ void usage(const char *version, const char *name)
 {
 	fprintf(stderr,
 		"Bticoin-ToolKit %s\n"
-		"Usage: %s [-sctk] [-a <address>] [-g <privkey>]\n"
-		"          [--base6e -S <string>] [--base6d -L <string>]\n"
-		"          [--base58e -F <string>] [--base58d -W <string>]\n"
-		"          [--base64e -U <string>] [--base64d -R <string>]\n"
-		"          [--base58checke -B <string>] [--base58checkd -T <string>]\n"
-		"Options:\n"
-		"    -s                         Get a standard mainnet address.\n"
-		"    -c                         Get a compressed mainnet address.\n"
-		"    -t                         Get a standard testnet address.\n"
-		"    -k                         Get a compressed testnet address.\n"
-		"    -a <address>               Check addess validaion and get the hash160 value.\n"
-		"    -g <privkey>               Check private key validaion and get the address.\n"
+		"Usage: %s <option> <argument>\n"
+		" -s                            Get mainnet standard P2PKH address.\n"
+//		" -p                            Get mainnet standard P2SH address.\n"
+		" -c                            Get mainnet compress P2PKH address.\n"
+//		" -w                            Get mainnet compress P2SH address.\n"
+		" -t                            Get testnet standard P2PKH address.\n"
+//		" -h                            Get testnet standard P2SH address.\n"
+		" -k                            Get testnet compress P2PKH address.\n"
+//		" -f                            Get testnet compress P2SH address.\n"
+		" -a <address>                  Check addess validaion and get the hash160 value.\n"
+		" -g <privkey>                  Check private key validaion and get the address.\n"
 		"                               Supported format: [B6] [WIF] [Hexadecimal]\n"
-		"    --base6e  -S <string>           Base6  encode\n"
-		"    --base6d  -L <string>           Base6  decode\n"
-		"    --base58e -F <string>           Base58 encode\n"
-		"    --base58d -W <string>           Base58 decode\n"
-		"    --base64e -U <string>           Base64 encode\n"
-		"    --base64d -R <string>           Base64 decode\n"
-		"    --base58checke -B <string>      Base58Check encode\n"
-		"    --base58checkd -T <string>      Base58Check decode\n"
+		" --base6e  -S <string>         Base6  encode\n"
+		" --base6d  -L <string>         Base6  decode\n"
+		" --base58e -F <string>         Base58 encode\n"
+		" --base58d -W <string>         Base58 decode\n"
+		" --base64e -U <string>         Base64 encode\n"
+		" --base64d -R <string>         Base64 decode\n"
+		" --base58checke -B <string>    Base58Check encode\n"
+		" --base58checkd -T <string>    Base58Check decode\n"
 		, version, name);
 }
 
 int32_t main(int32_t argc, char* const* argv)
 {
-//	BYTE payload[32] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFE,0xBA,0xAE,0xDC,0xE6,0xAF,0x48,0xA0,0x3B,0xBF,0xD2,0x5E,0x8C,0xD0,0x36,0x41,0x40};
-	char* const short_options = "sctka:g:S:L:F:W:B:T:U:R:";
+	char* const short_options = "s:c:t:k:a:g:S:L:F:W:B:T:U:R:";
 	struct option long_options[] = {
 		{"base6e", 1, NULL, 'S'},
 		{"base6d", 1, NULL, 'L'},
@@ -83,31 +81,63 @@ int32_t main(int32_t argc, char* const* argv)
 	{
 		switch(opt)
 		{
-			case 's': {
+			case 's': { // Mainnet standard P2PKH address
+				uint64_t number = atoll((const char *)optarg);
+
 				ADDRESS addr;
-				addr = generate_address(0, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
-				print_address(addr);
+				for (uint64_t i = 0; i < number; ++i)
+				{
+					printf("--------------------------------------------------------------------------------\n");
+					addr = generate_address(0, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
+					print_address(addr);
+					printf("--------------------------------------------------------------------------------\n");
+				}
+				
 				break;
 			}
 
-			case 'c': {
+			case 'c': { // Mainnet compress P2PKH address
+				uint64_t number = atoll((const char *)optarg);
+
 				ADDRESS addr;
-				addr = generate_address(1, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
-				print_address(addr);
+				for (uint64_t i = 0; i < number; ++i)
+				{
+					printf("--------------------------------------------------------------------------------\n");
+					addr = generate_address(1, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
+					print_address(addr);
+					printf("--------------------------------------------------------------------------------\n");
+				}
+
 				break;
 			}
 
-			case 't': {
+			case 't': { // Testnet standard P2PKH address
+				uint64_t number = atoll((const char *)optarg);
+
 				ADDRESS addr;
-				addr = generate_address(0, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
-				print_address(addr);
+				for (uint64_t i = 0; i < number; ++i)
+				{
+					printf("--------------------------------------------------------------------------------\n");
+					addr = generate_address(0, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
+					print_address(addr);
+					printf("--------------------------------------------------------------------------------\n");
+				}
+				
 				break;
 			}
 
-			case 'k': {
+			case 'k': { // Testnet compress P2PKH address
+				uint64_t number = atoll((const char *)optarg);
+
 				ADDRESS addr;
-				addr = generate_address(1, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
-				print_address(addr);
+				for (uint64_t i = 0; i < number; ++i)
+				{
+					printf("--------------------------------------------------------------------------------\n");
+					addr = generate_address(1, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
+					print_address(addr);
+					printf("--------------------------------------------------------------------------------\n");
+				}
+
 				break;
 			}
 
