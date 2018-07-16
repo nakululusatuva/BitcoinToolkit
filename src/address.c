@@ -26,7 +26,7 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *privkey_raw, BYTE *pubkey_raw, i
 	EC_KEY *keys = EC_KEY_new_by_curve_name(NID_secp256k1);
 
 	const EC_GROUP *group = EC_KEY_get0_group(keys);       // Struct group store the G and calculation rules
-	EC_POINT *pubkey_bn = EC_POINT_new(group);	               // Public key is a point on curve
+	EC_POINT *pubkey_bn = EC_POINT_new(group);	           // Public key is a point on curve
 	BN_CTX *ctx = BN_CTX_new();
 
 	if (cmpr_flag != 0 && cmpr_flag != 1)

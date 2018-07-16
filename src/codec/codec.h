@@ -1,7 +1,7 @@
-#include "../common.h"
-
 #ifndef _STRING_H_
 #define _STRING_H_
+
+#include "../common.h"
 
 /** Get the length of given string.
 *   \param  string      The given string.
@@ -35,6 +35,8 @@ int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, int8_t *str);
 
 #ifndef _BASE_H_
 #define _BASE_H_
+
+#include "../common.h"
 
 /** Base6 Encoder. (Leaading '0x00' bytes will be ignored)
 *   \param  payload     Byte array, bytes's value range: 0x00 ~ 0xFF.
