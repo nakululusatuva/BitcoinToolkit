@@ -5,6 +5,9 @@
 
 CStack * new_CStack(const uint64_t size)
 {
+	if (size <= 0)
+		return NULL;
+	
 	CStack *stack = (CStack *)calloc(1, sizeof(CStack));
 	if (stack == NULL)
 		return NULL;
