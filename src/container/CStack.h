@@ -10,10 +10,10 @@ struct CStack
 	void   **top;
 	uint64_t size;
 
-	bool (*CStack_push)(CStack *, void *);
-	void * (*CStack_pop)(CStack *);
-	bool (*CStack_is_empty)(CStack *);
-	bool (*CStack_is_full)(CStack *);
+	bool (*push)(CStack *, void *);
+	void * (*pop)(CStack *);
+	bool (*is_empty)(CStack *);
+	bool (*is_full)(CStack *);
 };
 
 // Construct and Destruct Fuctions.

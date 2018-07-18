@@ -20,10 +20,10 @@ CStack * new_CStack(const uint64_t size)
 	stack->top  = stack->base;
 	stack->size = size;
 
-	stack->CStack_push     = &CStack_push;
-	stack->CStack_pop      = &CStack_pop;
-	stack->CStack_is_empty = &CStack_is_empty;
-	stack->CStack_is_full  = &CStack_is_full;
+	stack->push     = &CStack_push;
+	stack->pop      = &CStack_pop;
+	stack->is_empty = &CStack_is_empty;
+	stack->is_full  = &CStack_is_full;
 
 	return stack;
 }
@@ -50,10 +50,10 @@ void * CStack_pop(CStack *self)
 	if (CStack_is_empty(self))
 		return NULL;
 	else {
-		void *CStack_pop = *(self->top);
-		*(self->top) = NULL;
 		self->top--;
-		return CStack_pop;
+		void *to_pop = *(self->top);
+		*(self->top) = NULL;
+		return to_pop;
 	}
 }
 
