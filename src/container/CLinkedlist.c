@@ -9,9 +9,15 @@ CLinkedlist * new_CLinkedlist()
 	if (new == NULL)
 		return NULL;
 
-	new->head = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
-	if (new->head == NULL)
-		return NULL;
+	else
+	{
+		new->head = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
+		if (new->head == NULL)
+		{
+			free(new);
+			return NULL;
+		}
+	}
 
 	new->head->previous = NULL;
 	new->head->data = NULL;
@@ -100,7 +106,7 @@ CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *self, uint64_t index)
 	return buffer;
 }
 
-void CLinkedlist_add(CLinkedlist *self, void *data)
+void CLinkedlist_add(CLinkedlist *self, void *data, size_t size)
 {
 	CLinkedlistNode *last = CLinkedlist_last_node(self);
 	// If empty, the last one will be the head.
@@ -113,6 +119,7 @@ void CLinkedlist_add(CLinkedlist *self, void *data)
 	last->next = new;
 	new->previous = last;
 	new->data = data;
+	new->size = size;
 	new->next = NULL;
 
 	self->length++;
@@ -209,40 +216,40 @@ bool CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data)
 	}
 }
 
-void ** CLinkedlist_forward_traversing(CLinkedlist *self)
+CLinkedlistNode ** CLinkedlist_forward_traversing(CLinkedlist *self)
 {
 	if (CLinkedlist_is_empty(self))
 		return NULL;
 
-	// Actually it return a pointer-array that store the data's pointers.
+	// Actually it return a pointer-array that store the nodes's pointers.
 	CLinkedlistNode *start = self->head->next;
-	void **list = (void **)calloc(self->length, sizeof(void *));
+	CLinkedlistNode **list = (CLinkedlistNode **)calloc(self->length, sizeof(CLinkedlistNode *));
 	if (list == NULL)
 		return NULL;
 
 	for (uint64_t i = 0; i < self->length; ++i)
 	{
-		list[i] = start->data;
+		list[i] = start;
 		start = start->next;
 	}
 
 	return list;
 }
 
-void ** CLinkedlist_backward_traversing(CLinkedlist *self)
+CLinkedlistNode ** CLinkedlist_backward_traversing(CLinkedlist *self)
 {
 	if (CLinkedlist_is_empty(self))
 		return NULL;
 
-	// Actually it return a pointer-array that store the data's pointers.
-	CLinkedlistNode *last = CLinkedlist_last_node(self);
-	void **list = (void **)calloc(self->length, sizeof(void *));
+	// Actually it return a pointer-array that store the node's pointers.
+	CLinkedlistNode  *last = CLinkedlist_last_node(self);
+	CLinkedlistNode **list = (CLinkedlistNode **)calloc(self->length, sizeof(CLinkedlistNode *));
 	if (list == NULL)
 		return NULL;
 
 	for (uint64_t i = self->length; i >= 1; --i)
 	{
-		list[self->length - i] = last->data;
+		list[self->length - i] = last;
 		last = last->previous;
 	}
 
@@ -256,16 +263,10 @@ bool CLinkedlist_reverse(CLinkedlist *self)
 	if (last == NULL)
 		return false;
 
-	CLinkedlistNode **nodes = (CLinkedlistNode **)calloc(self->length, sizeof(CLinkedlistNode *));
+	// Get the nodes' pointer and store in a pointer-array (reversed).
+	CLinkedlistNode **nodes = CLinkedlist_backward_traversing(self);
 	if (nodes == NULL)
 		return false;
-
-	// Get the nodes' pointer and store in a pointer-array (reversed).
-	for (uint64_t i = self->length; i >= 1; --i)
-	{
-		nodes[self->length - i] = last;
-		last = last->previous;
-	}
 
 	// Re-link nodes, follow the pointer-array.
 	CLinkedlistNode *buffer = self->head;
