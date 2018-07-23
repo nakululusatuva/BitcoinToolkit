@@ -1,21 +1,12 @@
 #define BITCOIN_TOOLKIT_VERSION "v0.0.1"
 
-#ifndef _DADA_TYPE_
-#define _DATA_TYPE_
+#ifndef _COMMON_
+#define _COMMON_
 
-#include <stdbool.h>
+#include <stdbool.h> // For 'bool' type
+#include <stdint.h>  // For integer types
+#include <stddef.h>  // For 'size_t' type
 
-typedef signed char int8_t;
-typedef short       int16_t;
-typedef int         int32_t;
-typedef long int    int64_t;
-
-typedef unsigned char     uint8_t;
-typedef unsigned short    uint16_t;
-typedef unsigned int      uint32_t;
-typedef unsigned long int uint64_t;
-
-typedef uint8_t  BYTE;
-typedef uint64_t size_t;
+typedef uint8_t BYTE;
 
 #endif
