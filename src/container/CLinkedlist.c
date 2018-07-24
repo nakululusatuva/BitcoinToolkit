@@ -38,14 +38,13 @@ CLinkedlist * new_CLinkedlist()
 	return new;
 }
 
-bool delete_CLinkedlist(CLinkedlist *self)
+void delete_CLinkedlist(CLinkedlist *self)
 {
 	// Check if empty.
 	if (CLinkedlist_is_empty(self))
 	{
 		free(self->head);
 		free(self);
-		return true;
 	}
 
 	else
@@ -69,8 +68,6 @@ bool delete_CLinkedlist(CLinkedlist *self)
 		}
 		free(self->head);
 		free(self);
-
-		return true;
 	}
 }
 

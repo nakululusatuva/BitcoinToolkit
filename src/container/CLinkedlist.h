@@ -40,7 +40,7 @@ struct CLinkedlist
 
 // Construct and Destruct Functions.
 CLinkedlist * new_CLinkedlist();
-bool delete_CLinkedlist(CLinkedlist *self);
+void delete_CLinkedlist(CLinkedlist *self);
 
 // Inner Fuctions.
 CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *self);
