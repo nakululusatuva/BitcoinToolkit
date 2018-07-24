@@ -4,12 +4,12 @@
 #include "../common.h"
 
 /** Common Type Linked List.
-*   1.It stores the data's pointer, instead of the data itself.
-*   2.Please make sure the data's memory is allocated manually,
-*     errors will happen if you add a pointer that point to stack memory into the linked list.
-*   3.Do not free the data manually once it's pointer was add into the linked list,
-*     the destruct function will do the job.
-*   4.If you change a node's data pointer, the old data itself will be freed.
+*   1. It stores the data's pointer, instead of the data itself.
+*   2. Please make sure the data's memory is allocated manually,
+*      errors will happen if you add a pointer that point to stack memory into the linked list.
+*   3. Do not free the data manually once it's pointer was add into the linked list,
+*      the destruct function will do the job.
+*   4. If you change a node's data pointer, the old data itself will be freed.
 **/
 
 typedef struct CLinkedlistNode CLinkedlistNode;

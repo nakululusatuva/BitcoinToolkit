@@ -4,13 +4,13 @@
 #include "../common.h"
 
 /** Common Type Stack.
-*   1.It stores the data's pointer, instead of the data itself.
-*   2.Please make sure the data's memory is allocated manually,
-*     errors will happen if you push a pointer that point to stack memory onto the stack.
-*   3.Do not free the data manually once it's pointer was push onto the stack,
-*     the destruct function will do the job.
-*   4.The memory that the popped pointer points to will not be freed by destructuring function,
-*     you need to free it manually.
+*   1. It stores the data's pointer, instead of the data itself.
+*   2. Please make sure the data's memory is allocated manually,
+*      errors will happen if you push a pointer that point to stack memory onto the stack.
+*   3. Do not free the data manually once it's pointer was push onto the stack,
+*      the destruct function will do the job.
+*   4. The memory that the popped pointer points to will not be freed by destructuring function,
+*      you need to free it manually.
 **/
 
 typedef struct CStack CStack;
