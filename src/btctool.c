@@ -33,14 +33,14 @@ void usage(const char *version, const char *name)
 	fprintf(stderr,
 		"Bticoin-ToolKit %s\n"
 		"Usage: %s <option> <argument>\n"
-		" -s                            Get mainnet standard P2PKH address.\n"
-//		" -p                            Get mainnet standard P2SH address.\n"
-		" -c                            Get mainnet compress P2PKH address.\n"
-//		" -w                            Get mainnet compress P2SH address.\n"
-		" -t                            Get testnet standard P2PKH address.\n"
-//		" -h                            Get testnet standard P2SH address.\n"
-		" -k                            Get testnet compress P2PKH address.\n"
-//		" -f                            Get testnet compress P2SH address.\n"
+		" -s <numbers>                  Get mainnet standard P2PKH address.\n"
+//		" -p <numbers>                  Get mainnet standard P2SH address.\n"
+		" -c <numbers>                  Get mainnet compress P2PKH address.\n"
+//		" -w <numbers>                  Get mainnet compress P2SH address.\n"
+		" -t <numbers>                  Get testnet standard P2PKH address.\n"
+//		" -h <numbers>                  Get testnet standard P2SH address.\n"
+		" -k <numbers>                  Get testnet compress P2PKH address.\n"
+//		" -f <numbers>                  Get testnet compress P2SH address.\n"
 		" -a <address>                  Check addess validaion and get the hash160 value.\n"
 		" -g <privkey>                  Check private key validaion and get the address.\n"
 		"                               Supported format: [B6] [WIF] [Hexadecimal]\n"
@@ -82,10 +82,15 @@ int32_t main(int32_t argc, char* const* argv)
 		switch(opt)
 		{
 			case 's': { // Mainnet standard P2PKH address
-				uint64_t number = atoll((const char *)optarg);
+				int64_t number = atoll((const char *)optarg);
+				if (number <= 0)
+				{
+					printf("Invalid Number!\n");
+					break;
+				}
 
 				ADDRESS addr;
-				for (uint64_t i = 0; i < number; ++i)
+				for (int64_t i = 0; i < number; ++i)
 				{
 					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(0, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
@@ -97,10 +102,15 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'c': { // Mainnet compress P2PKH address
-				uint64_t number = atoll((const char *)optarg);
+				int64_t number = atoll((const char *)optarg);
+				if (number <= 0)
+				{
+					printf("Invalid Number!\n");
+					break;
+				}
 
 				ADDRESS addr;
-				for (uint64_t i = 0; i < number; ++i)
+				for (int64_t i = 0; i < number; ++i)
 				{
 					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(1, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
@@ -112,10 +122,15 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 't': { // Testnet standard P2PKH address
-				uint64_t number = atoll((const char *)optarg);
+				int64_t number = atoll((const char *)optarg);
+				if (number <= 0)
+				{
+					printf("Invalid Number!\n");
+					break;
+				}
 
 				ADDRESS addr;
-				for (uint64_t i = 0; i < number; ++i)
+				for (int64_t i = 0; i < number; ++i)
 				{
 					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(0, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
@@ -127,10 +142,15 @@ int32_t main(int32_t argc, char* const* argv)
 			}
 
 			case 'k': { // Testnet compress P2PKH address
-				uint64_t number = atoll((const char *)optarg);
+				int64_t number = atoll((const char *)optarg);
+				if (number <= 0)
+				{
+					printf("Invalid Number!\n");
+					break;
+				}
 
 				ADDRESS addr;
-				for (uint64_t i = 0; i < number; ++i)
+				for (int64_t i = 0; i < number; ++i)
 				{
 					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(1, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
