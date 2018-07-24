@@ -33,6 +33,7 @@ CLinkedlist * new_CLinkedlist()
 	new->backward_traversing = &CLinkedlist_backward_traversing;
 	new->reverse             = &CLinkedlist_reverse;
 	new->is_empty            = &CLinkedlist_is_empty;
+	new->total_size          = &CLinkedlist_total_size;
 
 	return new;
 }
@@ -106,7 +107,7 @@ CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *self, uint64_t index)
 	return buffer;
 }
 
-void CLinkedlist_add(CLinkedlist *self, void *data, size_t size)
+bool CLinkedlist_add(CLinkedlist *self, void *data, size_t size)
 {
 	CLinkedlistNode *last = CLinkedlist_last_node(self);
 	// If empty, the last one will be the head.
@@ -114,6 +115,8 @@ void CLinkedlist_add(CLinkedlist *self, void *data, size_t size)
 		last = self->head;
 
 	CLinkedlistNode *new  = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
+	if (new == NULL)
+		return false;
 
 	// Re-link the nodes.
 	last->next = new;
@@ -123,6 +126,8 @@ void CLinkedlist_add(CLinkedlist *self, void *data, size_t size)
 	new->next = NULL;
 
 	self->length++;
+
+	return true;
 }
 
 bool CLinkedlist_delete(CLinkedlist *self, uint64_t index)
@@ -176,6 +181,9 @@ bool CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 bool CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data)
 {
 	CLinkedlistNode *new_node   = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
+	if (new_node == NULL)
+		return false;
+
 	CLinkedlistNode *after_node = CLinkedlist_specific_node(self, after);
 
 	// Check if index out range or empty linked list.
@@ -279,6 +287,7 @@ bool CLinkedlist_reverse(CLinkedlist *self)
 		buffer = nodes[i];
 	}
 
+	free(nodes);
 	return true;
 }
 
@@ -287,4 +296,19 @@ bool CLinkedlist_is_empty(CLinkedlist *self)
 	if (self->length <= 0 || self->head->next == NULL)
 		return true;
 	else return false;
+}
+
+size_t CLinkedlist_total_size(CLinkedlist *self)
+{
+	size_t total_size = 0;
+
+	CLinkedlistNode **list = CLinkedlist_forward_traversing(self);
+	if (list == NULL)
+		return -1;
+
+	for (size_t i = 0; i < self->length; ++i)
+		total_size += list[i]->size;
+
+	free(list);
+	return total_size;
 }
