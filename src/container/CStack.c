@@ -29,25 +29,30 @@ CStack * new_CStack(const uint64_t capacity)
 				free(stack);
 				return NULL;
 			}
-			memset(stack->size, 0, capacity * sizeof(uint32_t));
+		//	memset(stack->size, 0, capacity * sizeof(uint32_t));
 		}
 	}
 
 	stack->top  = stack->base;
 	stack->capacity = capacity;
 
-	stack->push     = &CStack_push;
-	stack->pop      = &CStack_pop;
-	stack->is_empty = &CStack_is_empty;
-	stack->is_full  = &CStack_is_full;
+	stack->push       = &CStack_push;
+	stack->pop        = &CStack_pop;
+	stack->is_empty   = &CStack_is_empty;
+	stack->is_full    = &CStack_is_full;
+	stack->total_size = &CStack_total_size;
 
 	return stack;
 }
 
 void delete_CStack(CStack *self)
 {
-	free(self->size);
+	for (int i = 0; i < self->top - self->base; ++i)
+	{
+		free((self->base)[i]);
+	}
 	free(self->base);
+	free(self->size);
 	free(self);
 }
 
@@ -88,4 +93,14 @@ bool CStack_is_full(CStack *self)
 	if (self->top - self->base >= self->capacity)
 		return true;
 	else return false;
+}
+
+size_t CStack_total_size(CStack *self)
+{
+	size_t total_size = 0;
+
+	for (size_t i = 0; i < self->capacity; ++i)
+		total_size = total_size + (self->size)[i];
+
+	return total_size;
 }

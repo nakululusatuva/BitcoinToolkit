@@ -56,11 +56,13 @@ bool delete_CLinkedlist(CLinkedlist *self)
 		{
 			if (start->next != NULL)
 			{	// If not the last one.
+				free(start->data);
 				start = start->next;
 				free(start->previous);
 			}
 			else if (start->next == NULL)
 			{	// If the last one.
+				free(start->data);
 				free(start);
 				break;
 			}
@@ -142,6 +144,7 @@ bool CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	else if (target->previous->previous == NULL && target->next == NULL)
 	{
 		self->head->next = NULL;
+		free(target->data);
 		free(target);
 		self->length--;
 		return true;
@@ -152,6 +155,7 @@ bool CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	{
 		self->head->next = target->next;
 		target->next->previous = self->head;
+		free(target->data);
 		free(target);
 		self->length--;
 		return true;
@@ -162,6 +166,7 @@ bool CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	{
 		target->previous->next = NULL;
 		self->length--;
+		free(target->data);
 		free(target);
 		return true;
 	}
@@ -172,13 +177,14 @@ bool CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	{
 		target->previous->next = target->next;
 		target->next->previous = target->previous;
+		free(target->data);
 		free(target);
 		self->length--;
 		return true;
 	}
 }
 
-bool CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data)
+bool CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t size)
 {
 	CLinkedlistNode *new_node   = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
 	if (new_node == NULL)
@@ -201,6 +207,7 @@ bool CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data)
 		new_node->previous = after_node->previous;
 
 		new_node->data = data;
+		new_node->size = size;
 
 		new_node->next = after_node;
 		after_node->previous = new_node;
@@ -209,7 +216,7 @@ bool CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data)
 	}
 }
 
-bool CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data)
+bool CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t size)
 {
 	CLinkedlistNode *target = CLinkedlist_specific_node(self, index);
 
@@ -219,7 +226,9 @@ bool CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data)
 
 	else
 	{
+		free(target->data);
 		target->data = data;
+		target->size = size;
 		return true;
 	}
 }
