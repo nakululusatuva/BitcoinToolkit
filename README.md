@@ -1,56 +1,28 @@
-#   Bitcoin Tool Kit- A Combination of Bitcoin Tools
+# Bitcoin Tool Kit -
+# A Collection of Cryptocurrency Tools
 
-##  Dependence
+## Introduction
 
-* OpenSSL-dev          1.1.0
-* libcurl4-openssl-dev 7.58.0
-* cJSON                1.7.5
+This open source tool kit was designed for bitcoin developers and anyone that want to control their bitcoins or transactions manually.
 
-##  Enviroment
+## Dependence
 
-* Ubuntu 18.04 (Kernel 4.15.0-23)
-* GCC 7.3
+* OpenSSL-dev 1.1.0
+
+ ### Install
+ sudo apt install libssl-dev
+
+## Enviroment
+
+* Any Linux x64 distribution, Windows/Mac platform currently not supported.
 
 ## Features
 
-### Current
-
-* Generate bitcoin address.
-* BaseX Encode/Decode
-* Check address validation and get the hash160 value
-* Check private key validaion and get the address
-
-### Future
-
-* Create and sign the raw transactions.
-* Broadcast the signed transaction.
-* Get the balance and UTXO on an address.
-
-##  Usage
-
-	sudo apt install libssl-dev
-    sudo apt install libcurl4-openssl-dev
-
-	make
-
-    Usage: ./btctool <option> <argument>
-     -s                            Get mainnet standard P2PKH address.
-     -c                            Get mainnet compress P2PKH address.
-     -t                            Get testnet standard P2PKH address.
-     -k                            Get testnet compress P2PKH address.
-     -a <address>                  Check addess validaion and get the hash160 value.
-     -g <privkey>                  Check private key validaion and get the address.
-                                   Supported format: [B6] [WIF] [Hexadecimal]
-     --base6e  -S <string>         Base6  encode
-     --base6d  -L <string>         Base6  decode
-     --base58e -F <string>         Base58 encode
-     --base58d -W <string>         Base58 decode
-     --base64e -U <string>         Base64 encode
-     --base64d -R <string>         Base64 decode
-     --base58checke -B <string>    Base58Check encode
-     --base58checkd -T <string>    Base58Check decode
-
-	/* String arguments with single quotes are recommended. */
+* Generate 4 kinds of bitcoin address.
+* Generate a bitcoin address from any format private key.
+* BaseX Encode/Decode.
+* Check address validation and get the hash160 value.
+* Check private key validaion and get the address.
 
 ## License
 
