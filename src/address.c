@@ -26,7 +26,7 @@ int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *privkey_raw, BYTE *pubkey_raw, i
 	EC_KEY *keys = EC_KEY_new_by_curve_name(NID_secp256k1);
 
 	const EC_GROUP *group = EC_KEY_get0_group(keys);       // Struct group store the G and calculation rules
-	EC_POINT *pubkey_bn = EC_POINT_new(group);	           // Public key is a point on curve
+	EC_POINT *pubkey_bn = EC_POINT_new(group);             // Public key is a point on curve
 	BN_CTX *ctx = BN_CTX_new();
 
 	if (cmpr_flag != 0 && cmpr_flag != 1)
@@ -83,23 +83,26 @@ void generate_ecdsa_secp256k1_private_key(BYTE *privkey_raw)
 
 int8_t selector(int32_t item)
 {
-	if (item == 1111) return '0';
-	else if (item == 1112) return '1';
-	else if (item == 1121) return '2';
-	else if (item == 1122) return '3';
-	else if (item == 1211) return '4';
-	else if (item == 1212) return '5';
-	else if (item == 1221) return '6';
-	else if (item == 1222) return '7';
-	else if (item == 2111) return '8';
-	else if (item == 2112) return '9';
-	else if (item == 2121) return 'A';
-	else if (item == 2122) return 'B';
-	else if (item == 2211) return 'C';
-	else if (item == 2212) return 'D';
-	else if (item == 2221) return 'E';
-	else if (item == 2222) return 'F';
-	else return -1;
+	switch (item)
+	{
+		case 1111: return '0';
+		case 1112: return '1';
+		case 1121: return '2';
+		case 1122: return '3';
+		case 1211: return '4';
+		case 1212: return '5';
+		case 1221: return '6';
+		case 1222: return '7';
+		case 2111: return '8';
+		case 2112: return '9';
+		case 2121: return 'A';
+		case 2122: return 'B';
+		case 2211: return 'C';
+		case 2212: return 'D';
+		case 2221: return 'E';
+		case 2222: return 'F';
+		default : return -1;
+	}
 }
 
 int32_t raw_to_wif(BYTE *privkey_raw, uint8_t *privkey_wif, int32_t cmpr_flag, BYTE privkey_type)
