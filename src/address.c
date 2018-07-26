@@ -311,31 +311,30 @@ int32_t privkey_validation(int8_t *anyformat, size_t length)
 		{
 			// Check if a valid WIF string.
 			BYTE privkey_raw[32];
-			int32_t ret = wif_to_raw((uint8_t*)anyformat, privkey_raw);
-
-			if (ret == -1)
-				return -3;             // Invalid WIF string.
-			else if (ret == -2)
-				return -3;             // Invalid WIF string.
-			else if (ret == -3)
-				return -4;             // Invalid checksum.
-			else if (ret == 0)         // Valid WIF format string.
+			switch (wif_to_raw((uint8_t*)anyformat, privkey_raw))
 			{
-				// Check if key's value out range.
-				BIGNUM *privkey_bn = BN_new();
-				BIGNUM *EC_MAX  = BN_new();
-				int8_t privkey_rawstr[64];
+				case 0:
+				{
+					// Check if key's value out range.
+					BIGNUM *privkey_bn = BN_new();
+					BIGNUM *EC_MAX  = BN_new();
+					int8_t privkey_rawstr[64];
 
-				bytearr_to_hexstr(privkey_raw, 32, privkey_rawstr);
-				BN_hex2bn(&privkey_bn, (const char *)privkey_rawstr);
-				BN_hex2bn(&EC_MAX , (const char *)MAX_PRIVKEY_HEX);
-				int32_t ret_cmp = BN_cmp(privkey_bn, EC_MAX);
+					bytearr_to_hexstr(privkey_raw, 32, privkey_rawstr);
+					BN_hex2bn(&privkey_bn, (const char *)privkey_rawstr);
+					BN_hex2bn(&EC_MAX , (const char *)MAX_PRIVKEY_HEX);
+					int32_t ret_cmp = BN_cmp(privkey_bn, EC_MAX);
 
-				BN_free(privkey_bn);
-				BN_free(EC_MAX);
-				if (ret_cmp == -1)
-					return 0x00;       // Not out range.
-				else return -1;        // out range.
+					BN_free(privkey_bn);
+					BN_free(EC_MAX);
+					if (ret_cmp == -1)
+						return VALID_WIF_FORMAT;
+					else return ECKEY_VALUE_OUT_RANGE;
+				}
+
+				case -1: return INVALID_BASE58_STRING;
+				case -2: return INVALID_BASE58_STRING;
+				case -3: return INVALID_WIF_CHECKSUM;
 			}
 
 			break;
@@ -347,34 +346,36 @@ int32_t privkey_validation(int8_t *anyformat, size_t length)
 			BIGNUM *privkey_bn = BN_new();
 			BIGNUM *EC_MAX  = BN_new();
 
-			int32_t ret = BN_hex2bn(&privkey_bn, (const char *)anyformat);
-
 			// Check if a valid hexadecimal string.
-			if (ret == 64)
+			switch (BN_hex2bn(&privkey_bn, (const char *)anyformat))
 			{
-				// Check if key's value out range.
-				BN_hex2bn(&EC_MAX, (const char *)MAX_PRIVKEY_HEX);
-				int32_t ret_cmp = BN_cmp(privkey_bn, EC_MAX);
-				BN_free(privkey_bn);
-				BN_free(EC_MAX);
-				if (ret_cmp == -1)
-					return 0x01;       // Not out range.
-				else return -1;        // out range.
-			}
+				case 0:
+				{
+					// Invalid Hexadecimal string.
+					BN_free(privkey_bn);
+					BN_free(EC_MAX);
+					return INVALID_HEX_STRING;
+				}
 
-			else if (ret == 0)
-			{
-				// Invalid Hexadecimal string.
-				BN_free(privkey_bn);
-				BN_free(EC_MAX);
-				return -5;
-			}
+				case 64:
+				{
+					// Check if key's value out range.
+					BN_hex2bn(&EC_MAX, (const char *)MAX_PRIVKEY_HEX);
+					int32_t ret_cmp = BN_cmp(privkey_bn, EC_MAX);
+					BN_free(privkey_bn);
+					BN_free(EC_MAX);
+					if (ret_cmp == -1)
+						return VALID_HEX_FORMAT;
+					else return ECKEY_VALUE_OUT_RANGE;
+				}
 
-			else {
-				// Invalid Hexadecimal string.
-				BN_free(privkey_bn);
-				BN_free(EC_MAX);
-				return -5;
+				default:
+				{
+					// Invalid Hexadecimal string.
+					BN_free(privkey_bn);
+					BN_free(EC_MAX);
+					return INVALID_HEX_STRING;
+				}
 			}
 
 			break;
@@ -402,13 +403,13 @@ int32_t privkey_validation(int8_t *anyformat, size_t length)
 				BN_free(privkey_bn);
 				BN_free(EC_MAX);
 				if (ret_cmp == -1)
-					return 0x02;       // Not out range.
-				else return -1;        // out range.
+					return VALID_BASE6_FORMAT;
+				else return ECKEY_VALUE_OUT_RANGE;
 			}
 
 			else if (ret == -1)
-				return -6;             // Invalid Base6 string.
-			else return -6;            // Invalid Base6 string.
+				return INVALID_BASE6_STRING;
+			else return INVALID_BASE6_STRING;
 
 			break;
 		}
@@ -435,13 +436,13 @@ int32_t privkey_validation(int8_t *anyformat, size_t length)
 				BN_free(privkey_bn);
 				BN_free(EC_MAX);
 				if (ret_cmp == -1)
-					return 0x03;       // Not out range.
-				else return -1;        // out range.
+					return VALID_BASE64_FORMAT;
+				else return ECKEY_VALUE_OUT_RANGE;
 			}
 
 			else if (ret == -1)
-				return -7;             // Invalid Base64 string.
-			else return -7;            // Invalid Base64 string.
+				return INVALID_BASE64_STRING;
+			else return INVALID_BASE64_STRING;
 
 			break;
 		}
@@ -451,9 +452,9 @@ int32_t privkey_validation(int8_t *anyformat, size_t length)
 			break;
 		}
 
-		default: return -2;
+		default: return UNSUPPORTED_FORMAT;
 	}
-	return -2;
+	return UNSUPPORTED_FORMAT;
 }
 
 int32_t anyformat_to_raw(int8_t *anyformat, int32_t *cmpr_flag, BYTE *privkey_type, BYTE *address_type, BYTE *privkey_raw)
@@ -466,38 +467,45 @@ int32_t anyformat_to_raw(int8_t *anyformat, int32_t *cmpr_flag, BYTE *privkey_ty
 	// WIF key
 		case 0x00:
 		{
-			if (anyformat[0] == '5')
+			switch (anyformat[0])
 			{
-				*privkey_type  = PRIVATE_KEY_MAINNET_BYTE_PREFIX;
-				*address_type  = ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX;
-				*cmpr_flag = 0;
-				wif_to_raw((uint8_t *)anyformat, privkey_raw);
-				return 0;
+				case '5':
+				{
+					*privkey_type  = PRIVATE_KEY_MAINNET_BYTE_PREFIX;
+					*address_type  = ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX;
+					*cmpr_flag = 0;
+					wif_to_raw((uint8_t *)anyformat, privkey_raw);
+					return 0;
+				}
+
+				case 'K':case 'L':
+				{
+					*privkey_type  = PRIVATE_KEY_MAINNET_BYTE_PREFIX;
+					*address_type  = ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX;
+					*cmpr_flag = 1;
+					wif_to_raw((uint8_t *)anyformat, privkey_raw);
+					return 0;
+				}
+
+				case '9':
+				{
+					*privkey_type  = PRIVATE_KEY_TESTNET_BYTE_PREFIX;
+					*address_type  = ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX;
+					*cmpr_flag = 0;
+					wif_to_raw((uint8_t *)anyformat, privkey_raw);
+					return 0;
+				}
+
+				case 'c':
+				{
+					*privkey_type  = PRIVATE_KEY_TESTNET_BYTE_PREFIX;
+					*address_type  = ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX;
+					*cmpr_flag = 1;
+					wif_to_raw((uint8_t *)anyformat, privkey_raw);
+					return 0;
+				}
 			}
-			else if (anyformat[0] == 'K' || anyformat[0] == 'L')
-			{
-				*privkey_type  = PRIVATE_KEY_MAINNET_BYTE_PREFIX;
-				*address_type  = ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX;
-				*cmpr_flag = 1;
-				wif_to_raw((uint8_t *)anyformat, privkey_raw);
-				return 0;
-			}
-			else if (anyformat[0] == '9')
-			{
-				*privkey_type  = PRIVATE_KEY_TESTNET_BYTE_PREFIX;
-				*address_type  = ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX;
-				*cmpr_flag = 0;
-				wif_to_raw((uint8_t *)anyformat, privkey_raw);
-				return 0;
-			}
-			else if (anyformat[0] == 'c')
-			{
-				*privkey_type  = PRIVATE_KEY_TESTNET_BYTE_PREFIX;
-				*address_type  = ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX;
-				*cmpr_flag = 1;
-				wif_to_raw((uint8_t *)anyformat, privkey_raw);
-				return 0;
-			}
+
 			break;
 		}
 

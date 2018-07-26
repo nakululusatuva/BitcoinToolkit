@@ -8,9 +8,9 @@
 #define MAX_PRIVKEY_HEX "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140"
 #define MAX_PRIVKEY_B6  "1021410542201502023034020312354303525141003020114142003134301540433233134222423333133255354344331040"
 
-#define PRIVATE_KEY_MAINNET_BYTE_PREFIX 0x80
-#define PRIVATE_KEY_TESTNET_BYTE_PREFIX 0xEF
-#define PRIVATE_KEY_COMPRESS_BYTE_SUFFIX 0X01
+#define PRIVATE_KEY_MAINNET_BYTE_PREFIX         0x80
+#define PRIVATE_KEY_TESTNET_BYTE_PREFIX         0xEF
+#define PRIVATE_KEY_COMPRESS_BYTE_SUFFIX        0X01
 #define ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX 0x00
 #define ADDRESS_MAINNET_SCRIPT_HASH_BYTE_PREFIX 0x05
 #define ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX 0x6F
@@ -99,8 +99,7 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160);
 /** Get the private key format and check validation.
 *   \param  anyformat   String, private key in [B6], [WIF], [Hexadecimal] format.
 *   \param  length      Character length of 'anyformat'.
-*   \return  0 on Unsupported format.
-*           -1 on EC key value out range.
+*   \return -1 on EC key value out range.
 *           -2 on unsupported format.
 *           -3 on invalid base58 string.
 *           -4 on invalid checksum.
@@ -113,6 +112,18 @@ int32_t address_to_hash160(uint8_t *address, BYTE *hash160);
 *         0x03 on valid B64   format.
 *         0x04 on valid BIP38 format
 **/
+#define ECKEY_VALUE_OUT_RANGE -1
+#define UNSUPPORTED_FORMAT    -2
+#define INVALID_BASE58_STRING -3
+#define INVALID_WIF_CHECKSUM  -4
+#define INVALID_HEX_STRING    -5
+#define INVALID_BASE6_STRING  -6
+#define INVALID_BASE64_STRING -7
+#define VALID_WIF_FORMAT    0X00
+#define VALID_HEX_FORMAT    0X01
+#define VALID_BASE6_FORMAT  0x02
+#define VALID_BASE64_FORMAT 0x03
+#define VALID_BIP38_FORMAT  0x04
 int32_t privkey_validation(int8_t *anyformat, size_t length);
 
 /** Generate an address by given private key type and address type.

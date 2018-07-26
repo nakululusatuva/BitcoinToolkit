@@ -81,7 +81,8 @@ int32_t main(int32_t argc, char* const* argv)
 	{
 		switch(opt)
 		{
-			case 's': { // Mainnet standard P2PKH address
+			case 's':
+			{	// Mainnet standard P2PKH address
 				int64_t number = atoll((const char *)optarg);
 				if (number <= 0)
 				{
@@ -101,7 +102,8 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'c': { // Mainnet compress P2PKH address
+			case 'c':
+			{	// Mainnet compress P2PKH address
 				int64_t number = atoll((const char *)optarg);
 				if (number <= 0)
 				{
@@ -121,7 +123,8 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 't': { // Testnet standard P2PKH address
+			case 't':
+			{	// Testnet standard P2PKH address
 				int64_t number = atoll((const char *)optarg);
 				if (number <= 0)
 				{
@@ -141,7 +144,8 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'k': { // Testnet compress P2PKH address
+			case 'k':
+			{	// Testnet compress P2PKH address
 				int64_t number = atoll((const char *)optarg);
 				if (number <= 0)
 				{
@@ -161,81 +165,114 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'a': {	
-				int32_t ret;
+			case 'a':
+			{	
 				BYTE hash160[20];
-				ret = address_to_hash160((uint8_t*)optarg, hash160);
+				switch (address_to_hash160((uint8_t*)optarg, hash160))
+				{
+					case 0:
+					{
+						printf("Correct Address!\n");
+						printf("hash160 Value: ");
+						for (int32_t i = 0; i < 20; ++i)
+							printf("%02X", hash160[i]);
+						printf("\n");
+						break;
+					}
 
-				if (ret == 0) {
-					printf("Correct Address!\n");
-					printf("hash160 Value: ");
-					for (int32_t i = 0; i < 20; ++i)
-						printf("%02X", hash160[i]);
-					printf("\n");
+					case -1:
+					{
+						printf("Invalid Charaters In The Address!\n");
+						break;
+					}
+
+					case -2:
+					{
+						printf("Invalid Address Length!\n");
+						break;
+					}
+
+					case -3:
+					{
+						printf("Invalid Checksum!\n");
+						break;
+					}
 				}
-				else if (ret == -1)
-					printf("Invalid Charaters In The Address!\n");
-				else if (ret == -2)
-					printf("Invalid Address Length!\n");
-				else if (ret == -3)
-					printf("Invalid Checksum!\n");
-				
 				break;
 			}
 
-			case 'g': {
-				int32_t ret, optarg_len;
+			case 'g':
+			{
+				int32_t optarg_len;
 				int32_t cmpr_flag = 0;
 				BYTE privkey_type = PRIVATE_KEY_MAINNET_BYTE_PREFIX,
 					 address_type = ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX,
 					 privkey_raw[32];
 				optarg_len = get_strlen((int8_t*)optarg);
 
-				ret = privkey_validation((int8_t*)optarg, optarg_len);
-				if (ret == -1) {
-					printf("EC key value out range!\n");
-					break;
+				switch (privkey_validation((int8_t*)optarg, optarg_len))
+				{
+					case ECKEY_VALUE_OUT_RANGE:
+					{
+						printf("EC key value out range!\n");
+						break;
+					}
+
+					case UNSUPPORTED_FORMAT:
+					{
+						printf("Unsupported format!\n");
+						break;
+					}
+
+					case INVALID_BASE58_STRING:
+					{
+						printf("Invalid Base58 key string!\n");
+						break;
+					}
+
+					case INVALID_WIF_CHECKSUM:
+					{
+						printf("Invalid checksum!\n");
+						break;
+					}
+
+					case INVALID_HEX_STRING:
+					{
+						printf("Invalid HEX key string!\n");
+						break;
+					}
+
+					case INVALID_BASE6_STRING:
+					{
+						printf("Invalid B6 key string!\n");
+						break;
+					}
+
+					case INVALID_BASE64_STRING:
+					{
+						printf("Invalid B64 key string!\n");
+						break;
+					}
+
+					default:
+					{
+						anyformat_to_raw((int8_t*)optarg, &cmpr_flag, &privkey_type, &address_type, privkey_raw);
+						ADDRESS addr;
+						addr = generate_address_by_private_key(cmpr_flag, privkey_type, address_type, privkey_raw);
+						print_address(addr);
+						break;
+					}
 				}
-				else if (ret == -2) {
-					printf("Unsupported format!\n");
-					break;
-				}
-				else if (ret == -3 ){
-					printf("Invalid Base58 key string!\n");
-					break;
-				}
-				else if (ret == -4) {
-					printf("Invalid checksum!\n");
-					break;
-				}
-				else if (ret == -5) {
-					printf("Invalid HEX key string!\n");
-					break;
-				}
-				else if (ret == -6) {
-					printf("Invalid B6 key string!\n");
-					break;
-				}
-				else if (ret == -7) {
-					printf("Invalid B64 key string!\n");
-					break;
-				}
-				else {
-					anyformat_to_raw((int8_t*)optarg, &cmpr_flag, &privkey_type, &address_type, privkey_raw);
-					
-					ADDRESS addr;
-					addr = generate_address_by_private_key(cmpr_flag, privkey_type, address_type, privkey_raw);
-					print_address(addr);
-					
-					break;
-				}
+				break;
 			}
 
-			case 'S': {
+			case 'S':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base6encode((BYTE*)optarg, payload_len, NULL);
-				if (encoded_len == -1) {
+				if (encoded_len == -1)
+				{
 					printf("Charater's value out range!\n");
 					break;
 				}
@@ -248,11 +285,13 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'L': {
+			case 'L':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base6decode((uint8_t*)optarg, payload_len, NULL);
-				if (decoded_len == -1) {
+				if (decoded_len == -1)
+				{
 					printf("Invalid charater(s) in the base6 string!\n");
 					break;
 				}
@@ -268,11 +307,13 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'F': {
+			case 'F':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base58encode((BYTE*)optarg, payload_len, NULL);
-				if (encoded_len == -1) {
+				if (encoded_len == -1)
+				{
 					printf("Charater's value out range!\n");
 					break;
 				}
@@ -286,11 +327,13 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'W': {
+			case 'W':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base58decode((uint8_t*)optarg, payload_len, NULL);
-				if (decoded_len == -1) {
+				if (decoded_len == -1)
+				{
 					printf("Invalid charater(s) in the base58 string!\n");
 					break;
 				}
@@ -306,11 +349,13 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'U': {
+			case 'U':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base64encode((BYTE*)optarg, payload_len, NULL);
-				if (encoded_len == -1) {
+				if (encoded_len == -1)
+				{
 					printf("Charater's value out range!\n");
 					break;
 				}
@@ -326,11 +371,13 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'R': {
+			case 'R':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base64decode((uint8_t*)optarg, payload_len, NULL);
-				if (decoded_len == -1) {
+				if (decoded_len == -1)
+				{
 					printf("Invalid charater(s) in the base64 string!\n");
 					break;
 				}
@@ -346,11 +393,13 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'B': {
+			case 'B':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t encoded_len = base58check_encode((BYTE*)optarg, payload_len, NULL);
-				if (encoded_len == -1) {
+				if (encoded_len == -1)
+				{
 					printf("Charater's value out range!\n");
 					break;
 				}
@@ -366,15 +415,18 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			case 'T': {
+			case 'T':
+			{
 				size_t payload_len = get_strlen((int8_t*)optarg);
 
 				int32_t decoded_len = base58check_decode((uint8_t*)optarg, payload_len, NULL);
-				if (decoded_len == -1) {
+				if (decoded_len == -1)
+				{
 					printf("Invalid charater(s) in the base58 string!\n");
 					break;
 				}
-				else if (decoded_len == -2) {
+				else if (decoded_len == -2)
+				{
 					printf("Invalid checksum!\n");
 					break;
 				}
@@ -390,7 +442,8 @@ int32_t main(int32_t argc, char* const* argv)
 				break;
 			}
 
-			default: {
+			default:
+			{
 				usage(version, argv[0]);
 				exit(0);
 			}
