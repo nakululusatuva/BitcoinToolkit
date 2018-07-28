@@ -173,11 +173,20 @@ struct Script
     bool (*execute)(Script *);
     uint8_t * (*to_string)(Script *, size_t *);
     BYTE * (*to_bytes)(Script *, size_t *);
+    bool (*is_p2pkh)(Script *);
+    bool (*is_p2pk)(Script *);
+    bool (*is_p2sh)(Script *);
+    bool (*is_multisig)(Script *);
 };
 
 // Construct and Destruct Functions.
 Script * new_Script();
 Script * new_Script_from_bytes(BYTE *bytes, size_t size);
+Script * new_Script_assembled(Script *p1, Script *p2);
+Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size);
+Script * new_Script_p2pk(BYTE *pubkey, size_t size);
+Script * new_Script_p2sh(BYTE *script_bytes, size_t size);
+Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys);
 void delete_Script(Script *self);
 
 // Inner Functions.
@@ -200,5 +209,10 @@ uint8_t * Script_to_string(Script *self, size_t *size);
 /** Script to byte array.
 **/
 BYTE * Script_to_bytes(Script *self, size_t *size);
+
+bool Script_is_p2pkh(Script *self);
+bool Script_is_p2pk(Script *self);
+bool Script_is_p2sh(Script *self);
+bool Script_is_multisig(Script *self);
 
 #endif

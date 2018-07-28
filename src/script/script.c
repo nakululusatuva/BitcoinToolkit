@@ -31,6 +31,8 @@ Script * new_Script()
 Script * new_Script_from_bytes(BYTE *bytes, size_t size)
 {
 	Script *new = new_Script();
+	if (new == NULL)
+		return NULL;
 	uint32_t pos = 0;
 
 while (true) // Can't use break and continue to control the loop if I use switch-case.
@@ -211,6 +213,175 @@ while (true) // Can't use break and continue to control the loop if I use switch
 	return new;
 }
 
+Script * new_Script_assembled(Script *p1, Script *p2)
+{
+	Script *new = new_Script();
+	CLinkedlistNode **p1_list = p1->script->forward_traversing(p1->script);
+	CLinkedlistNode **p2_list = p2->script->forward_traversing(p2->script);
+	if (new == NULL || p1_list == NULL || p2_list == NULL)
+		return NULL;
+
+	for (uint32_t i = 0; i < p1->script->length; ++i)
+	{
+		if (p1_list[i]->size == 1)
+		{
+			opcode *op = (opcode *)malloc(sizeof(opcode));
+			memcpy(op, p1_list[i]->data, 1);
+			bool ret = new->add_opcode(new, op);
+			if (ret == false)
+				return NULL;
+		}
+		else
+		{
+			size_t data_size = p1_list[i]->size;
+			BYTE *data = (BYTE *)malloc(data_size);
+			memcpy(data, p1_list[i]->data, data_size);
+			bool ret = new->add_data(new, data, data_size);
+			if (ret == false)
+				return NULL;
+		}
+	}
+
+	for (uint32_t i = 0; i < p2->script->length; ++i)
+	{
+		if (p2_list[i]->size == 1)
+		{
+			opcode *op = (opcode *)malloc(sizeof(opcode));
+			memcpy(op, p2_list[i]->data, 1);
+			bool ret = new->add_opcode(new, op);
+			if (ret == false)
+				return NULL;
+		}
+		else
+		{
+			size_t data_size = p2_list[i]->size;
+			BYTE *data = (BYTE *)malloc(data_size);
+			memcpy(data, p2_list[i]->data, data_size);
+			bool ret = new->add_data(new, data, data_size);
+			if (ret == false)
+				return NULL;
+		}
+	}
+
+	free(p1_list);
+	free(p2_list);
+
+	return new;
+}
+
+Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
+{
+	Script *new = new_Script();
+	if (new == NULL || size <= 0)
+		return NULL;
+
+	opcode *dup = (opcode *)malloc(sizeof(opcode));
+	opcode *hash160 = (opcode *)malloc(sizeof(opcode));
+	BYTE *pushdata = (BYTE *)malloc(sizeof(BYTE));
+	BYTE *data = (BYTE *)malloc(size);
+	opcode *equalverify = (opcode *)malloc(sizeof(opcode));
+	opcode *checksig = (opcode *)malloc(sizeof(opcode));
+
+	if (dup == NULL || hash160 == NULL || pushdata == NULL ||
+		data == NULL || equalverify == NULL || checksig == NULL)
+		return NULL;
+
+	*dup         = OP_DUP;
+	*hash160     = OP_HASH160;
+	*pushdata    = size;
+	*equalverify = OP_EQUALVERIFY;
+	*checksig    = OP_CHECKSIG;
+	memcpy(data, pubkey_hash, size);
+
+	bool ret1 = new->add_opcode(new, dup);
+	bool ret2 = new->add_opcode(new, hash160);
+	bool ret3 = new->add_opcode(new, pushdata);
+	bool ret4 = new->add_data(new, data, size);
+	bool ret5 = new->add_opcode(new, equalverify);
+	bool ret6 = new->add_opcode(new, checksig);
+
+	if (ret1 == false || ret2 == false || ret3 == false ||
+		ret4 == false || ret5 == false || ret6 == false)
+		return NULL;
+
+	return NULL;
+}
+
+Script * new_Script_p2pk(BYTE *pubkey, size_t size)
+{
+
+}
+
+Script * new_Script_p2sh(BYTE *script_hash, size_t size)
+{
+
+}
+
+Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys)
+{
+	if ( !(m > 0 && m <= pubkeys->length) )
+		return NULL;
+
+	Script *script = new_Script();
+	if (script == NULL)
+		return NULL;
+
+	// Add first opcode: OP_M.
+	opcode *OP_M = (opcode *)calloc(1, sizeof(opcode));
+	if (OP_M == NULL)
+		return NULL;
+	*OP_M = 0x50 + m;
+	bool ret1 = script->add_opcode(script, OP_M);
+	if (ret1 == false)
+		return NULL;
+
+	// Add public keys.
+	CLinkedlistNode **keys = pubkeys->forward_traversing(pubkeys);
+	if (keys == NULL)
+		return NULL;
+	for (uint32_t i = 0; i < pubkeys->length; ++i)
+	{
+		// Add PUSHDATA().
+		BYTE *PUSHDATA = (BYTE *)calloc(1, sizeof(BYTE));
+		if (PUSHDATA == NULL)
+			return NULL;
+		*PUSHDATA = keys[i]->size;
+		bool ret2 = script->add_data(script, PUSHDATA, 1);
+		if (ret2 == false)
+			return NULL;
+
+		// Add public key bytes.
+		BYTE *pub = (BYTE *)malloc(keys[i]->size);
+		if (pub == NULL)
+			return NULL;
+		memcpy(pub, keys[i]->data, keys[i]->size);
+		bool ret3 = script->add_data(script, pub, keys[i]->size);
+		if (ret3 == false)
+			return NULL;
+	}
+	free(keys);
+
+	// Add OP_N.
+	opcode *OP_N = (opcode *)calloc(1, sizeof(opcode));
+	if (OP_N == NULL)
+		return NULL;
+	*OP_N = 0x50 + (pubkeys->length);
+	bool ret4 = script->add_opcode(script, OP_N);
+	if (ret4 == false)
+		return NULL;
+
+	// Add OP_CHECKMULTISIG
+	opcode *CHECKMULTISIG = (opcode *)calloc(1, sizeof(opcode));
+	if (CHECKMULTISIG == NULL)
+		return NULL;
+	*CHECKMULTISIG = OP_CHECKMULTISIG;
+	bool ret5 = script->add_opcode(script, CHECKMULTISIG);
+	if (ret5 == false)
+		return NULL;
+
+	return script;
+}
+
 void delete_Script(Script *self)
 {
 	delete_CLinkedlist(self->script);
@@ -380,6 +551,8 @@ uint8_t * Script_to_string(Script *self, size_t *size)
 {
 	CLinkedlistNode **statements = self->script->forward_traversing(self->script);
 	CLinkedlist *statements_str = new_CLinkedlist();
+	if (statements == NULL || statements_str == NULL)
+		return NULL;
 
 // Script statements loop, convert one statement to one string and add to linked list.
 for (uint32_t i = 0; i < self->script->length; ++i)
@@ -388,24 +561,34 @@ for (uint32_t i = 0; i < self->script->length; ++i)
 	{	// If opcode.
 		case 1:
 		{
-			opcode op_buffer = ((opcode*)(statements[i]->data))[0];
+		/**	
+		*	Cause error in valgrind if use 'opcode' type, error message:
+		*	Conditional jump or move depends on uninitialised value(s)
+		*
+		*	opcode op_buffer = ((opcode *)(statements[i]->data))[0];
+		**/
+			BYTE op_buffer = ((BYTE *)(statements[i]->data))[0];
 
 			// Opcode is PUSHDATA (1 ~ 75): "PUSHDATA(size)"
 			if (op_buffer >= 0x01 && op_buffer <= 0x4b)
 			{
 				int8_t size_str[3];
-				BYTE size_byte[1];
+				BYTE  size_byte[1];
 				size_byte[0] = op_buffer;
 				bytearr_to_hexstr(size_byte, 1, size_str);
 
 				uint8_t *str = (uint8_t *)calloc(12, sizeof(uint8_t));
+				if (str == NULL)
+					return NULL;
 				str[0] = 'P'; str[1] = 'U'; str[2] = 'S'; str[3] = 'H';
 				str[4] = 'D'; str[5] = 'A'; str[6] = 'T'; str[7] = 'A';
 				str[8] = '(';
 				str[9] = size_str[0]; str[10] = size_str[1];
 				str[11] = ')';
 
-				statements_str->add(statements_str, str, 12 * sizeof(uint8_t));
+				bool ret1 = statements_str->add(statements_str, str, 12 * sizeof(uint8_t));
+				if (ret1 == false)
+					return NULL;
 				break;
 			}
 
@@ -415,9 +598,13 @@ for (uint32_t i = 0; i < self->script->length; ++i)
 				const char * op_name = get_op_name(op_buffer);
 				size_t len = strlen(op_name);
 				uint8_t *str = (uint8_t *)calloc(len, sizeof(uint8_t));
-				for (uint32_t i = 0; i < len; ++i)
-					str[i] = op_name[i];
-				statements_str->add(statements_str, str, len * sizeof(uint8_t));
+				if (str == NULL)
+					return NULL;
+
+				memcpy(str, op_name, len);
+				bool ret2 = statements_str->add(statements_str, str, len * sizeof(uint8_t));
+				if (ret2 == false)
+					return NULL;
 				break;
 			}
 
@@ -427,10 +614,14 @@ for (uint32_t i = 0; i < self->script->length; ++i)
 				const char * op_name = get_op_name(op_buffer);
 				size_t len = strlen(op_name) + 1;
 				uint8_t *str = (uint8_t *)calloc(len, sizeof(uint8_t));
-				for (uint32_t i = 0; i < len; ++i)
-					str[i] = op_name[i];
+				if (str == NULL)
+					return NULL;
+
+				memcpy(str, op_name, len);
 				str[len - 1] = ' ';
-				statements_str->add(statements_str, str, len * sizeof(uint8_t));
+				bool ret3 = statements_str->add(statements_str, str, len * sizeof(uint8_t));
+				if (ret3 == false)
+					return NULL;
 				break;
 			}
 		}
@@ -440,37 +631,40 @@ for (uint32_t i = 0; i < self->script->length; ++i)
 		{
 			uint32_t data_byte_len = statements[i]->size;
 			uint32_t data_str_len  = data_byte_len * 2;
-			uint8_t data_str[data_str_len + 1];
+			uint8_t  data_str[data_str_len + 1];
 
 			bytearr_to_hexstr((BYTE *)(statements[i]->data), data_byte_len, (int8_t *)data_str);
 			uint8_t *str = (uint8_t *)calloc(data_str_len + 3, sizeof(uint8_t));
+			if (str == NULL)
+				return NULL;
 
 			str[0] = '[';
-			for (uint32_t i = 0; i < data_str_len; ++i)
-				str[i+1] = data_str[i];
+			memcpy(str+1, data_str, data_str_len);
 			str[data_str_len + 1] = ']';
 			str[data_str_len + 2] = ' ';
 
-			statements_str->add(statements_str, str, (data_str_len + 3) * sizeof(uint8_t));
+			bool ret4 = statements_str->add(statements_str, str, (data_str_len + 3) * sizeof(uint8_t));
+			if (ret4 == false)
+				return NULL;
 			break;
 		}
 	}
-}
-free(statements);
+}	free(statements);
 
 	// Linked list to a single string.
 	*size = statements_str->total_size(statements_str);
 	uint8_t *string = (uint8_t *)malloc(statements_str->total_size(statements_str));
+	if (string == NULL)
+		return NULL;
 	CLinkedlistNode **list = statements_str->forward_traversing(statements_str);
+	if (list == NULL)
+		return NULL;
 
 	uint32_t pos = 0;
 	for (uint32_t i = 0; i < statements_str->length; ++i)
 	{
-		for (uint32_t j = 0; j < (list[i]->size)/sizeof(uint8_t); ++j)
-		{
-			string[pos] = ((uint8_t *)(list[i]->data))[j];
-			pos++;
-		}
+		memcpy(string+pos, list[i]->data, list[i]->size);
+		pos = pos + list[i]->size;
 	}
 	free(list);
 	delete_CLinkedlist(statements_str);
@@ -485,18 +679,36 @@ BYTE * Script_to_bytes(Script *self, size_t *size)
 
 	BYTE *bytes = (BYTE *)malloc(total_size);
 	CLinkedlistNode **list = self->script->forward_traversing(self->script);
+	if (bytes == NULL || list == NULL)
+		return NULL;
 
 	uint32_t pos = 0;
 	// Script statements loop.
 	for (size_t i = 0; i < script_len; ++i)
 	{
-		// Statements bytes loop.
-		for (size_t j = 0; j < list[i]->size; ++j)
-			bytes[pos+j] = ((BYTE *)(list[i]->data))[j];
-
-		// Shift the posistion.
-		pos = pos + list[i]->size;
+		memcpy(bytes+pos, list[i]->data, list[i]->size);
+		pos = pos + list[i]->size; // Shift the posistion.
 	}
 	free(list);
 	return bytes;
+}
+
+bool Script_is_p2pkh(Script *self)
+{
+
+}
+
+bool Script_is_p2pk(Script *self)
+{
+
+}
+
+bool Script_is_p2sh(Script *self)
+{
+
+}
+
+bool Script_is_multisig(Script *self)
+{
+
 }
