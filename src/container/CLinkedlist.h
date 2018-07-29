@@ -36,15 +36,13 @@ struct CLinkedlist
 	bool (*reverse)(CLinkedlist *);
 	bool (*is_empty)(CLinkedlist *);
 	size_t (*total_size)(CLinkedlist *);
+	CLinkedlistNode * (*last_node)(CLinkedlist *);
+	CLinkedlistNode * (*specific_node)(CLinkedlist *, uint64_t);
 };
 
 // Construct and Destruct Functions.
 CLinkedlist * new_CLinkedlist();
-void delete_CLinkedlist(CLinkedlist *self);
-
-// Inner Fuctions.
-CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *self);
-CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *self, uint64_t index);
+void delete_CLinkedlist(CLinkedlist *this);
 
 // Member Fuctions.
 /** Add a data's pointer.
@@ -53,14 +51,14 @@ CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *self, uint64_t index);
 *   \return true on success.
 *          false on error.
 **/
-bool CLinkedlist_add(CLinkedlist *self, void *data, size_t size);
+bool CLinkedlist_add(CLinkedlist *this, void *data, size_t size);
 
 /** Delete a node.
 *   \param  index       Node's position, start from zero.
 *   \return true on success.
 *          false on error.
 **/
-bool CLinkedlist_delete(CLinkedlist *self, uint64_t index);
+bool CLinkedlist_delete(CLinkedlist *this, uint64_t index);
 
 /** Insert a data's pointer.
 *   \param  after       Node's position, the new node will be in front of it.
@@ -69,7 +67,7 @@ bool CLinkedlist_delete(CLinkedlist *self, uint64_t index);
 *   \return true on success.
 *          false on error.
 **/
-bool CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t size);
+bool CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size);
 
 /** Change specific node's data.
 *   \param  index       Node's position, the node you want to edit.
@@ -78,23 +76,25 @@ bool CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t si
 *   \return true on success.
 *          false on error.
 **/
-bool CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t size);
+bool CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size);
 
 /** Forward traversing the linked list.
 *   \return NUll on error.
 *           else on a pointer-array that store the nodes' pointer.
 *   Need to be freed manually.
 **/
-CLinkedlistNode ** CLinkedlist_forward_traversing(CLinkedlist *self);
+CLinkedlistNode ** CLinkedlist_forward_traversing(CLinkedlist *this);
 
 /** Backward traversing the linked list.
 *   \return NUll on error.
 *           else on a pointer-array that store the nodes' pointer.
 *   Need to be freed manually.
 **/
-CLinkedlistNode ** CLinkedlist_backward_traversing(CLinkedlist *self);
-bool CLinkedlist_reverse(CLinkedlist *self);
-bool CLinkedlist_is_empty(CLinkedlist *self);
-size_t CLinkedlist_total_size(CLinkedlist *self);
+CLinkedlistNode ** CLinkedlist_backward_traversing(CLinkedlist *this);
+bool CLinkedlist_reverse(CLinkedlist *this);
+bool CLinkedlist_is_empty(CLinkedlist *this);
+size_t CLinkedlist_total_size(CLinkedlist *this);
+CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *this);
+CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *this, uint64_t index);
 
 #endif

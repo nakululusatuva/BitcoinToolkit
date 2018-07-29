@@ -33,7 +33,7 @@ struct CStack
 *   \param  capacity    How many elements.
 **/
 CStack * new_CStack(const uint64_t capacity);
-void delete_CStack(CStack *self);
+void delete_CStack(CStack *this);
 
 // Member Fuctions.
 /** Push data onto stack.
@@ -42,30 +42,30 @@ void delete_CStack(CStack *self);
 *   \return true on success.
 *          false on error.
 **/
-bool CStack_push(CStack *self, void *data, size_t size);
+bool CStack_push(CStack *this, void *data, size_t size);
 
 /** Pop the top element.
 *   \param  size        Store the top element's data size (bytes).
 *   \return NULL on error.
 *           else on success.
 **/
-void * CStack_pop(CStack *self, size_t *size);
+void * CStack_pop(CStack *this, size_t *size);
 
 /** Check if stack is empty.
 *   \return true on empty.
 *          false on not empty.
 **/
-bool CStack_is_empty(CStack *self);
+bool CStack_is_empty(CStack *this);
 
 /** Check if stack is full.
 *   \return true on full.
 *          false on not full.
 */
-bool CStack_is_full(CStack *self);
+bool CStack_is_full(CStack *this);
 
 /** Get total data size.
 *   \return how many bytes.
 **/
-size_t CStack_total_size(CStack *self);
+size_t CStack_total_size(CStack *this);
 
 #endif

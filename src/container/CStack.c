@@ -45,62 +45,62 @@ CStack * new_CStack(const uint64_t capacity)
 	return stack;
 }
 
-void delete_CStack(CStack *self)
+void delete_CStack(CStack *this)
 {
-	for (int i = 0; i < self->top - self->base; ++i)
+	for (int i = 0; i < this->top - this->base; ++i)
 	{
-		free((self->base)[i]);
+		free((this->base)[i]);
 	}
-	free(self->base);
-	free(self->size);
-	free(self);
+	free(this->base);
+	free(this->size);
+	free(this);
 }
 
-bool CStack_push(CStack *self, void *data, size_t size)
+bool CStack_push(CStack *this, void *data, size_t size)
 {
-	if (CStack_is_full(self) || size < 0)
+	if (CStack_is_full(this) || size < 0)
 		return false;
 	else {
-		*(self->top) = data;
-		(self->size)[self->top - self->base] = size;
-		self->top++;
+		*(this->top) = data;
+		(this->size)[this->top - this->base] = size;
+		this->top++;
 		return true;
 	}
 }
 
-void * CStack_pop(CStack *self, size_t *size)
+void * CStack_pop(CStack *this, size_t *size)
 {
-	if (CStack_is_empty(self) || size == NULL)
+	if (CStack_is_empty(this) || size == NULL)
 		return NULL;
 	else {
-		self->top--;
-		void *to_pop = *(self->top);
-		*(self->top) = NULL;
-		*size = (self->size)[self->top - self->base];
+		this->top--;
+		void *to_pop = *(this->top);
+		*(this->top) = NULL;
+		*size = (this->size)[this->top - this->base];
 		return to_pop;
 	}
 }
 
-bool CStack_is_empty(CStack *self)
+bool CStack_is_empty(CStack *this)
 {
-	if (self->top == self->base)
+	if (this->top == this->base)
 		return true;
 	else return false;
 }
 
-bool CStack_is_full(CStack *self)
+bool CStack_is_full(CStack *this)
 {
-	if (self->top - self->base >= self->capacity)
+	if (this->top - this->base >= this->capacity)
 		return true;
 	else return false;
 }
 
-size_t CStack_total_size(CStack *self)
+size_t CStack_total_size(CStack *this)
 {
 	size_t total_size = 0;
 
-	for (size_t i = 0; i < self->capacity; ++i)
-		total_size = total_size + (self->size)[i];
+	for (size_t i = 0; i < this->capacity; ++i)
+		total_size = total_size + (this->size)[i];
 
 	return total_size;
 }
