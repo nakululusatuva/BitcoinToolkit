@@ -6,6 +6,20 @@
 #include "../container/CLinkedlist.h"
 #include "script.h"
 
+opcode * new_opcode(BYTE value)
+{
+	opcode *new = (opcode *)malloc(sizeof(opcode));
+	if (new == NULL)
+		return NULL;
+	else *new = value;
+	return new;
+}
+
+void delete_opcode(opcode *op)
+{
+	free(op);
+}
+
 Script * new_Script()
 {
 	Script *new = (Script *)calloc(1, sizeof(Script));
@@ -20,10 +34,14 @@ Script * new_Script()
 	}
 	else
 	{
-		new->add_opcode = &Script_add_opcode;
-		new->add_data   = &Script_add_data;
-		new->to_string  = &Script_to_string;
-		new->to_bytes   = &Script_to_bytes;
+		new->add_opcode  = &Script_add_opcode;
+		new->add_data    = &Script_add_data;
+		new->to_string   = &Script_to_string;
+		new->to_bytes    = &Script_to_bytes;
+		new->is_p2pkh    = &Script_is_p2pkh;
+		new->is_p2pk     = &Script_is_p2pk;
+		new->is_p2sh     = &Script_is_p2sh;
+		new->is_multisig = &Script_is_multisig;
 		return new;
 	}
 }
@@ -38,7 +56,7 @@ Script * new_Script_from_bytes(BYTE *bytes, size_t size)
 while (true) // Can't use break and continue to control the loop if I use switch-case.
 {
 // Check if opcode.
-	if (is_opcode(bytes[pos]))
+	if (IS_OPCODE(bytes[pos]))
 	{
 		// Check if PUSHDATA1.
 		if (bytes[pos] == OP_PUSHDATA1)
@@ -50,10 +68,9 @@ while (true) // Can't use break and continue to control the loop if I use switch
 				return NULL;
 
 			// Add opcode.
-			opcode *op = (opcode *)calloc(1, sizeof(opcode));
+			opcode *op = new_opcode(bytes[pos]);
 			if (op == NULL)
 				return NULL;
-			*op = bytes[pos];
 			new->add_opcode(new, op);
 
 			// Add data.
@@ -83,10 +100,9 @@ while (true) // Can't use break and continue to control the loop if I use switch
 				return NULL;
 
 			// Add opcode.
-			opcode *op = (opcode *)calloc(1, sizeof(opcode));
+			opcode *op = new_opcode(bytes[pos]);
 			if (op == NULL)
 				return NULL;
-			*op = bytes[pos];
 			new->add_opcode(new, op);
 
 			// Add data.
@@ -119,10 +135,9 @@ while (true) // Can't use break and continue to control the loop if I use switch
 				return NULL;
 
 			// Add opcode.
-			opcode *op = (opcode *)calloc(1, sizeof(opcode));
+			opcode *op = new_opcode(bytes[pos]);
 			if (op == NULL)
 				return NULL;
-			*op = bytes[pos];
 			new->add_opcode(new, op);
 
 			// Add data.
@@ -148,10 +163,9 @@ while (true) // Can't use break and continue to control the loop if I use switch
 		else
 		{
 			// Add opcode.
-			opcode *op = (opcode *)calloc(1, sizeof(opcode));
+			opcode *op = new_opcode(bytes[pos]);
 			if (op == NULL)
 				return NULL;
-			*op = bytes[pos];
 			new->add_opcode(new, op);
 
 			// Shift pos, break the loop if pos at the end.
@@ -172,10 +186,9 @@ while (true) // Can't use break and continue to control the loop if I use switch
 			return NULL;
 
 		// Add PUSHDATA byte.
-		opcode *op = (opcode *)calloc(1, sizeof(opcode));
+		opcode *op = new_opcode(length);
 		if (op == NULL)
 			return NULL;
-		*op = length;
 		new->add_opcode(new, op);
 
 		// Add data.
@@ -197,10 +210,9 @@ while (true) // Can't use break and continue to control the loop if I use switch
 	else
 	{
 		// Add OP_INVALIDOPCODE.
-		opcode *op = (opcode *)calloc(1, sizeof(opcode));
+		opcode *op = new_opcode(OP_INVALIDOPCODE);
 		if (op == NULL)
 			return NULL;
-		*op = OP_INVALIDOPCODE;
 		new->add_opcode(new, op);
 
 		// Shift pos, break the loop if pos at the end.
@@ -225,7 +237,9 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 	{
 		if (p1_list[i]->size == 1)
 		{
-			opcode *op = (opcode *)malloc(sizeof(opcode));
+			opcode *op = new_opcode(0);
+			if (op == NULL)
+				return NULL;
 			memcpy(op, p1_list[i]->data, 1);
 			bool ret = new->add_opcode(new, op);
 			if (ret == false)
@@ -246,7 +260,9 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 	{
 		if (p2_list[i]->size == 1)
 		{
-			opcode *op = (opcode *)malloc(sizeof(opcode));
+			opcode *op = new_opcode(0);
+			if (op == NULL)
+				return NULL;
 			memcpy(op, p2_list[i]->data, 1);
 			bool ret = new->add_opcode(new, op);
 			if (ret == false)
@@ -271,26 +287,19 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 
 Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 {
-	Script *new = new_Script();
-	if (new == NULL || size <= 0)
+	if (size != 20)
 		return NULL;
-
-	opcode *dup = (opcode *)malloc(sizeof(opcode));
-	opcode *hash160 = (opcode *)malloc(sizeof(opcode));
-	BYTE *pushdata = (BYTE *)malloc(sizeof(BYTE));
+	Script *new = new_Script();
+	opcode *dup = new_opcode(OP_DUP);
+	opcode *hash160 = new_opcode(OP_HASH160);
+	opcode *pushdata = new_opcode(size);
 	BYTE *data = (BYTE *)malloc(size);
-	opcode *equalverify = (opcode *)malloc(sizeof(opcode));
-	opcode *checksig = (opcode *)malloc(sizeof(opcode));
+	opcode *equalverify = new_opcode(OP_EQUALVERIFY);
+	opcode *checksig = new_opcode(OP_CHECKSIG);
 
-	if (dup == NULL || hash160 == NULL || pushdata == NULL ||
+	if (new == NULL || dup == NULL || hash160 == NULL || pushdata == NULL ||
 		data == NULL || equalverify == NULL || checksig == NULL)
 		return NULL;
-
-	*dup         = OP_DUP;
-	*hash160     = OP_HASH160;
-	*pushdata    = size;
-	*equalverify = OP_EQUALVERIFY;
-	*checksig    = OP_CHECKSIG;
 	memcpy(data, pubkey_hash, size);
 
 	bool ret1 = new->add_opcode(new, dup);
@@ -309,17 +318,54 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 
 Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 {
+	if (size != 65 || size != 33)
+		return NULL;
+	Script *new = new_Script();
+	opcode *pushdata = new_opcode(size);
+	BYTE *pub = (BYTE *)malloc(size);
+	opcode *checksig = new_opcode(OP_CHECKSIG);
 
+	if (new == NULL || pushdata == NULL || pub == NULL || checksig == NULL)
+		return NULL;
+	memcpy(pub, pubkey, size);
+
+	bool ret1 = new->add_opcode(new, pushdata);
+	bool ret2 = new->add_data(new, pub, size);
+	bool ret3 = new->add_opcode(new, checksig);
+
+	if (ret1 == false || ret2 == false || ret3 == false)
+		return NULL;
+
+	return new;
 }
 
-Script * new_Script_p2sh(BYTE *script_hash, size_t size)
+Script * new_Script_p2sh(BYTE *hash, size_t size)
 {
+	Script *new = new_Script();
+	opcode *hash160 = new_opcode(OP_HASH160);
+	opcode *pushdata = new_opcode(size);
+	BYTE *script_hash = (BYTE *)malloc(size);
+	opcode *equal = new_opcode(OP_EQUAL);
 
+	if (new == NULL || hash160 == NULL || pushdata == NULL ||
+		script_hash == NULL || equal == NULL)
+		return NULL;
+	memcpy(script_hash, hash, size);
+
+	bool ret1 = new->add_opcode(new, hash160);
+	bool ret2 = new->add_opcode(new, pushdata);
+	bool ret3 = new->add_data(new, script_hash, size);
+	bool ret4 = new->add_opcode(new, equal);
+
+	if (ret1 == false || ret2 == false || ret3 == false || ret4 == false)
+		return 	NULL;
+
+	return new;
 }
 
 Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys)
 {
-	if ( !(m > 0 && m <= pubkeys->length) )
+	if ( !(m > 0 && m <= pubkeys->length) || pubkeys->length > MAX_PUBKEYS_PER_MULTISIG )
 		return NULL;
 
 	Script *script = new_Script();
@@ -327,10 +373,9 @@ Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys)
 		return NULL;
 
 	// Add first opcode: OP_M.
-	opcode *OP_M = (opcode *)calloc(1, sizeof(opcode));
+	opcode *OP_M = new_opcode(0x50 + m);
 	if (OP_M == NULL)
 		return NULL;
-	*OP_M = 0x50 + m;
 	bool ret1 = script->add_opcode(script, OP_M);
 	if (ret1 == false)
 		return NULL;
@@ -362,19 +407,17 @@ Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys)
 	free(keys);
 
 	// Add OP_N.
-	opcode *OP_N = (opcode *)calloc(1, sizeof(opcode));
+	opcode *OP_N = new_opcode(0x50+(pubkeys->length));
 	if (OP_N == NULL)
 		return NULL;
-	*OP_N = 0x50 + (pubkeys->length);
 	bool ret4 = script->add_opcode(script, OP_N);
 	if (ret4 == false)
 		return NULL;
 
 	// Add OP_CHECKMULTISIG
-	opcode *CHECKMULTISIG = (opcode *)calloc(1, sizeof(opcode));
+	opcode *CHECKMULTISIG = new_opcode(OP_CHECKMULTISIG);
 	if (CHECKMULTISIG == NULL)
 		return NULL;
-	*CHECKMULTISIG = OP_CHECKMULTISIG;
 	bool ret5 = script->add_opcode(script, CHECKMULTISIG);
 	if (ret5 == false)
 		return NULL;
@@ -382,17 +425,10 @@ Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys)
 	return script;
 }
 
-void delete_Script(Script *self)
+void delete_Script(Script *this)
 {
-	delete_CLinkedlist(self->script);
-	free(self);
-}
-
-bool is_opcode(BYTE byte)
-{	
-	if ( byte == 0x00 || (byte >= 0x4c && byte <= 0xb9) || byte == 0xff)
-		return true;
-	else return false;
+	delete_CLinkedlist(this->script);
+	free(this);
 }
 
 const char * get_op_name(opcode op)
@@ -533,29 +569,29 @@ const char * get_op_name(opcode op)
     }
 }
 
-bool Script_add_opcode(Script *self, opcode *op)
+bool Script_add_opcode(Script *this, opcode *op)
 {
-	if ( (self->script->add(self->script, op, 1)) )
+	if ( (this->script->add(this->script, op, 1)) )
 		return true;
 	else return false;
 }
 
-bool Script_add_data(Script *self, BYTE *data, size_t size)
+bool Script_add_data(Script *this, BYTE *data, size_t size)
 {
-	if ( (self->script->add(self->script, data, size)) )
+	if ( (this->script->add(this->script, data, size)) )
 		return true;
 	else return false;
 }
 
-uint8_t * Script_to_string(Script *self, size_t *size)
+uint8_t * Script_to_string(Script *this, size_t *size)
 {
-	CLinkedlistNode **statements = self->script->forward_traversing(self->script);
+	CLinkedlistNode **statements = this->script->forward_traversing(this->script);
 	CLinkedlist *statements_str = new_CLinkedlist();
 	if (statements == NULL || statements_str == NULL)
 		return NULL;
 
 // Script statements loop, convert one statement to one string and add to linked list.
-for (uint32_t i = 0; i < self->script->length; ++i)
+for (uint32_t i = 0; i < this->script->length; ++i)
 {
 	switch (statements[i]->size)
 	{	// If opcode.
@@ -671,14 +707,14 @@ for (uint32_t i = 0; i < self->script->length; ++i)
 	return string;
 }
 
-BYTE * Script_to_bytes(Script *self, size_t *size)
+BYTE * Script_to_bytes(Script *this, size_t *size)
 {
-	uint32_t script_len = self->script->length;
-	size_t   total_size = self->script->total_size(self->script);
+	uint32_t script_len = this->script->length;
+	size_t   total_size = this->script->total_size(this->script);
 	*size = total_size;
 
 	BYTE *bytes = (BYTE *)malloc(total_size);
-	CLinkedlistNode **list = self->script->forward_traversing(self->script);
+	CLinkedlistNode **list = this->script->forward_traversing(this->script);
 	if (bytes == NULL || list == NULL)
 		return NULL;
 
@@ -693,22 +729,92 @@ BYTE * Script_to_bytes(Script *self, size_t *size)
 	return bytes;
 }
 
-bool Script_is_p2pkh(Script *self)
+bool Script_is_p2pkh(Script *this)
 {
+	// OP_DUP + OP_HASH160 + pushdata(20) + pubkey_hash(20) + OP_EQUALVERIFY + OP_CHECKSIG
+	if (this->script->length != 6)
+		return false;
 
+	BYTE op_dup      = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
+	BYTE op_hash160  = ((BYTE *)(this->script->specific_node(this->script, 1)->data))[0];
+	BYTE pushdata    = ((BYTE *)(this->script->specific_node(this->script, 2)->data))[0];
+	size_t data_size = this->script->specific_node(this->script, 3)->size;
+	BYTE op_equalverify = ((BYTE *)(this->script->specific_node(this->script, 4)->data))[0];
+	BYTE op_checksig = ((BYTE *)(this->script->specific_node(this->script, 5)->data))[0];
+
+	if (op_dup == OP_DUP && op_hash160 == OP_HASH160 && pushdata == 0x14 &&
+		data_size == 0x14 && op_equalverify == OP_EQUALVERIFY && op_checksig == OP_CHECKSIG)
+		return true;
+
+	else return false;
 }
 
-bool Script_is_p2pk(Script *self)
+bool Script_is_p2pk(Script *this)
 {
+	// pushdata(65/33) + pubkey(65/33) + OP_CHECKSIG
+	if (this->script->length != 3)
+		return false;
 
+	BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
+	size_t data_size = this->script->specific_node(this->script, 1)->size;
+	BYTE op_checksig = ((BYTE *)(this->script->specific_node(this->script, 2)->data))[0];
+
+	if ( (pushdata == 65 || pushdata == 33) && (data_size == 65 || data_size == 33) &&
+		op_checksig == OP_CHECKSIG && pushdata == data_size)
+		return true;
+
+	else return false;
 }
 
-bool Script_is_p2sh(Script *self)
+bool Script_is_p2sh(Script *this)
 {
+	// OP_HASH160 + pushdata(20) + script_hash(20) + OP_EQUAL
+	if (this->script->length != 4)
+		return false;
 
+	BYTE op_hash160 = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
+	BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, 1)->data))[0];
+	size_t data_size = this->script->specific_node(this->script, 2)->size;
+	BYTE op_equal = ((BYTE *)(this->script->specific_node(this->script, 3)->data))[0];
+
+	if (op_hash160 == OP_HASH160 && pushdata == 0x14 && data_size == 0x14 && op_equal == OP_EQUAL)
+		return true;
+
+	else return false;
 }
 
-bool Script_is_multisig(Script *self)
+bool Script_is_multisig(Script *this)
 {
+	// OP_N + pushdata(65/33) + pubkey1(65/33) +...+ pushdata(65/33) + pubkeyM(65/33) + OP_M + OP_CHECKMULTISIG
+	uint8_t pub_num = ((opcode *)(this->script-> \
+		last_node(this->script)->previous->data))[0] - 0x50;
+	if (this->script->length != 3 + pub_num * 2 )
+		return false;
 
+	BYTE op_n = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
+	BYTE op_m = ((BYTE *)(this->script->last_node(this->script)->previous->data))[0];
+	BYTE op_checkmultisig = ((BYTE *)(this->script->last_node(this->script)->data))[0];
+
+	// Check op_n/op_m/op_checkmultisig.
+	if (op_n > OP_0 && op_n <= OP_16 && op_m > OP_0 && op_m <= OP_16 &&
+		op_n <= op_m && op_checkmultisig == OP_CHECKMULTISIG)
+	{
+		// If correct, check pushdatas and pubkeys.
+		uint32_t i;
+		for (i = 1; i <= pub_num * 2; ++i)
+		{
+			BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, i)->data))[0];
+			size_t data_size = this->script->specific_node(this->script, i+1)->size;
+
+			if ((pushdata == 65 || pushdata == 33) && (data_size == 65 || data_size == 33) && (pushdata == data_size))
+				i++;
+			else return false;
+		}
+		// pushdatas and pubkeys correct.
+		if (i > pub_num * 2)
+			return true;
+		else return false;
+	}
+	// op_n/op_m/op_checksig incorrect.
+	else return false;
 }

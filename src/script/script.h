@@ -153,16 +153,16 @@ typedef enum opcode
 
     OP_INVALIDOPCODE = 0xff,
 } opcode;
+#define IS_OPCODE(byte) ( byte == 0x00 || (byte >= 0x4c && byte <= 0xb9) || byte == 0xff) ? true : false
+#define IS_PUSHDATA(byte) (byte >= 0x01 && byte <= 0x4b) ? true : false
+/* New an opcode object, value range: 0x00~0xFF, return NULL on error */
+opcode * new_opcode(BYTE value);
+/* Delete an opcode object that created by new_opcode() */
+void delete_opcode(opcode *this);
+/* Return the opcode name string */
+const char * get_op_name(opcode op);
 
-/** Script
-*   1. "Script" could store a bitcoin script and include some relative functions.
-*   2. "add_opcode()" and "add_data()" require a pointer that points to heap memory,
-*      passing a pointer that points to stack memory will cause errors.
-*   3. Once the opcode's pointer or the data's pointer was
-*      added to "Script" by "add_opcode()" or "add_data()",
-*      do not free it manually, the destructing function will do the job.
-**/
-
+/* Script could store a bitcoin script and include some relative functions */
 typedef struct Script Script;
 struct Script
 {
@@ -179,40 +179,105 @@ struct Script
     bool (*is_multisig)(Script *);
 };
 
-// Construct and Destruct Functions.
+/* Construct and Destruct Functions */
+/* Create an empty Script object, return NULL on error(s) */
 Script * new_Script();
-Script * new_Script_from_bytes(BYTE *bytes, size_t size);
-Script * new_Script_assembled(Script *p1, Script *p2);
-Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size);
-Script * new_Script_p2pk(BYTE *pubkey, size_t size);
-Script * new_Script_p2sh(BYTE *script_bytes, size_t size);
-Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys);
-void delete_Script(Script *self);
 
-// Inner Functions.
-bool is_opcode(BYTE byte);
-const char * get_op_name(opcode op);
-
-// Member Functions.
-/** Add an opcode.
+/** Create a Script object from bytes.
+*   \param  bytes       Byte array.
+*   \param  size        How many bytes.
+*   \return NULL on error(s).
+*           else on success.
 **/
-bool Script_add_opcode(Script *self, opcode *op);
+Script * new_Script_from_bytes(BYTE *bytes, size_t size);
+
+/** Create a Script object from two other Script.
+*   \param  p1          Part 1, the first Script.
+*   \param  p2          Part 2, the second Script.
+*   \return NULL on error(s).
+*           else on success.
+*   Notice that p1 and p2 are 'templates', still, need to be freed by delete_Script() manually.
+**/
+Script * new_Script_assembled(Script *p1, Script *p2);
+
+/** Create a P2PKH Script.
+*   \param  pubkey_hash  Byte array.
+*   \param  size         How many bytes.
+*   \return NULL on error(s).
+*           else on success.
+**/
+Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size);
+
+/** Create a P2PK Script.
+*   \param  pubkey       Byte array.
+*   \param  size         How many bytes.
+*   \return NULL on error(s).
+*           else on success.
+**/
+Script * new_Script_p2pk(BYTE *pubkey, size_t size);
+
+/** Create a P2SH Script.
+*   \param  hash         Byte array, script hash.
+*   \param  size         How many bytes.
+*   \return NULL on error(s).
+*           else on success.
+**/
+Script * new_Script_p2sh(BYTE *hash, size_t size);
+
+/** Create a multisig Script.
+*   \param  m            How many keys to unlock, must smaller than or equal to total pubkey number.
+*   \param  pubkeys      Public keys, must less than 20 keys.
+*   \return NULL on error(s).
+*           else on success.
+*   Notice that 'pubkeys' is a 'template', still, need to be freed by delete_CLinkedlist() manually.
+**/
+Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys);
+/* Delete an SCript object that created by construct function */
+void delete_Script(Script *this);
+
+/* Member Functions */
+/** Add an opcode.
+*   \param  op          An opcode.
+*   \return true on success.
+*          false on error.
+*   Parameter 'op' must be allocated by new_opcode(), once Script_add_opcode() returns true,
+*   do not free 'op' by delete_opcode() manually, the destruct function will do the job.
+**/
+bool Script_add_opcode(Script *this, opcode *op);
 
 /** Add data bytes.
+*   \param  data        The data bytes.
+*   \param  size        Data size, how many bytes.
+*   \return true on success.
+*          false on error.
+*   Parameter 'data' must point to heap memory, passing a pointer points to stack memory will cause errors.
+*   Once Script_add_data() returns true, do not free 'data' manually, the destruct function will do the job.
 **/
-bool Script_add_data(Script *self, BYTE *data, size_t size);
+bool Script_add_data(Script *this, BYTE *data, size_t size);
 
 /** Script to string.
+*   \param  size        Store the string's size, how many bytes.
+*   \return NULL on error(s).
+*           else on success.
+*   The returned string must be freed manually.
 **/
-uint8_t * Script_to_string(Script *self, size_t *size);
+uint8_t * Script_to_string(Script *this, size_t *size);
 
 /** Script to byte array.
+*   \param  size        Store the byte array's size, how many bytes.
+*   \return NULL on error(s).
+*           else on success.
+*   The returned byte array must be freed manually.
 **/
-BYTE * Script_to_bytes(Script *self, size_t *size);
+BYTE * Script_to_bytes(Script *this, size_t *size);
 
-bool Script_is_p2pkh(Script *self);
-bool Script_is_p2pk(Script *self);
-bool Script_is_p2sh(Script *self);
-bool Script_is_multisig(Script *self);
+/* Check if a valid P2PKH script */
+bool Script_is_p2pkh(Script *this);
+/* Check if a valid P2PK script */
+bool Script_is_p2pk(Script *this);
+/* Check if a valid P2SH script */
+bool Script_is_p2sh(Script *this);
+/* Check if a valid multisig script */
+bool Script_is_multisig(Script *this);
 
 #endif
