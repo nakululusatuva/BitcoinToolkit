@@ -1,7 +1,5 @@
 # custom
-todo
-count
-log*
+clean.sh
 
 # Prerequisites
 *.d
