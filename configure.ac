@@ -4,6 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT([btctool], [0.0.1], [syr.chloe@gmail.com])
 AM_INIT_AUTOMAKE
+AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([src/btctool.c])
 AC_CONFIG_HEADERS([config.h])
 
