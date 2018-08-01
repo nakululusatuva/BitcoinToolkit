@@ -7,7 +7,7 @@ CLinkedlist * new_CLinkedlist()
 {
 	CLinkedlist *new = (CLinkedlist *)calloc(1, sizeof(CLinkedlist));
 	if (new == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	else
 	{
@@ -15,7 +15,7 @@ CLinkedlist * new_CLinkedlist()
 		if (new->head == NULL)
 		{
 			free(new);
-			return NULL;
+			return MEMORY_ALLOCATE_FAILED;
 		}
 	}
 
@@ -36,6 +36,7 @@ CLinkedlist * new_CLinkedlist()
 	new->total_size          = &CLinkedlist_total_size;
 	new->last_node           = &CLinkedlist_last_node;
 	new->specific_node       = &CLinkedlist_specific_node;
+	new->get_length          = &CLinkedlist_get_length;
 
 	return new;
 }
@@ -76,7 +77,7 @@ void delete_CLinkedlist(CLinkedlist *this)
 CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *this)
 {
 	if (CLinkedlist_is_empty(this))
-		return NULL;
+		return CLINKEDLIST_EMPTY;
 
 	CLinkedlistNode *buffer = this->head->next;
 	while (1)
@@ -93,8 +94,10 @@ CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *this)
 CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *this, uint64_t index)
 {
 	// Check if empty or index out range.
-	if (CLinkedlist_is_empty(this) || index < 0 || index >= this->length)
-		return NULL;
+	if (CLinkedlist_is_empty(this))
+		return CLINKEDLIST_EMPTY;
+	else if (index < 0 || index >= this->length)
+		return INDEX_OUT_RANGE;
 
 	uint64_t i;
 	CLinkedlistNode *buffer = this->head->next;
@@ -235,13 +238,13 @@ bool CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t si
 CLinkedlistNode ** CLinkedlist_forward_traversing(CLinkedlist *this)
 {
 	if (CLinkedlist_is_empty(this))
-		return NULL;
+		return CLINKEDLIST_EMPTY;
 
 	// Actually it return a pointer-array that store the nodes's pointers.
 	CLinkedlistNode *start = this->head->next;
 	CLinkedlistNode **list = (CLinkedlistNode **)calloc(this->length, sizeof(CLinkedlistNode *));
 	if (list == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	for (uint64_t i = 0; i < this->length; ++i)
 	{
@@ -255,13 +258,13 @@ CLinkedlistNode ** CLinkedlist_forward_traversing(CLinkedlist *this)
 CLinkedlistNode ** CLinkedlist_backward_traversing(CLinkedlist *this)
 {
 	if (CLinkedlist_is_empty(this))
-		return NULL;
+		return CLINKEDLIST_EMPTY;
 
 	// Actually it return a pointer-array that store the node's pointers.
 	CLinkedlistNode  *last = CLinkedlist_last_node(this);
 	CLinkedlistNode **list = (CLinkedlistNode **)calloc(this->length, sizeof(CLinkedlistNode *));
 	if (list == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	for (uint64_t i = this->length; i >= 1; --i)
 	{
@@ -310,13 +313,21 @@ size_t CLinkedlist_total_size(CLinkedlist *this)
 {
 	size_t total_size = 0;
 
+	if (this->is_empty(this))
+		return -1;
+
 	CLinkedlistNode **list = CLinkedlist_forward_traversing(this);
 	if (list == NULL)
-		return -1;
+		return -2;
 
 	for (size_t i = 0; i < this->length; ++i)
 		total_size += list[i]->size;
 
 	free(list);
 	return total_size;
+}
+
+uint64_t CLinkedlist_get_length(CLinkedlist *this)
+{
+	return this->length;
 }

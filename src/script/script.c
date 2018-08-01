@@ -10,7 +10,7 @@ opcode * new_opcode(BYTE value)
 {
 	opcode *new = (opcode *)malloc(sizeof(opcode));
 	if (new == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	else *new = value;
 	return new;
 }
@@ -24,24 +24,27 @@ Script * new_Script()
 {
 	Script *new = (Script *)calloc(1, sizeof(Script));
 	if (new == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	new->script = new_CLinkedlist();
-	if (new->script == NULL)
+	if (new->script == MEMORY_ALLOCATE_FAILED)
 	{
 		free(new);
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	}
 	else
 	{
-		new->add_opcode  = &Script_add_opcode;
-		new->add_data    = &Script_add_data;
-		new->to_string   = &Script_to_string;
-		new->to_bytes    = &Script_to_bytes;
-		new->is_p2pkh    = &Script_is_p2pkh;
-		new->is_p2pk     = &Script_is_p2pk;
-		new->is_p2sh     = &Script_is_p2sh;
-		new->is_multisig = &Script_is_multisig;
+		new->add_opcode    = &Script_add_opcode;
+		new->add_data      = &Script_add_data;
+		new->to_string     = &Script_to_string;
+		new->to_bytes      = &Script_to_bytes;
+		new->is_p2pkh      = &Script_is_p2pkh;
+		new->is_p2pk       = &Script_is_p2pk;
+		new->is_p2sh       = &Script_is_p2sh;
+		new->is_multisig   = &Script_is_multisig;
+		new->is_empty      = &Script_is_empty;
+		new->get_length    = &Script_get_length;
+		new->get_statement = &Script_get_statement;
 		return new;
 	}
 }
@@ -50,7 +53,7 @@ Script * new_Script_from_bytes(BYTE *bytes, size_t size)
 {
 	Script *new = new_Script();
 	if (new == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	uint32_t pos = 0;
 
 while (true) // Can't use break and continue to control the loop if I use switch-case.
@@ -69,14 +72,14 @@ while (true) // Can't use break and continue to control the loop if I use switch
 
 			// Add opcode.
 			opcode *op = new_opcode(bytes[pos]);
-			if (op == NULL)
-				return NULL;
+			if (op == MEMORY_ALLOCATE_FAILED)
+				return MEMORY_ALLOCATE_FAILED;
 			new->add_opcode(new, op);
 
 			// Add data.
 			BYTE *data = (BYTE *)calloc(length + 1, sizeof(BYTE));
 			if (data == NULL)
-				return NULL;
+				return MEMORY_ALLOCATE_FAILED;
 			data[0] = bytes[pos+1];
 			for (uint32_t j = 0; j < length; ++j)
 				data[j+1] = bytes[pos + 2 + j];
@@ -101,14 +104,14 @@ while (true) // Can't use break and continue to control the loop if I use switch
 
 			// Add opcode.
 			opcode *op = new_opcode(bytes[pos]);
-			if (op == NULL)
-				return NULL;
+			if (op == MEMORY_ALLOCATE_FAILED)
+				return MEMORY_ALLOCATE_FAILED;
 			new->add_opcode(new, op);
 
 			// Add data.
 			BYTE *data = (BYTE *)calloc(length + 2, sizeof(BYTE));
 			if (data == NULL)
-				return NULL;
+				return MEMORY_ALLOCATE_FAILED;
 			data[0] = bytes[pos+1];
 			data[1] = bytes[pos+2];
 			for (uint32_t j = 0; j < length; ++j)
@@ -136,14 +139,14 @@ while (true) // Can't use break and continue to control the loop if I use switch
 
 			// Add opcode.
 			opcode *op = new_opcode(bytes[pos]);
-			if (op == NULL)
-				return NULL;
+			if (op == MEMORY_ALLOCATE_FAILED)
+				return MEMORY_ALLOCATE_FAILED;
 			new->add_opcode(new, op);
 
 			// Add data.
 			BYTE *data = (BYTE *)calloc(length + 4, sizeof(BYTE));
 			if (data == NULL)
-				return NULL;
+				return MEMORY_ALLOCATE_FAILED;
 			data[0] = bytes[pos+1];
 			data[1] = bytes[pos+2];
 			data[2] = bytes[pos+3];
@@ -164,8 +167,8 @@ while (true) // Can't use break and continue to control the loop if I use switch
 		{
 			// Add opcode.
 			opcode *op = new_opcode(bytes[pos]);
-			if (op == NULL)
-				return NULL;
+			if (op == MEMORY_ALLOCATE_FAILED)
+				return MEMORY_ALLOCATE_FAILED;
 			new->add_opcode(new, op);
 
 			// Shift pos, break the loop if pos at the end.
@@ -187,14 +190,14 @@ while (true) // Can't use break and continue to control the loop if I use switch
 
 		// Add PUSHDATA byte.
 		opcode *op = new_opcode(length);
-		if (op == NULL)
-			return NULL;
+		if (op == MEMORY_ALLOCATE_FAILED)
+			return MEMORY_ALLOCATE_FAILED;
 		new->add_opcode(new, op);
 
 		// Add data.
 		BYTE *data = (BYTE *)calloc(length, sizeof(BYTE));
 		if (data == NULL)
-			return NULL;
+			return MEMORY_ALLOCATE_FAILED;
 		for (uint32_t j = 0; j < length; ++j)
 			data[j] = bytes[pos + 1 + j];
 		new->add_data(new, data, length);
@@ -211,8 +214,8 @@ while (true) // Can't use break and continue to control the loop if I use switch
 	{
 		// Add OP_INVALIDOPCODE.
 		opcode *op = new_opcode(OP_INVALIDOPCODE);
-		if (op == NULL)
-			return NULL;
+		if (op == MEMORY_ALLOCATE_FAILED)
+			return MEMORY_ALLOCATE_FAILED;
 		new->add_opcode(new, op);
 
 		// Shift pos, break the loop if pos at the end.
@@ -227,23 +230,26 @@ while (true) // Can't use break and continue to control the loop if I use switch
 
 Script * new_Script_assembled(Script *p1, Script *p2)
 {
+	if (p1->get_length(p1) == 0 || p2->get_length(p2) == 0)
+		return SCRIPT_HAS_NO_STATEMENTS;
+
 	Script *new = new_Script();
 	CLinkedlistNode **p1_list = p1->script->forward_traversing(p1->script);
 	CLinkedlistNode **p2_list = p2->script->forward_traversing(p2->script);
-	if (new == NULL || p1_list == NULL || p2_list == NULL)
-		return NULL;
+	if (new == MEMORY_ALLOCATE_FAILED || p1_list == MEMORY_ALLOCATE_FAILED || p2_list == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 
-	for (uint32_t i = 0; i < p1->script->length; ++i)
+	for (uint32_t i = 0; i < p1->get_length(p1); ++i)
 	{
 		if (p1_list[i]->size == 1)
 		{
 			opcode *op = new_opcode(0);
-			if (op == NULL)
-				return NULL;
+			if (op == MEMORY_ALLOCATE_FAILED)
+				return MEMORY_ALLOCATE_FAILED;
 			memcpy(op, p1_list[i]->data, 1);
 			bool ret = new->add_opcode(new, op);
 			if (ret == false)
-				return NULL;
+				return SCRIPT_ADD_OPCODE_FAILED;
 		}
 		else
 		{
@@ -252,21 +258,21 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			memcpy(data, p1_list[i]->data, data_size);
 			bool ret = new->add_data(new, data, data_size);
 			if (ret == false)
-				return NULL;
+				return SCRIPT_ADD_DATA_FAILED;
 		}
 	}
 
-	for (uint32_t i = 0; i < p2->script->length; ++i)
+	for (uint32_t i = 0; i < p2->get_length(p2); ++i)
 	{
 		if (p2_list[i]->size == 1)
 		{
 			opcode *op = new_opcode(0);
-			if (op == NULL)
-				return NULL;
+			if (op == MEMORY_ALLOCATE_FAILED)
+				return MEMORY_ALLOCATE_FAILED;
 			memcpy(op, p2_list[i]->data, 1);
 			bool ret = new->add_opcode(new, op);
 			if (ret == false)
-				return NULL;
+				return SCRIPT_ADD_OPCODE_FAILED;
 		}
 		else
 		{
@@ -275,7 +281,7 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			memcpy(data, p2_list[i]->data, data_size);
 			bool ret = new->add_data(new, data, data_size);
 			if (ret == false)
-				return NULL;
+				return SCRIPT_ADD_DATA_FAILED;
 		}
 	}
 
@@ -288,7 +294,7 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 {
 	if (size != 20)
-		return NULL;
+		return INVALID_PUBKEY_HASH_SIZE;
 	Script *new = new_Script();
 	opcode *dup = new_opcode(OP_DUP);
 	opcode *hash160 = new_opcode(OP_HASH160);
@@ -299,7 +305,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 
 	if (new == NULL || dup == NULL || hash160 == NULL || pushdata == NULL ||
 		data == NULL || equalverify == NULL || checksig == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	memcpy(data, pubkey_hash, size);
 
 	bool ret1 = new->add_opcode(new, dup);
@@ -311,7 +317,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 
 	if (ret1 == false || ret2 == false || ret3 == false ||
 		ret4 == false || ret5 == false || ret6 == false)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	return NULL;
 }
@@ -319,14 +325,14 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 {
 	if (size != 65 || size != 33)
-		return NULL;
+		return INVALID_PUBKEY_SIZE;
 	Script *new = new_Script();
 	opcode *pushdata = new_opcode(size);
 	BYTE *pub = (BYTE *)malloc(size);
 	opcode *checksig = new_opcode(OP_CHECKSIG);
 
 	if (new == NULL || pushdata == NULL || pub == NULL || checksig == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	memcpy(pub, pubkey, size);
 
 	bool ret1 = new->add_opcode(new, pushdata);
@@ -334,7 +340,7 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 	bool ret3 = new->add_opcode(new, checksig);
 
 	if (ret1 == false || ret2 == false || ret3 == false)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	return new;
 }
@@ -349,7 +355,7 @@ Script * new_Script_p2sh(BYTE *hash, size_t size)
 
 	if (new == NULL || hash160 == NULL || pushdata == NULL ||
 		script_hash == NULL || equal == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	memcpy(script_hash, hash, size);
 
 	bool ret1 = new->add_opcode(new, hash160);
@@ -358,69 +364,73 @@ Script * new_Script_p2sh(BYTE *hash, size_t size)
 	bool ret4 = new->add_opcode(new, equal);
 
 	if (ret1 == false || ret2 == false || ret3 == false || ret4 == false)
-		return 	NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	return new;
 }
 
 Script * new_Script_multisig(uint8_t m, CLinkedlist *pubkeys)
 {
-	if ( !(m > 0 && m <= pubkeys->length) || pubkeys->length > MAX_PUBKEYS_PER_MULTISIG )
-		return NULL;
+	if (pubkeys->is_empty(pubkeys))
+		return CLINKEDLIST_EMPTY;
+	else if ( !(m > 0 && m <= pubkeys->get_length(pubkeys)) )
+		return SCRIPT_MULTISIG_M_BIGGER_N;
+	else if (pubkeys->get_length(pubkeys) > MAX_PUBKEYS_PER_MULTISIG)
+		return SCRIPT_MULTISIG_PUBKEYS_OVER_LIMIT;
 
 	Script *script = new_Script();
-	if (script == NULL)
-		return NULL;
+	if (script == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 
 	// Add first opcode: OP_M.
 	opcode *OP_M = new_opcode(0x50 + m);
-	if (OP_M == NULL)
-		return NULL;
+	if (OP_M == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 	bool ret1 = script->add_opcode(script, OP_M);
 	if (ret1 == false)
-		return NULL;
+		return SCRIPT_ADD_OPCODE_FAILED;
 
 	// Add public keys.
 	CLinkedlistNode **keys = pubkeys->forward_traversing(pubkeys);
-	if (keys == NULL)
-		return NULL;
-	for (uint32_t i = 0; i < pubkeys->length; ++i)
+	if (keys == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
+	for (uint32_t i = 0; i < pubkeys->get_length(pubkeys); ++i)
 	{
 		// Add PUSHDATA().
 		BYTE *PUSHDATA = (BYTE *)calloc(1, sizeof(BYTE));
 		if (PUSHDATA == NULL)
-			return NULL;
+			return MEMORY_ALLOCATE_FAILED;
 		*PUSHDATA = keys[i]->size;
 		bool ret2 = script->add_data(script, PUSHDATA, 1);
 		if (ret2 == false)
-			return NULL;
+			return SCRIPT_ADD_DATA_FAILED;
 
 		// Add public key bytes.
 		BYTE *pub = (BYTE *)malloc(keys[i]->size);
 		if (pub == NULL)
-			return NULL;
+			return MEMORY_ALLOCATE_FAILED;
 		memcpy(pub, keys[i]->data, keys[i]->size);
 		bool ret3 = script->add_data(script, pub, keys[i]->size);
 		if (ret3 == false)
-			return NULL;
+			return SCRIPT_ADD_DATA_FAILED;
 	}
 	free(keys);
 
 	// Add OP_N.
-	opcode *OP_N = new_opcode(0x50+(pubkeys->length));
+	opcode *OP_N = new_opcode(0x50+(pubkeys->get_length(pubkeys)));
 	if (OP_N == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	bool ret4 = script->add_opcode(script, OP_N);
 	if (ret4 == false)
-		return NULL;
+		return SCRIPT_ADD_OPCODE_FAILED;
 
 	// Add OP_CHECKMULTISIG
 	opcode *CHECKMULTISIG = new_opcode(OP_CHECKMULTISIG);
 	if (CHECKMULTISIG == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 	bool ret5 = script->add_opcode(script, CHECKMULTISIG);
 	if (ret5 == false)
-		return NULL;
+		return SCRIPT_ADD_OPCODE_FAILED;
 
 	return script;
 }
@@ -585,13 +595,17 @@ bool Script_add_data(Script *this, BYTE *data, size_t size)
 
 uint8_t * Script_to_string(Script *this, size_t *size)
 {
+	if (this->is_empty(this))
+		return SCRIPT_HAS_NO_STATEMENTS;
+
 	CLinkedlistNode **statements = this->script->forward_traversing(this->script);
 	CLinkedlist *statements_str = new_CLinkedlist();
-	if (statements == NULL || statements_str == NULL)
-		return NULL;
+
+	if (statements == MEMORY_ALLOCATE_FAILED || statements_str == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 
 // Script statements loop, convert one statement to one string and add to linked list.
-for (uint32_t i = 0; i < this->script->length; ++i)
+for (uint32_t i = 0; i < this->get_length(this); ++i)
 {
 	switch (statements[i]->size)
 	{	// If opcode.
@@ -615,7 +629,7 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 
 				uint8_t *str = (uint8_t *)calloc(12, sizeof(uint8_t));
 				if (str == NULL)
-					return NULL;
+					return MEMORY_ALLOCATE_FAILED;
 				str[0] = 'P'; str[1] = 'U'; str[2] = 'S'; str[3] = 'H';
 				str[4] = 'D'; str[5] = 'A'; str[6] = 'T'; str[7] = 'A';
 				str[8] = '(';
@@ -624,7 +638,7 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 
 				bool ret1 = statements_str->add(statements_str, str, 12 * sizeof(uint8_t));
 				if (ret1 == false)
-					return NULL;
+					return MEMORY_ALLOCATE_FAILED;
 				break;
 			}
 
@@ -635,12 +649,12 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 				size_t len = strlen(op_name);
 				uint8_t *str = (uint8_t *)calloc(len, sizeof(uint8_t));
 				if (str == NULL)
-					return NULL;
+					return MEMORY_ALLOCATE_FAILED;
 
 				memcpy(str, op_name, len);
 				bool ret2 = statements_str->add(statements_str, str, len * sizeof(uint8_t));
 				if (ret2 == false)
-					return NULL;
+					return MEMORY_ALLOCATE_FAILED;
 				break;
 			}
 
@@ -651,13 +665,13 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 				size_t len = strlen(op_name) + 1;
 				uint8_t *str = (uint8_t *)calloc(len, sizeof(uint8_t));
 				if (str == NULL)
-					return NULL;
+					return MEMORY_ALLOCATE_FAILED;
 
 				memcpy(str, op_name, len);
 				str[len - 1] = ' ';
 				bool ret3 = statements_str->add(statements_str, str, len * sizeof(uint8_t));
 				if (ret3 == false)
-					return NULL;
+					return MEMORY_ALLOCATE_FAILED;
 				break;
 			}
 		}
@@ -672,7 +686,7 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 			bytearr_to_hexstr((BYTE *)(statements[i]->data), data_byte_len, (int8_t *)data_str);
 			uint8_t *str = (uint8_t *)calloc(data_str_len + 3, sizeof(uint8_t));
 			if (str == NULL)
-				return NULL;
+				return MEMORY_ALLOCATE_FAILED;
 
 			str[0] = '[';
 			memcpy(str+1, data_str, data_str_len);
@@ -681,7 +695,7 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 
 			bool ret4 = statements_str->add(statements_str, str, (data_str_len + 3) * sizeof(uint8_t));
 			if (ret4 == false)
-				return NULL;
+				return MEMORY_ALLOCATE_FAILED;
 			break;
 		}
 	}
@@ -690,14 +704,15 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 	// Linked list to a single string.
 	*size = statements_str->total_size(statements_str);
 	uint8_t *string = (uint8_t *)malloc(statements_str->total_size(statements_str));
-	if (string == NULL)
-		return NULL;
+
+	if (string == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 	CLinkedlistNode **list = statements_str->forward_traversing(statements_str);
-	if (list == NULL)
-		return NULL;
+	if (list == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 
 	uint32_t pos = 0;
-	for (uint32_t i = 0; i < statements_str->length; ++i)
+	for (uint32_t i = 0; i < statements_str->get_length(statements_str); ++i)
 	{
 		memcpy(string+pos, list[i]->data, list[i]->size);
 		pos = pos + list[i]->size;
@@ -709,14 +724,17 @@ for (uint32_t i = 0; i < this->script->length; ++i)
 
 BYTE * Script_to_bytes(Script *this, size_t *size)
 {
-	uint32_t script_len = this->script->length;
+	if (this->is_empty(this))
+		return SCRIPT_HAS_NO_STATEMENTS;
+
+	uint32_t script_len = this->get_length(this);
 	size_t   total_size = this->script->total_size(this->script);
 	*size = total_size;
 
 	BYTE *bytes = (BYTE *)malloc(total_size);
 	CLinkedlistNode **list = this->script->forward_traversing(this->script);
-	if (bytes == NULL || list == NULL)
-		return NULL;
+	if (bytes == NULL || list == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 
 	uint32_t pos = 0;
 	// Script statements loop.
@@ -732,7 +750,7 @@ BYTE * Script_to_bytes(Script *this, size_t *size)
 bool Script_is_p2pkh(Script *this)
 {
 	// OP_DUP + OP_HASH160 + pushdata(20) + pubkey_hash(20) + OP_EQUALVERIFY + OP_CHECKSIG
-	if (this->script->length != 6)
+	if (this->get_length(this) != 6)
 		return false;
 
 	BYTE op_dup      = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
@@ -752,7 +770,7 @@ bool Script_is_p2pkh(Script *this)
 bool Script_is_p2pk(Script *this)
 {
 	// pushdata(65/33) + pubkey(65/33) + OP_CHECKSIG
-	if (this->script->length != 3)
+	if (this->get_length(this) != 3)
 		return false;
 
 	BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
@@ -769,7 +787,7 @@ bool Script_is_p2pk(Script *this)
 bool Script_is_p2sh(Script *this)
 {
 	// OP_HASH160 + pushdata(20) + script_hash(20) + OP_EQUAL
-	if (this->script->length != 4)
+	if (this->get_length(this) != 4)
 		return false;
 
 	BYTE op_hash160 = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
@@ -788,7 +806,7 @@ bool Script_is_multisig(Script *this)
 	// OP_N + pushdata(65/33) + pubkey1(65/33) +...+ pushdata(65/33) + pubkeyM(65/33) + OP_M + OP_CHECKMULTISIG
 	uint8_t pub_num = ((opcode *)(this->script-> \
 		last_node(this->script)->previous->data))[0] - 0x50;
-	if (this->script->length != 3 + pub_num * 2 )
+	if (this->get_length(this) != 3 + pub_num * 2 )
 		return false;
 
 	BYTE op_n = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
@@ -817,4 +835,29 @@ bool Script_is_multisig(Script *this)
 	}
 	// op_n/op_m/op_checksig incorrect.
 	else return false;
+}
+
+bool Script_is_empty(Script *this)
+{
+	if (this->script->is_empty(this->script))
+		return true;
+	else return false;
+}
+
+uint32_t Script_get_length(Script *this)
+{
+	return this->get_length(this);
+}
+
+void * Script_get_statement(Script *this, uint64_t index, size_t *size)
+{
+	if (this->is_empty(this))
+		return SCRIPT_HAS_NO_STATEMENTS;
+	else if (this->get_length(this) <= index || index == 0)
+		return INDEX_OUT_RANGE;
+	else
+	{
+		*size = this->script->specific_node(this->script, index)->size;
+		return this->script->specific_node(this->script, index)->data;
+	}
 }

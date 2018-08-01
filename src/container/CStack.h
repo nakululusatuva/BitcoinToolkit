@@ -3,16 +3,10 @@
 
 #include "../common.h"
 
-/** Common Type Stack.
-*   1. It stores the data's pointer, instead of the data itself.
-*   2. Please make sure the data's memory is allocated manually,
-*      errors will happen if you push a pointer that point to stack memory onto the stack.
-*   3. Do not free the data manually once it's pointer was push onto the stack,
-*      the destruct function will do the job.
-*   4. The memory that the popped pointer points to will not be freed by destructuring function,
-*      you need to free it manually.
-**/
+#define CSTACK_EMPTY     (void *)0x002000
+#define INVALID_CAPACITY (void *)0x002001
 
+/** Common Type Stack. It stores the data's pointer, instead of the data itself **/
 typedef struct CStack CStack;
 struct CStack
 {
@@ -26,11 +20,17 @@ struct CStack
 	bool (*is_empty)(CStack *);
 	bool (*is_full)(CStack *);
 	size_t (*total_size)(CStack *);
+	uint64_t (*get_element_amount)(CStack *);
+	uint64_t (*get_capacity)(CStack *);
 };
 
 // Construct and Destruct Fuctions.
 /** New a common type stack.
 *   \param  capacity    How many elements.
+*   \return error codes:
+*           INVALID_CAPACITY
+*           MEMORY_ALLOCATE_FAILED
+*   \else on success.
 **/
 CStack * new_CStack(const uint64_t capacity);
 void delete_CStack(CStack *this);
@@ -41,31 +41,31 @@ void delete_CStack(CStack *this);
 *   \param  size        How many bytes.
 *   \return true on success.
 *          false on error.
+*   Parameter 'data' must be allocated on heap memory.
+*   Once CStack_push() returns true:
+*   1. Do not push 'data' to another CStack.
+*   2. Do not free 'data' manually, the destruct function will do the job.
 **/
 bool CStack_push(CStack *this, void *data, size_t size);
 
 /** Pop the top element.
 *   \param  size        Store the top element's data size (bytes).
-*   \return NULL on error.
-*           else on success.
+*   \return error codes:
+*           CSTACK_EMPTY
+*   \else on success.
+*   Once CStack_pop() success, you need to free the returned pointer manually.
 **/
 void * CStack_pop(CStack *this, size_t *size);
 
-/** Check if stack is empty.
-*   \return true on empty.
-*          false on not empty.
-**/
+/* Check if stack is empty */
 bool CStack_is_empty(CStack *this);
 
-/** Check if stack is full.
-*   \return true on full.
-*          false on not full.
-*/
+/* Check if stack is full */
 bool CStack_is_full(CStack *this);
 
-/** Get total data size.
-*   \return how many bytes.
-**/
+/* Get total data size, return how many bytes */
 size_t CStack_total_size(CStack *this);
+uint64_t CStack_get_element_amount(CStack *this);
+uint64_t CStack_get_capacity(CStack *this);
 
 #endif

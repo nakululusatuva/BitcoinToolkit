@@ -6,11 +6,11 @@
 CStack * new_CStack(const uint64_t capacity)
 {
 	if (capacity <= 0)
-		return NULL;
+		return INVALID_CAPACITY;
 	
 	CStack *stack = (CStack *)calloc(1, sizeof(CStack));
 	if (stack == NULL)
-		return NULL;
+		return MEMORY_ALLOCATE_FAILED;
 
 	else
 	{
@@ -18,7 +18,7 @@ CStack * new_CStack(const uint64_t capacity)
 		if (stack->base == NULL)
 		{
 			free(stack);
-			return NULL;
+			return MEMORY_ALLOCATE_FAILED;
 		}
 		else
 		{
@@ -27,7 +27,7 @@ CStack * new_CStack(const uint64_t capacity)
 			{
 				free(stack->base);
 				free(stack);
-				return NULL;
+				return MEMORY_ALLOCATE_FAILED;
 			}
 		//	memset(stack->size, 0, capacity * sizeof(uint32_t));
 		}
@@ -41,6 +41,8 @@ CStack * new_CStack(const uint64_t capacity)
 	stack->is_empty   = &CStack_is_empty;
 	stack->is_full    = &CStack_is_full;
 	stack->total_size = &CStack_total_size;
+	stack->get_element_amount = &CStack_get_element_amount;
+	stack->get_capacity = &CStack_get_capacity;
 
 	return stack;
 }
@@ -71,7 +73,7 @@ bool CStack_push(CStack *this, void *data, size_t size)
 void * CStack_pop(CStack *this, size_t *size)
 {
 	if (CStack_is_empty(this) || size == NULL)
-		return NULL;
+		return CSTACK_EMPTY;
 	else {
 		this->top--;
 		void *to_pop = *(this->top);
@@ -103,4 +105,14 @@ size_t CStack_total_size(CStack *this)
 		total_size = total_size + (this->size)[i];
 
 	return total_size;
+}
+
+uint64_t CStack_get_element_amount(CStack *this)
+{
+	return this->top - this->base;
+}
+
+uint64_t CStack_get_capacity(CStack *this)
+{
+	return this->capacity;
 }
