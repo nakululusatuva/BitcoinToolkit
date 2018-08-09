@@ -13,7 +13,7 @@ AC_PROG_CC
 
 # Checks for libraries.
 AC_CHECK_LIB([crypto],[main])
-AC_CHECK_LIB([check],[main])
+AC_CHECK_LIB([rt],[main])
 
 # Checks for header files.
 AC_CHECK_HEADERS([float.h limits.h locale.h stddef.h stdint.h stdlib.h string.h])
