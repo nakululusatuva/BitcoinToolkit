@@ -15,7 +15,7 @@ struct CStack
 	uint64_t capacity;
 	uint32_t *size;
 
-	bool (*push)(CStack *, void *, size_t);
+	void * (*push)(CStack *, void *, size_t);
 	void * (*pop)(CStack *, size_t *);
 	bool (*is_empty)(CStack *);
 	bool (*is_full)(CStack *);
@@ -46,7 +46,7 @@ void delete_CStack(CStack *this);
 *   1. Do not push 'data' to another CStack.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-bool CStack_push(CStack *this, void *data, size_t size);
+void * CStack_push(CStack *this, void *data, size_t size);
 
 /** Pop the top element.
 *   \param  size        Store the top element's data size (bytes).

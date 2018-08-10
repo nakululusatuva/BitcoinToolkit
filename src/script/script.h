@@ -5,15 +5,13 @@
 #include "../container/CStack.h"
 #include "../container/CLinkedlist.h"
 
-#define SCRIPT_ADD_OPCODE_FAILED                (void *)0x003000
-#define SCRIPT_ADD_DATA_FAILED                  (void *)0x003001
-#define SCRIPT_MULTISIG_M_BIGGER_N              (void *)0x003002
-#define SCRIPT_BARE_MULTISIG_PUBKEYS_OVER_LIMIT (void *)0x003003
-#define SCRIPT_HAS_NO_ELEMENTS                  (void *)0x003004
-#define SCRIPT_REMAIN_BYTES_LESS_THAN_PUSH      (void *)0x003005
-#define SCRIPT_ELEMENT_SIZE_OVERLIMIT           (void *)0x003006
-#define SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED  (void *)0x003007
-#define SCRIPT_CONTAINED_INVALID_ELEMENT        (void *)0x003008
+#define SCRIPT_MULTISIG_M_BIGGER_N              (void *)0x003000
+#define SCRIPT_BARE_MULTISIG_PUBKEYS_OVER_LIMIT (void *)0x003001
+#define SCRIPT_HAS_NO_ELEMENTS                  (void *)0x003002
+#define SCRIPT_REMAIN_BYTES_LESS_THAN_PUSH      (void *)0x003003
+#define SCRIPT_ELEMENT_SIZE_OVERLIMIT           (void *)0x003004
+#define SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED  (void *)0x003005
+#define SCRIPT_CONTAINED_INVALID_ELEMENT        (void *)0x003006
 
 #define MAX_SCRIPT_ELEMENT_SIZE      520 // Maximum number of bytes pushable to the stack
 #define MAX_OPS_PER_SCRIPT           201 // Maximum number of non-push operations per script
@@ -181,20 +179,22 @@ struct Script
 {
 	CLinkedlist *script;
 
-	bool (*add_opcode)(Script *, Opcode *);
-	bool (*add_data)(Script *, BYTE *, size_t);
-	bool (*execute)(Script *);
+	void * (*add_opcode)(Script *, Opcode *);
+	void * (*add_data)(Script *, BYTE *, size_t);
 	uint8_t * (*to_string)(Script *, size_t *);
 	BYTE * (*to_bytes)(Script *, size_t *);
-	bool (*is_p2pkh)(Script *);
-	bool (*is_p2pk)(Script *);
-	bool (*is_p2sh)(Script *);
-	bool (*is_p2sh_multisig)(Script *);
+	void * (*is_p2pkh)(Script *);
+	void * (*is_p2pk)(Script *);
+	void * (*is_p2sh)(Script *);
+	void * (*is_p2sh_multisig)(Script *);
+	void * (*is_p2wsh)(Script *);
+	void * (*is_p2wpkh)(Script *);
+	void * (*is_null_data)(Script *);
 	bool (*is_empty)(Script *);
-	uint32_t (*get_length)(Script *);
+	uint64_t (*get_length)(Script *);
 	void * (*get_element)(Script *, uint64_t, size_t *);
 	size_t (*total_size)(Script *);
-	uint32_t (*check_element_size)(Script *);
+	uint64_t (*check_element_size)(Script *);
 };
 
 /** Construct and Destruct Functions **/
@@ -269,6 +269,9 @@ Script * new_Script_p2sh(BYTE *hash, size_t size);
 *   Notice that 'pubkeys' is a 'template', still, need to be freed by delete_CLinkedlist() manually.
 **/
 Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys);
+Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size);
+Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size);
+Script * new_Script_null_data(BYTE *data, size_t size);
 /* Delete an SCript object that created by construct function */
 void delete_Script(Script *this);
 
@@ -281,7 +284,7 @@ void delete_Script(Script *this);
 *   do not add 'op' to another Script or free 'op' by delete_Opcode() manually,
 *   the destruct function will do the job.
 **/
-bool Script_add_opcode(Script *this, Opcode *op);
+void * Script_add_opcode(Script *this, Opcode *op);
 
 /** Add data bytes.
 *   \param  data        The data bytes.
@@ -292,7 +295,7 @@ bool Script_add_opcode(Script *this, Opcode *op);
 *   Once Script_add_data() returns true, do not add 'data' to another Script or free 'data' manually,
 *   the destruct function will do the job.
 **/
-bool Script_add_data(Script *this, BYTE *data, size_t size);
+void * Script_add_data(Script *this, BYTE *data, size_t size);
 
 /** Script to string.
 *   \param  size        Store the string's size, how many bytes.
@@ -314,17 +317,20 @@ uint8_t * Script_to_string(Script *this, size_t *size);
 **/
 BYTE * Script_to_bytes(Script *this, size_t *size);
 /* Check if a valid P2PKH script */
-bool Script_is_p2pkh(Script *this);
+void * Script_is_p2pkh(Script *this);
 /* Check if a valid P2PK script */
-bool Script_is_p2pk(Script *this);
+void * Script_is_p2pk(Script *this);
 /* Check if a valid P2SH script */
-bool Script_is_p2sh(Script *this);
+void * Script_is_p2sh(Script *this);
 /* Check if a valid multisig script */
-bool Script_is_p2sh_multisig(Script *this);
+void * Script_is_p2sh_multisig(Script *this);
+void * Script_is_p2wsh(Script *this);
+void * Script_is_p2wpkh(Script *this);
+void * Script_is_null_data(Script *this);
 /* Check if the script has no statements */
 bool Script_is_empty(Script *this);
 /* How many statements */
-uint32_t Script_get_length(Script *this);
+uint64_t Script_get_length(Script *this);
 
 /** Get an element's pointer from script
 *   \param  index       Position of the element.
@@ -336,6 +342,6 @@ uint32_t Script_get_length(Script *this);
 **/
 void * Script_get_element(Script *this, uint64_t index, size_t *size);
 size_t Script_total_size(Script *this);
-uint32_t Script_check_element_size(Script *this);
+uint64_t Script_check_element_size(Script *this);
 
 #endif

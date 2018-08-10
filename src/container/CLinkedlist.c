@@ -111,16 +111,16 @@ CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *this, uint64_t index)
 	return buffer;
 }
 
-bool CLinkedlist_add(CLinkedlist *this, void *data, size_t size)
+void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size)
 {
 	CLinkedlistNode *last = CLinkedlist_last_node(this);
 	// If empty, the last one will be the head.
-	if (last == NULL)
+	if (last == CLINKEDLIST_EMPTY)
 		last = this->head;
 
 	CLinkedlistNode *new  = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
 	if (new == NULL)
-		return false;
+		return MEMORY_ALLOCATE_FAILED;
 
 	// Re-link the nodes.
 	last->next = new;
@@ -131,16 +131,18 @@ bool CLinkedlist_add(CLinkedlist *this, void *data, size_t size)
 
 	this->length++;
 
-	return true;
+	return SUCCESS;
 }
 
-bool CLinkedlist_delete(CLinkedlist *this, uint64_t index)
+void * CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 {
 	CLinkedlistNode *target = CLinkedlist_specific_node(this, index);
 
 	// Index out range or empty linked list.
-	if (target == NULL)
-		return false;
+	if (target == CLINKEDLIST_EMPTY)
+		return CLINKEDLIST_EMPTY;
+	else if (target == INDEX_OUT_RANGE)
+		return INDEX_OUT_RANGE;
 
 	// The only node.
 	else if (target->previous->previous == NULL && target->next == NULL)
@@ -149,7 +151,7 @@ bool CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 		free(target->data);
 		free(target);
 		this->length--;
-		return true;
+		return SUCCESS;
 	}
 
 	// The first node.
@@ -160,7 +162,7 @@ bool CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 		free(target->data);
 		free(target);
 		this->length--;
-		return true;
+		return SUCCESS;
 	}
 
 	// The last node.
@@ -170,7 +172,7 @@ bool CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 		this->length--;
 		free(target->data);
 		free(target);
-		return true;
+		return SUCCESS;
 	}
 
 	// Any where else (Procedures are as same as the first node).
@@ -182,24 +184,30 @@ bool CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 		free(target->data);
 		free(target);
 		this->length--;
-		return true;
+		return SUCCESS;
 	}
 }
 
-bool CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size)
+void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size)
 {
 	CLinkedlistNode *new_node   = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
 	if (new_node == NULL)
-		return false;
+		return MEMORY_ALLOCATE_FAILED;
 
 	CLinkedlistNode *after_node = CLinkedlist_specific_node(this, after);
 
 	// Check if index out range or empty linked list.
-	if (after_node == NULL)
+	if (after_node == INDEX_OUT_RANGE)
 	{
 		free(new_node);
-		return NULL;
+		return INDEX_OUT_RANGE;
 	}
+	else if (after_node == CLINKEDLIST_EMPTY)
+	{
+		free(new_node);
+		return CLINKEDLIST_EMPTY;
+	}
+
 	// Always between two nodes, or between head node and a normal node.
 	else
 	{// Re-link the nodes, length+1
@@ -214,24 +222,25 @@ bool CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t si
 		new_node->next = after_node;
 		after_node->previous = new_node;
 
-		return true;
+		return SUCCESS;
 	}
 }
 
-bool CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size)
+void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size)
 {
 	CLinkedlistNode *target = CLinkedlist_specific_node(this, index);
 
 	// Index out range or empty linked list.
-	if (target == NULL)
-		return false;
-
+	if (target == INDEX_OUT_RANGE)
+		return INDEX_OUT_RANGE;
+	else if (target == CLINKEDLIST_EMPTY)
+		return CLINKEDLIST_EMPTY;
 	else
 	{
 		free(target->data);
 		target->data = data;
 		target->size = size;
-		return true;
+		return SUCCESS;
 	}
 }
 
@@ -275,17 +284,17 @@ CLinkedlistNode ** CLinkedlist_backward_traversing(CLinkedlist *this)
 	return list;
 }
 
-bool CLinkedlist_reverse(CLinkedlist *this)
+void * CLinkedlist_reverse(CLinkedlist *this)
 {
 	// Check if empty.
 	CLinkedlistNode *last = CLinkedlist_last_node(this);
-	if (last == NULL)
-		return false;
+	if (last == CLINKEDLIST_EMPTY)
+		return CLINKEDLIST_EMPTY;
 
 	// Get the nodes' pointer and store in a pointer-array (reversed).
 	CLinkedlistNode **nodes = CLinkedlist_backward_traversing(this);
-	if (nodes == NULL)
-		return false;
+	if (nodes == MEMORY_ALLOCATE_FAILED)
+		return MEMORY_ALLOCATE_FAILED;
 
 	// Re-link nodes, follow the pointer-array.
 	CLinkedlistNode *buffer = this->head;
@@ -299,7 +308,7 @@ bool CLinkedlist_reverse(CLinkedlist *this)
 	}
 
 	free(nodes);
-	return true;
+	return SUCCESS;
 }
 
 bool CLinkedlist_is_empty(CLinkedlist *this)

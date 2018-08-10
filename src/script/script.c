@@ -42,6 +42,9 @@ Script * new_Script()
 		new->is_p2pk     = &Script_is_p2pk;
 		new->is_p2sh     = &Script_is_p2sh;
 		new->is_p2sh_multisig = &Script_is_p2sh_multisig;
+		new->is_p2wsh    = &Script_is_p2wsh;
+		new->is_p2wpkh   = &Script_is_p2wpkh;
+		new->is_null_data= &Script_is_null_data;
 		new->is_empty    = &Script_is_empty;
 		new->get_length  = &Script_get_length;
 		new->get_element = &Script_get_element;
@@ -77,8 +80,7 @@ while (true)
 			delete_Script(new);
 			return MEMORY_ALLOCATE_FAILED;
 		}
-		bool ret1 = new->add_opcode(new, op);
-		if (ret1 == false)
+		if (new->add_opcode(new, op) == MEMORY_ALLOCATE_FAILED)
 		{
 			delete_Script(new);
 			delete_Opcode(op);
@@ -96,8 +98,7 @@ while (true)
 		{
 			data[i] = bytes[pos+1+i];
 		}
-		bool ret2 = new->add_data(new, data, expected);
-		if (ret2 == false)
+		if (new->add_data(new, data, expected) == MEMORY_ALLOCATE_FAILED)
 		{
 			delete_Script(new);
 			free(data);
@@ -127,8 +128,7 @@ while (true)
 					delete_Script(new);
 					return MEMORY_ALLOCATE_FAILED;
 				}
-				bool ret1 = new->add_opcode(new, op);
-				if (ret1 == false)
+				if (new->add_opcode(new, op) == MEMORY_ALLOCATE_FAILED)
 				{
 					delete_Script(new);
 					delete_Opcode(op);
@@ -143,8 +143,7 @@ while (true)
 					return MEMORY_ALLOCATE_FAILED;
 				}
 				next_one_byte[0] = bytes[pos+1];
-				bool ret2 = new->add_data(new, next_one_byte, 1);
-				if (ret2 == false)
+				if (new->add_data(new, next_one_byte, 1) == MEMORY_ALLOCATE_FAILED)
 				{
 					delete_Script(new);
 					free(next_one_byte);
@@ -162,8 +161,7 @@ while (true)
 				{
 					data[i] = bytes[pos+2+i];
 				}
-				bool ret3 = new->add_data(new, data, expected);
-				if (ret3 == false)
+				if (new->add_data(new, data, expected) == MEMORY_ALLOCATE_FAILED)
 				{
 					delete_Script(new);
 					free(data);
@@ -190,8 +188,7 @@ while (true)
 					free(new);
 					return MEMORY_ALLOCATE_FAILED;
 				}
-				bool ret = new->add_opcode(new, op);
-				if (ret == false)
+				if (new->add_opcode(new, op) == MEMORY_ALLOCATE_FAILED)
 				{
 					free(new);
 					delete_Opcode(op);
@@ -207,8 +204,7 @@ while (true)
 				}
 				next_two_bytes[0] = bytes[pos+1];
 				next_two_bytes[1] = bytes[pos+2];
-				bool ret2 = new->add_data(new, next_two_bytes, 2);
-				if (ret2 == false)
+				if (new->add_data(new, next_two_bytes, 2) == MEMORY_ALLOCATE_FAILED)
 				{
 					delete_Script(new);
 					free(next_two_bytes);
@@ -226,8 +222,7 @@ while (true)
 				{
 					data[i] = bytes[pos+3+i];
 				}
-				bool ret3 = new->add_data(new, data, expected);
-				if (ret3 == false)
+				if (new->add_data(new, data, expected) == MEMORY_ALLOCATE_FAILED)
 				{
 					delete_Script(new);
 					free(data);
@@ -256,8 +251,7 @@ while (true)
 					free(new);
 					return MEMORY_ALLOCATE_FAILED;
 				}
-				bool ret = new->add_opcode(new, op);
-				if (ret == false)
+				if (new->add_opcode(new, op) == MEMORY_ALLOCATE_FAILED)
 				{
 					free(new);
 					delete_Opcode(op);
@@ -275,8 +269,7 @@ while (true)
 				next_four_bytes[1] = bytes[pos+2];
 				next_four_bytes[2] = bytes[pos+3];
 				next_four_bytes[3] = bytes[pos+4];
-				bool ret2 = new->add_data(new, next_four_bytes, 4);
-				if (ret2 == false)
+				if (new->add_data(new, next_four_bytes, 4) == MEMORY_ALLOCATE_FAILED)
 				{
 					delete_Script(new);
 					free(next_four_bytes);
@@ -294,8 +287,7 @@ while (true)
 				{
 					data[i] = bytes[pos+5+i];
 				}
-				bool ret3 = new->add_data(new, data, expected);
-				if (ret3 == false)
+				if (new->add_data(new, data, expected) == MEMORY_ALLOCATE_FAILED)
 				{
 					delete_Script(new);
 					free(data);
@@ -320,8 +312,7 @@ while (true)
 			delete_Script(new);
 			return MEMORY_ALLOCATE_FAILED;
 		}
-		bool ret = new->add_opcode(new, op);
-		if (ret == false)
+		if (new->add_opcode(new, op) == MEMORY_ALLOCATE_FAILED)
 		{
 			delete_Script(new);
 			delete_Opcode(op);
@@ -341,8 +332,7 @@ while (true)
 			delete_Script(new);
 			return MEMORY_ALLOCATE_FAILED;
 		}
-		bool ret = new->add_opcode(new, op);
-		if (ret == false)
+		if (new->add_opcode(new, op) == MEMORY_ALLOCATE_FAILED)
 		{
 			delete_Script(new);
 			delete_Opcode(op);
@@ -361,20 +351,22 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 {
 	if (p1->get_length(p1) == 0 || p2->get_length(p2) == 0)
 		return SCRIPT_HAS_NO_ELEMENTS;
+	else if (p1 == NULL || p2 == NULL)
+		return PASSING_NULL_POINTER;
 
 	Script *new = new_Script();
 	if (new == NULL)
 		return MEMORY_ALLOCATE_FAILED;
 
 	CLinkedlistNode **p1_list = p1->script->forward_traversing(p1->script);
-	if (p1_list == NULL)
+	if (p1_list == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		return MEMORY_ALLOCATE_FAILED;
 	}
 
 	CLinkedlistNode **p2_list = p2->script->forward_traversing(p2->script);
-	if (p2_list == NULL)
+	if (p2_list == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		free(p1_list);
@@ -393,12 +385,12 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(data, p1_list[i]->data, size);
-		bool ret = new->script->add(new->script, data, size);
-		if (ret == false)
+		if (new->script->add(new->script, data, size) == false)
 		{
 			delete_Script(new);
 			free(p1_list);
 			free(p2_list);
+			free(data);
 			return MEMORY_ALLOCATE_FAILED;
 		}
 	}
@@ -415,12 +407,12 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(data, p2_list[i]->data, size);
-		bool ret = new->script->add(new->script, data, size);
-		if (ret == false)
+		if (new->script->add(new->script, data, size) == false)
 		{
 			delete_Script(new);
 			free(p1_list);
 			free(p2_list);
+			free(data);
 			return MEMORY_ALLOCATE_FAILED;
 		}
 	}
@@ -434,7 +426,9 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 {
 	if (size != 20)
-		return INVALID_HASH160_SIZE;
+		return INVALID_RIPEMD160_SIZE;
+	else if (pubkey_hash == NULL)
+		return PASSING_NULL_POINTER;
 
 	Script *new = new_Script();
 	if (new == NULL)
@@ -499,7 +493,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 
 	memcpy(data, pubkey_hash, size);
 
-	if (new->add_opcode(new, op_dup) == false)
+	if (new->add_opcode(new, op_dup) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_dup);
@@ -510,7 +504,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 		delete_Opcode(op_checksig);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_hash160) == false)
+	if (new->add_opcode(new, op_hash160) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_hash160);
@@ -520,7 +514,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 		delete_Opcode(op_checksig);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_pushdata) == false)
+	if (new->add_opcode(new, op_pushdata) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_pushdata);
@@ -529,7 +523,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 		delete_Opcode(op_checksig);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_data(new, data, size) == false)
+	if (new->add_data(new, data, size) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		free(data);
@@ -537,14 +531,14 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 		delete_Opcode(op_checksig);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_equalverify) == false)
+	if (new->add_opcode(new, op_equalverify) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_equalverify);
 		delete_Opcode(op_checksig);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_checksig) == false)
+	if (new->add_opcode(new, op_checksig) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_checksig);
@@ -558,6 +552,8 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 {
 	if (size != 65 || size != 33)
 		return INVALID_PUBKEY_SIZE;
+	else if (pubkey == NULL)
+		return PASSING_NULL_POINTER;
 
 	Script *new = new_Script();
 	if (new == NULL)
@@ -589,7 +585,7 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 
 	memcpy(pub, pubkey, size);
 
-	if (new->add_opcode(new, op_pushdata) == false)
+	if (new->add_opcode(new, op_pushdata) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_pushdata);
@@ -597,14 +593,14 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 		delete_Opcode(op_checksig);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_data(new, pub, size) == false)
+	if (new->add_data(new, pub, size) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		free(pub);
 		delete_Opcode(op_checksig);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_checksig) == false)
+	if (new->add_opcode(new, op_checksig) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_checksig);
@@ -617,7 +613,9 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 Script * new_Script_p2sh(BYTE *hash, size_t size)
 {
 	if (size != 20)
-		return INVALID_HASH160_SIZE;
+		return INVALID_RIPEMD160_SIZE;
+	else if (hash == NULL)
+		return PASSING_NULL_POINTER;
 
 	Script *new = new_Script();
 	if (new == NULL)
@@ -659,7 +657,7 @@ Script * new_Script_p2sh(BYTE *hash, size_t size)
 
 	memcpy(script_hash, hash, size);
 
-	if (new->add_opcode(new, op_hash160) == false)
+	if (new->add_opcode(new, op_hash160) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_hash160);
@@ -668,7 +666,7 @@ Script * new_Script_p2sh(BYTE *hash, size_t size)
 		delete_Opcode(op_equal);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_pushdata) == false)
+	if (new->add_opcode(new, op_pushdata) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_pushdata);
@@ -676,14 +674,14 @@ Script * new_Script_p2sh(BYTE *hash, size_t size)
 		delete_Opcode(op_equal);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_data(new, script_hash, size) == false)
+	if (new->add_data(new, script_hash, size) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		free(script_hash);
 		delete_Opcode(op_equal);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_equal) == false)
+	if (new->add_opcode(new, op_equal) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_equal);
@@ -695,6 +693,8 @@ Script * new_Script_p2sh(BYTE *hash, size_t size)
 
 Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 {
+	if (pubkeys == NULL)
+		return PASSING_NULL_POINTER;
 	uint8_t n = pubkeys->get_length(pubkeys);
 	if (pubkeys->is_empty(pubkeys))
 		return CLINKEDLIST_EMPTY;
@@ -714,11 +714,11 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 		delete_Script(new);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_m) == false)
+	if (new->add_opcode(new, op_m) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_m);
-		return SCRIPT_ADD_OPCODE_FAILED;
+		return MEMORY_ALLOCATE_FAILED;
 	}
 
 	// Add public keys.
@@ -739,7 +739,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		*op_pushdata = keys[i]->size;
-		if (new->add_data(new, op_pushdata, 1) == false)
+		if (new->add_data(new, op_pushdata, 1) == MEMORY_ALLOCATE_FAILED)
 		{
 			delete_Script(new);
 			free(keys);
@@ -756,7 +756,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(pub, keys[i]->data, keys[i]->size);
-		if (new->add_data(new, pub, keys[i]->size) == false)
+		if (new->add_data(new, pub, keys[i]->size) == MEMORY_ALLOCATE_FAILED)
 		{
 			delete_Script(new);
 			free(keys);
@@ -773,7 +773,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 		delete_Script(new);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_n) == false)
+	if (new->add_opcode(new, op_n) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_n);
@@ -787,7 +787,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 		delete_Script(new);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	if (new->add_opcode(new, op_checkmultisig) == false)
+	if (new->add_opcode(new, op_checkmultisig) == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		delete_Opcode(op_checkmultisig);
@@ -795,6 +795,28 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 	}
 
 	return new;
+}
+
+Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size)
+{
+	if (size != 32)
+		return INVALID_SHA256_SIZE;
+	else if (sha256 == NULL)
+		return PASSING_NULL_POINTER;
+}
+
+Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size)
+{
+	if (size != 20)
+		return INVALID_SHA256_SIZE;
+	else if (hash160 == NULL)
+		return PASSING_NULL_POINTER;
+}
+
+Script * new_Script_null_data(BYTE *data, size_t size)
+{
+	if (data == NULL)
+		return PASSING_NULL_POINTER;
 }
 
 void delete_Script(Script *this)
@@ -941,23 +963,29 @@ const char * get_op_name(Opcode op)
     }
 }
 
-bool Script_add_opcode(Script *this, Opcode *op)
+void * Script_add_opcode(Script *this, Opcode *op)
 {
-	if ( (this->script->add(this->script, op, 1)) )
-		return true;
-	else return false;
+	if (this == NULL || op == NULL)
+		return PASSING_NULL_POINTER;
+	else if ( (this->script->add(this->script, op, 1)) == SUCCESS )
+		return SUCCESS;
+	else return MEMORY_ALLOCATE_FAILED;
 }
 
-bool Script_add_data(Script *this, BYTE *data, size_t size)
+void * Script_add_data(Script *this, BYTE *data, size_t size)
 {
-	if ( (this->script->add(this->script, data, size)) )
-		return true;
-	else return false;
+	if (this == NULL || data == NULL)
+		return PASSING_NULL_POINTER;
+	else if ( (this->script->add(this->script, data, size)) == SUCCESS )
+		return SUCCESS;
+	else return MEMORY_ALLOCATE_FAILED;
 }
 
 uint8_t * Script_to_string(Script *this, size_t *size)
 {
-	if (this->is_empty(this))
+	if (this == NULL || size == NULL)
+		return PASSING_NULL_POINTER;
+	else if (this->is_empty(this))
 		return SCRIPT_HAS_NO_ELEMENTS;
 
 	CLinkedlistNode **elements = this->script->forward_traversing(this->script);
@@ -1209,7 +1237,9 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 
 BYTE * Script_to_bytes(Script *this, size_t *size)
 {
-	if (this->is_empty(this))
+	if (this == NULL || size == NULL)
+		return PASSING_NULL_POINTER;
+	else if (this->is_empty(this))
 		return SCRIPT_HAS_NO_ELEMENTS;
 
 	uint32_t script_len = this->get_length(this);
@@ -1237,11 +1267,13 @@ BYTE * Script_to_bytes(Script *this, size_t *size)
 	return bytes;
 }
 
-bool Script_is_p2pkh(Script *this)
+void * Script_is_p2pkh(Script *this)
 {
 	// OP_DUP + OP_HASH160 + pushdata(20) + pubkey_hash(20) + OP_EQUALVERIFY + OP_CHECKSIG
-	if (this->get_length(this) != 6)
-		return false;
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
+	else if (this->get_length(this) != 6)
+		return FAILED;
 
 	BYTE op_dup      = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
 	BYTE op_hash160  = ((BYTE *)(this->script->specific_node(this->script, 1)->data))[0];
@@ -1250,80 +1282,127 @@ bool Script_is_p2pkh(Script *this)
 	BYTE op_equalverify = ((BYTE *)(this->script->specific_node(this->script, 4)->data))[0];
 	BYTE op_checksig = ((BYTE *)(this->script->specific_node(this->script, 5)->data))[0];
 
-	if (op_dup == OP_DUP && op_hash160 == OP_HASH160 && pushdata == 0x14 &&
-		data_size == 0x14 && op_equalverify == OP_EQUALVERIFY && op_checksig == OP_CHECKSIG)
-		return true;
+	if (pushdata != 0x14 || data_size != 0x14)
+		return INVALID_RIPEMD160_SIZE;
 
-	else return false;
+	else if (pushdata != data_size)
+		return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
+
+	else if (op_dup == OP_DUP && op_hash160 == OP_HASH160 && op_equalverify == OP_EQUALVERIFY && op_checksig == OP_CHECKSIG)
+		return SUCCESS;
+
+	else return FAILED;
 }
 
-bool Script_is_p2pk(Script *this)
+void * Script_is_p2pk(Script *this)
 {
 	// pushdata(65/33) + pubkey(65/33) + OP_CHECKSIG
-	if (this->get_length(this) != 3)
-		return false;
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
+	else if (this->get_length(this) != 3)
+		return FAILED;
 
 	BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
 	size_t data_size = this->script->specific_node(this->script, 1)->size;
 	BYTE op_checksig = ((BYTE *)(this->script->specific_node(this->script, 2)->data))[0];
 
-	if ( (pushdata == 65 || pushdata == 33) && (data_size == 65 || data_size == 33) &&
-		op_checksig == OP_CHECKSIG && pushdata == data_size)
-		return true;
+	if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)
+		return INVALID_PUBKEY_SIZE;
 
-	else return false;
+	else if (pushdata != data_size)
+		return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
+
+	else if (op_checksig == OP_CHECKSIG && pushdata == data_size)
+		return SUCCESS;
+
+	else return FAILED;
 }
 
-bool Script_is_p2sh(Script *this)
+void * Script_is_p2sh(Script *this)
 {
 	// OP_HASH160 + pushdata(20) + script_hash(20) + OP_EQUAL
-	if (this->get_length(this) != 4)
-		return false;
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
+	else if (this->get_length(this) != 4)
+		return FAILED;
 
 	BYTE op_hash160 = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
 	BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, 1)->data))[0];
 	size_t data_size = this->script->specific_node(this->script, 2)->size;
 	BYTE op_equal = ((BYTE *)(this->script->specific_node(this->script, 3)->data))[0];
 
-	if (op_hash160 == OP_HASH160 && pushdata == 0x14 && data_size == 0x14 && op_equal == OP_EQUAL)
-		return true;
+	if (pushdata != 0x14 || data_size != 0x14)
+		return INVALID_RIPEMD160_SIZE;
 
-	else return false;
+	else if (pushdata != data_size)
+		return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
+
+	else if (op_hash160 == OP_HASH160 && op_equal == OP_EQUAL)
+		return SUCCESS;
+
+	else return FAILED;
 }
 
-bool Script_is_p2sh_multisig(Script *this)
+void * Script_is_p2sh_multisig(Script *this)
 {
 	// OP_N + pushdata(65/33) + pubkey1(65/33) +...+ pushdata(65/33) + pubkeyM(65/33) + OP_M + OP_CHECKMULTISIG
-	uint8_t pub_num = ((Opcode *)(this->script->last_node(this->script)->previous->data))[0] - 0x50;
-	if (this->get_length(this) != 3 + pub_num * 2 )
-		return false;
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
+	uint8_t n = ((Opcode *)(this->script->last_node(this->script)->previous->data))[0] - 0x50;
+	if (this->get_length(this) != 3 + n * 2 )
+		return FAILED;
 
 	BYTE op_n = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
 	BYTE op_m = ((BYTE *)(this->script->last_node(this->script)->previous->data))[0];
 	BYTE op_checkmultisig = ((BYTE *)(this->script->last_node(this->script)->data))[0];
 
 	// Check op_n/op_m/op_checkmultisig.
-	if (op_n > OP_0 && op_n <= OP_16 && op_m > OP_0 && op_m <= OP_16 &&
+	if (op_n > OP_0 && op_n < OP_16 && op_m > OP_0 && op_m < OP_16 &&
 		op_n <= op_m && op_checkmultisig == OP_CHECKMULTISIG)
 	{
 		// If correct, check pushdatas and pubkeys.
 		uint32_t i;
-		for (i = 1; i <= pub_num * 2; ++i)
+		for (i = 1; i <= n * 2; ++i)
 		{
 			BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, i)->data))[0];
 			size_t data_size = this->script->specific_node(this->script, i+1)->size;
 
-			if ((pushdata == 65 || pushdata == 33) && (data_size == 65 || data_size == 33) && (pushdata == data_size))
-				i++;
-			else return false;
+			if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)
+				return INVALID_PUBKEY_SIZE;
+
+			else if (pushdata != data_size)
+				return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
+
+			else i++;
 		}
 		// pushdatas and pubkeys correct.
-		if (i > pub_num * 2)
-			return true;
-		else return false;
+		if (i > n * 2)
+			return SUCCESS;
+		else return FAILED;
 	}
 	// op_n/op_m/op_checksig incorrect.
-	else return false;
+	else return FAILED;
+}
+
+void * Script_is_p2wsh(Script *this)
+{
+	// ver + <32 bytes sha256 of redeem script>
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
+}
+
+void * Script_is_p2wpkh(Script *this)
+{
+	// ver + <20 bytes hash160 of pubkey>
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
+}
+
+void * Script_is_null_data(Script *this)
+{
+	// OP_RETURN + <0 to 40 bytes data>
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
 }
 
 bool Script_is_empty(Script *this)
@@ -1333,14 +1412,18 @@ bool Script_is_empty(Script *this)
 	else return false;
 }
 
-uint32_t Script_get_length(Script *this)
+uint64_t Script_get_length(Script *this)
 {
+	if (this == NULL)
+		return (uint64_t)PASSING_NULL_POINTER;
 	return this->get_length(this);
 }
 
 void * Script_get_element(Script *this, uint64_t index, size_t *size)
 {
-	if (this->is_empty(this))
+	if (this == NULL)
+		return PASSING_NULL_POINTER;
+	else if (this->is_empty(this))
 		return SCRIPT_HAS_NO_ELEMENTS;
 	else if (this->get_length(this) <= index || index == 0)
 		return INDEX_OUT_RANGE;
@@ -1358,16 +1441,18 @@ void * Script_get_element(Script *this, uint64_t index, size_t *size)
 
 size_t Script_total_size(Script *this)
 {
-	if (this->is_empty(this))
-		return -1;
+	if (this == NULL)
+		return (size_t)PASSING_NULL_POINTER;
+	else if (this->is_empty(this))
+		return (size_t)SCRIPT_HAS_NO_ELEMENTS;
 
 	return this->script->total_size(this->script);
 }
 
-uint32_t Script_check_element_size(Script *this)
+uint64_t Script_check_element_size(Script *this)
 {
 	if (this->is_empty(this))
-		return -1;
+		return (uint64_t)SCRIPT_HAS_NO_ELEMENTS;
 
 	uint32_t i;
 	for (i = 0; i < this->get_length(this); ++i)
@@ -1379,5 +1464,26 @@ uint32_t Script_check_element_size(Script *this)
 			return i;
 	}
 
-	return 0;
+	return (uint64_t)FAILED;
+}
+
+bool Script_is_standard(Script *this)
+{
+	if (this->is_p2pkh(this) == SUCCESS)
+		return true;
+	else if (this->is_p2pk(this) == SUCCESS)
+		return true;
+	else if (this->is_p2sh(this) == SUCCESS)
+		return true;
+	else if (this->is_p2sh_multisig(this) == SUCCESS)
+		return true;
+	/*
+	else if (this->is_p2wsh(this) == SUCCESS)
+		return true;
+	else if (this->is_p2wpkh(this) == SUCCESS)
+		return true;
+	else if (this->is_null_data(this) == SUCCESS)
+		return true;
+	*/
+	else return false;
 }

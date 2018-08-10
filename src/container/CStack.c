@@ -58,23 +58,27 @@ void delete_CStack(CStack *this)
 	free(this);
 }
 
-bool CStack_push(CStack *this, void *data, size_t size)
+void * CStack_push(CStack *this, void *data, size_t size)
 {
 	if (CStack_is_full(this) || size < 0)
-		return false;
-	else {
+		return FAILED;
+	else
+	{
 		*(this->top) = data;
 		(this->size)[this->top - this->base] = size;
 		this->top++;
-		return true;
+		return SUCCESS;
 	}
 }
 
 void * CStack_pop(CStack *this, size_t *size)
 {
-	if (CStack_is_empty(this) || size == NULL)
+	if (CStack_is_empty(this))
 		return CSTACK_EMPTY;
-	else {
+	else if (size == NULL)
+		return PASSING_NULL_POINTER;
+	else
+	{
 		this->top--;
 		void *to_pop = *(this->top);
 		*(this->top) = NULL;
