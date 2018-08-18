@@ -30,6 +30,7 @@ int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr);
 *   \example: {'0x0A', '0X1B', '0X2C'} -> "0A1B2C"
 **/
 int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, int8_t *str);
+int32_t bytearr_reverse(BYTE *arr, size_t size);
 
 #endif
 

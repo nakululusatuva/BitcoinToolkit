@@ -12,6 +12,7 @@ struct CLinkedlistNode
 	CLinkedlistNode *previous;
 	void *data;
 	size_t size; // How many bytes.
+	void *type;
 	CLinkedlistNode *next;
 };
 typedef struct CLinkedlist CLinkedlist;
@@ -20,10 +21,10 @@ struct CLinkedlist
 	CLinkedlistNode *head;
 	uint64_t length;
 
-	void * (*add)(CLinkedlist *, void *, size_t);
+	void * (*add)(CLinkedlist *, void *, size_t, void *);
 	void * (*delete)(CLinkedlist *, uint64_t);
-	void * (*insert)(CLinkedlist *, uint64_t, void *, size_t);
-	void * (*change)(CLinkedlist *, uint64_t, void *, size_t);
+	void * (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *);
+	void * (*change)(CLinkedlist *, uint64_t, void *, size_t, void *);
 	CLinkedlistNode ** (*forward_traversing)(CLinkedlist *);
 	CLinkedlistNode ** (*backward_traversing)(CLinkedlist *);
 	void * (*reverse)(CLinkedlist *);
@@ -49,7 +50,7 @@ void delete_CLinkedlist(CLinkedlist *this);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size);
+void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
 
 /** Delete a node.
 *   \param  index       Node's position, start from zero.
@@ -69,7 +70,7 @@ void * CLinkedlist_delete(CLinkedlist *this, uint64_t index);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size);
+void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type);
 
 /** Change specific node's data.
 *   \param  index       Node's position, the node you want to edit.
@@ -83,7 +84,7 @@ void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t 
 *   2. Do not free 'data' manually, the destruct function will do the job.
 *   3. The old data will be freed.
 **/
-void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size);
+void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type);
 
 /** Forward traversing the linked list.
 *   \return error codes:

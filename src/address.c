@@ -579,10 +579,10 @@ ADDRESS generate_address_by_private_key(int32_t cmpr_flag, BYTE privkey_type, BY
 void print_address(ADDRESS addr)
 {
 	printf("Address:\n");
-	printf("%s\n\n", addr.address);
+	printf("%s\n", addr.address);
 
 	printf("Private Key WIF:\n");
-	printf("%s\n\n", addr.cmpr_flag?addr.privkey_wif_cmpr:addr.privkey_wif);
+	printf("%s\n", addr.cmpr_flag?addr.privkey_wif_cmpr:addr.privkey_wif);
 
 	printf("Public Key Hexadecimal:\n");
 	if (addr.cmpr_flag == 0)
@@ -595,7 +595,7 @@ void print_address(ADDRESS addr)
 		for (int32_t i = 0; i < 33; ++i)
 		printf("%02X", addr.pubkey_cmpr[i]);
 	}
-	printf("\n\n");
+	printf("\n");
 
 	printf("Private Key Hexadecimal:\n");
 	for (int32_t i = 0; i < 32; ++i)

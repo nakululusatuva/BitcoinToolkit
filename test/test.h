@@ -4,5 +4,6 @@
 
 Suite * make_CStack_suite(void);
 Suite * make_CLinkedlist_suite(void);
+Suite * make_Script_suite(void);
 
 #endif

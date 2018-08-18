@@ -2,7 +2,6 @@
 #define _SCRIPT_
 
 #include "../common.h"
-#include "../container/CStack.h"
 #include "../container/CLinkedlist.h"
 
 #define SCRIPT_MULTISIG_M_BIGGER_N              (void *)0x003000
@@ -166,6 +165,8 @@ typedef enum opcode
 #define BYTE_IS_OPCODE(byte) ( (byte >= 0x00 && byte <= 0xb9) || (byte >= 0xfd && byte <= 0xff) ) ? true : false
 #define BYTE_IS_NONAME_PUSHDATA(byte) (byte >= 0x01 && byte <= 0x4b) ? true : false
 #define BYTE_IS_124_PUSHDATA(byte) (byte >= 0x4c && byte <= 0x4e) ? true : false
+#define OPCODE_IS_DISABLED(OPC) ( (OPC >= 0X7e && OPC <= 0x81) || (OPC >= 0X83 && OPC <= 0x86) || \
+                                  (OPC >= 0X8d && OPC <= 0x8e) || (OPC >= 0X95 && OPC <= 0x99) ) ? true : false
 /* New an opcode object, value range: 0x00~0xFF, return NULL on error */
 Opcode * new_Opcode(BYTE value);
 /* Delete an opcode object that created by new_opcode() */
@@ -198,7 +199,7 @@ struct Script
 };
 
 /** Construct and Destruct Functions **/
-/** Create an empty Script object, return NULL on error(s)
+/** Create an empty Script object.
 *   \return error codes:
 *           MEMORY_ALLOCATE_FAILED
 *   \else on success.
@@ -258,7 +259,7 @@ Script * new_Script_p2sh(BYTE *hash, size_t size);
 
 /** Create a multisig Script.
 *   \param  m            How many keys to unlock, must smaller than or equal to total pubkey number.
-*   \param  pubkeys      Public keys, must less than 20 keys.
+*   \param  pubkeys      Public keys, must not more than 20 keys.
 *   \return error codes:
 *           SCRIPT_MULTISIG_M_BIGGER_N
 *           SCRIPT_MULTISIG_PUBKEYS_OVER_LIMIT
@@ -272,14 +273,16 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys);
 Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size);
 Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size);
 Script * new_Script_null_data(BYTE *data, size_t size);
-/* Delete an SCript object that created by construct function */
+/* Delete an Script object which created by construct function */
 void delete_Script(Script *this);
 
 /** Member Functions **/
 /** Add an opcode.
 *   \param  op          An opcode.
-*   \return true on success.
-*          false on error.
+*   \return error codes:
+*           MEMORY_ALLOCATE_FAILED
+*           PASSING_NULL_POINTER
+*   \SUCCESS on success.
 *   Parameter 'op' must be allocated by new_opcode(), once Script_add_opcode() returns true,
 *   do not add 'op' to another Script or free 'op' by delete_Opcode() manually,
 *   the destruct function will do the job.
@@ -289,8 +292,10 @@ void * Script_add_opcode(Script *this, Opcode *op);
 /** Add data bytes.
 *   \param  data        The data bytes.
 *   \param  size        Data size, how many bytes.
-*   \return true on success.
-*          false on error.
+*   \return error codes:
+*           MEMORY_ALLOCATE_FAILED
+*           PASSING_NULL_POINTER
+*   \SUCCESS on success.
 *   Parameter 'data' must point to heap memory, passing a pointer points to stack memory will cause errors.
 *   Once Script_add_data() returns true, do not add 'data' to another Script or free 'data' manually,
 *   the destruct function will do the job.

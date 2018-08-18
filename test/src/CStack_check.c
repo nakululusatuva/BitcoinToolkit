@@ -10,11 +10,13 @@ START_TEST(stack_push_and_pop)
 	data[0] = 0xaa;
 	data[1] = 0xff;
 
-	stack->push(stack, data, 2);
+	stack->push(stack, data, 2, BYTE_TYPE);
 	size_t popped_size;
-	BYTE *popped = stack->pop(stack, &popped_size);
+	void *type;
+	BYTE *popped = stack->pop(stack, &popped_size, &type);
 
 	ck_assert_ptr_eq(popped, data);
+	ck_assert_ptr_eq(type, BYTE_TYPE);
 	ck_assert_uint_eq(popped[0], data[0]);
 	ck_assert_uint_eq(popped[1], data[1]);
 	ck_assert_uint_eq(popped_size, 2);
@@ -30,8 +32,8 @@ START_TEST(stack_is_empty_and_is_full)
 
 	BYTE *data1 = (BYTE *)malloc(1);
 	BYTE *data2 = (BYTE *)malloc(1);
-	stack->push(stack, data1, 1);
-	stack->push(stack, data2, 1);
+	stack->push(stack, data1, 1, BYTE_TYPE);
+	stack->push(stack, data2, 1, BYTE_TYPE);
 	
 	ck_assert(stack->is_full(stack));
 
@@ -47,11 +49,11 @@ START_TEST(stack_total_size)
 	ck_assert_uint_eq(stack->total_size(stack), 0);
 
 	BYTE *data1 = (BYTE *)malloc(5);
-	stack->push(stack, data1, 5);
+	stack->push(stack, data1, 5, BYTE_TYPE);
 	ck_assert_uint_eq(stack->total_size(stack), 5);
 
 	BYTE *data2 = (BYTE *)malloc(10);
-	stack->push(stack, data1, 10);
+	stack->push(stack, data1, 10, BYTE_TYPE);
 	ck_assert_uint_eq(stack->total_size(stack), 15);
 
 	delete_CStack(stack);

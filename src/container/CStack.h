@@ -3,8 +3,9 @@
 
 #include "../common.h"
 
-#define CSTACK_EMPTY     (void *)0x002000
-#define INVALID_CAPACITY (void *)0x002001
+#define CSTACK_EMPTY            (void *)0x002000
+#define CSTACK_FULL             (void *)0x002000
+#define CSTACK_INVALID_CAPACITY (void *)0x002002
 
 /** Common Type Stack. It stores the data's pointer, instead of the data itself **/
 typedef struct CStack CStack;
@@ -14,13 +15,14 @@ struct CStack
 	void   **top;
 	uint64_t capacity;
 	uint32_t *size;
+	void   **type;
 
-	void * (*push)(CStack *, void *, size_t);
-	void * (*pop)(CStack *, size_t *);
+	void * (*push)(CStack *, void *, size_t, void *);
+	void * (*pop)(CStack *, size_t *, void **);
 	bool (*is_empty)(CStack *);
 	bool (*is_full)(CStack *);
 	size_t (*total_size)(CStack *);
-	uint64_t (*get_element_amount)(CStack *);
+	uint64_t (*get_depth)(CStack *);
 	uint64_t (*get_capacity)(CStack *);
 };
 
@@ -46,7 +48,7 @@ void delete_CStack(CStack *this);
 *   1. Do not push 'data' to another CStack.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-void * CStack_push(CStack *this, void *data, size_t size);
+void * CStack_push(CStack *this, void *data, size_t size, void *type);
 
 /** Pop the top element.
 *   \param  size        Store the top element's data size (bytes).
@@ -55,7 +57,7 @@ void * CStack_push(CStack *this, void *data, size_t size);
 *   \else on success.
 *   Once CStack_pop() success, you need to free the returned pointer manually.
 **/
-void * CStack_pop(CStack *this, size_t *size);
+void * CStack_pop(CStack *this, size_t *size, void **type);
 
 /* Check if stack is empty */
 bool CStack_is_empty(CStack *this);
@@ -65,7 +67,7 @@ bool CStack_is_full(CStack *this);
 
 /* Get total data size, return how many bytes */
 size_t CStack_total_size(CStack *this);
-uint64_t CStack_get_element_amount(CStack *this);
+uint64_t CStack_get_depth(CStack *this);
 uint64_t CStack_get_capacity(CStack *this);
 
 #endif

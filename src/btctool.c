@@ -27,6 +27,7 @@ SOFTWARE.
 #include "codec/codec.h"
 #include "common.h"
 #include "address.h"
+#include "script/script.h"
 
 void usage(const char *version, const char *name)
 {
@@ -93,10 +94,8 @@ int32_t main(int32_t argc, char* const* argv)
 				ADDRESS addr;
 				for (int64_t i = 0; i < number; ++i)
 				{
-					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(0, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
 					print_address(addr);
-					printf("--------------------------------------------------------------------------------\n");
 				}
 				
 				break;
@@ -114,10 +113,8 @@ int32_t main(int32_t argc, char* const* argv)
 				ADDRESS addr;
 				for (int64_t i = 0; i < number; ++i)
 				{
-					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(1, PRIVATE_KEY_MAINNET_BYTE_PREFIX, ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX);
 					print_address(addr);
-					printf("--------------------------------------------------------------------------------\n");
 				}
 
 				break;
@@ -135,10 +132,8 @@ int32_t main(int32_t argc, char* const* argv)
 				ADDRESS addr;
 				for (int64_t i = 0; i < number; ++i)
 				{
-					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(0, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
 					print_address(addr);
-					printf("--------------------------------------------------------------------------------\n");
 				}
 				
 				break;
@@ -156,10 +151,8 @@ int32_t main(int32_t argc, char* const* argv)
 				ADDRESS addr;
 				for (int64_t i = 0; i < number; ++i)
 				{
-					printf("--------------------------------------------------------------------------------\n");
 					addr = generate_address(1, PRIVATE_KEY_TESTNET_BYTE_PREFIX, ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX);
 					print_address(addr);
-					printf("--------------------------------------------------------------------------------\n");
 				}
 
 				break;

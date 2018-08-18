@@ -6,31 +6,34 @@
 CStack * new_CStack(const uint64_t capacity)
 {
 	if (capacity <= 0)
-		return INVALID_CAPACITY;
+		return CSTACK_INVALID_CAPACITY;
 	
 	CStack *stack = (CStack *)calloc(1, sizeof(CStack));
 	if (stack == NULL)
 		return MEMORY_ALLOCATE_FAILED;
 
-	else
+	stack->base = (void **)calloc(capacity, sizeof(void *));
+	if (stack->base == NULL)
 	{
-		stack->base = (void **)calloc(capacity, sizeof(void *));
-		if (stack->base == NULL)
-		{
-			free(stack);
-			return MEMORY_ALLOCATE_FAILED;
-		}
-		else
-		{
-			stack->size = (uint32_t *)calloc(capacity, sizeof(uint32_t));
-			if (stack->size == NULL)
-			{
-				free(stack->base);
-				free(stack);
-				return MEMORY_ALLOCATE_FAILED;
-			}
-		//	memset(stack->size, 0, capacity * sizeof(uint32_t));
-		}
+		free(stack);
+		return MEMORY_ALLOCATE_FAILED;
+	}
+
+	stack->size = (uint32_t *)calloc(capacity, sizeof(uint32_t));
+	if (stack->size == NULL)
+	{
+		free(stack->base);
+		free(stack);
+		return MEMORY_ALLOCATE_FAILED;
+	}
+
+	stack->type = (void **)calloc(capacity, sizeof(void *));
+	if (stack->type == NULL)
+	{
+		free(stack->size);
+		free(stack->base);
+		free(stack);
+		return MEMORY_ALLOCATE_FAILED;
 	}
 
 	stack->top  = stack->base;
@@ -41,7 +44,7 @@ CStack * new_CStack(const uint64_t capacity)
 	stack->is_empty   = &CStack_is_empty;
 	stack->is_full    = &CStack_is_full;
 	stack->total_size = &CStack_total_size;
-	stack->get_element_amount = &CStack_get_element_amount;
+	stack->get_depth  = &CStack_get_depth;
 	stack->get_capacity = &CStack_get_capacity;
 
 	return stack;
@@ -55,23 +58,28 @@ void delete_CStack(CStack *this)
 	}
 	free(this->base);
 	free(this->size);
+	free(this->type);
 	free(this);
 }
 
-void * CStack_push(CStack *this, void *data, size_t size)
+void * CStack_push(CStack *this, void *data, size_t size, void *type)
 {
-	if (CStack_is_full(this) || size < 0)
-		return FAILED;
+	if (CStack_is_full(this))
+		return CSTACK_EMPTY;
 	else
 	{
 		*(this->top) = data;
-		(this->size)[this->top - this->base] = size;
+		if (data == NULL)
+			(this->size)[this->top - this->base] = 0;
+		else
+			(this->size)[this->top - this->base] = size;
+		(this->type)[this->top - this->base] = type;
 		this->top++;
 		return SUCCESS;
 	}
 }
 
-void * CStack_pop(CStack *this, size_t *size)
+void * CStack_pop(CStack *this, size_t *size, void **type)
 {
 	if (CStack_is_empty(this))
 		return CSTACK_EMPTY;
@@ -82,7 +90,10 @@ void * CStack_pop(CStack *this, size_t *size)
 		this->top--;
 		void *to_pop = *(this->top);
 		*(this->top) = NULL;
-		*size = (this->size)[this->top - this->base];
+		if (size != NULL)
+			*size = (this->size)[this->top - this->base];
+		if (type != NULL)
+			type[0] = (this->type)[this->top - this->base];
 		return to_pop;
 	}
 }
@@ -111,7 +122,7 @@ size_t CStack_total_size(CStack *this)
 	return total_size;
 }
 
-uint64_t CStack_get_element_amount(CStack *this)
+uint64_t CStack_get_depth(CStack *this)
 {
 	return this->top - this->base;
 }

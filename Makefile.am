@@ -9,4 +9,5 @@ btctool_SOURCES = src/btctool.c \
 	src/container/CStack.c \
 	src/container/CLinkedlist.c \
 	src/script/script.c \
-	src/script/interpreter.c
+	src/script/interpreter.c \
+	src/script/operation.c

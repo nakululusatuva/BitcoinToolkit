@@ -111,7 +111,7 @@ CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *this, uint64_t index)
 	return buffer;
 }
 
-void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size)
+void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type)
 {
 	CLinkedlistNode *last = CLinkedlist_last_node(this);
 	// If empty, the last one will be the head.
@@ -127,6 +127,7 @@ void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size)
 	new->previous = last;
 	new->data = data;
 	new->size = size;
+	new->type = type;
 	new->next = NULL;
 
 	this->length++;
@@ -188,7 +189,7 @@ void * CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 	}
 }
 
-void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size)
+void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type)
 {
 	CLinkedlistNode *new_node   = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
 	if (new_node == NULL)
@@ -218,6 +219,7 @@ void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t 
 
 		new_node->data = data;
 		new_node->size = size;
+		new_node->type = type;
 
 		new_node->next = after_node;
 		after_node->previous = new_node;
@@ -226,7 +228,7 @@ void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t 
 	}
 }
 
-void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size)
+void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type)
 {
 	CLinkedlistNode *target = CLinkedlist_specific_node(this, index);
 
@@ -240,6 +242,7 @@ void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t 
 		free(target->data);
 		target->data = data;
 		target->size = size;
+		target->type = type;
 		return SUCCESS;
 	}
 }
@@ -323,11 +326,11 @@ size_t CLinkedlist_total_size(CLinkedlist *this)
 	size_t total_size = 0;
 
 	if (this->is_empty(this))
-		return -1;
+		return 0;
 
 	CLinkedlistNode **list = CLinkedlist_forward_traversing(this);
 	if (list == NULL)
-		return -2;
+		return 0;
 
 	for (size_t i = 0; i < this->length; ++i)
 		total_size += list[i]->size;

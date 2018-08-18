@@ -5,7 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT([test],[0.0.1],[])
 AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
-AC_CONFIG_SRCDIR([test.c])
+AC_CONFIG_SRCDIR([main.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.

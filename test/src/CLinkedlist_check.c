@@ -9,7 +9,7 @@ START_TEST(clinkedlist_add_and_is_empty)
 	ck_assert(list->is_empty(list));
 
 	BYTE *data1 = (BYTE *)malloc(10);
-	ck_assert(list->add(list, data1, 10));
+	ck_assert(list->add(list, data1, 10, BYTE_TYPE));
 	ck_assert_ptr_eq(list->head->next->data, data1);
 	ck_assert(!(list->is_empty(list)));
 
@@ -21,7 +21,7 @@ START_TEST(clinkedlist_delete)
 {
 	CLinkedlist *list = new_CLinkedlist();
 	BYTE *data1 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
+	list->add(list, data1, 10, BYTE_TYPE);
 
 	list->delete(list, 0);
 	ck_assert_ptr_eq(list->head->next, NULL);
@@ -38,9 +38,9 @@ START_TEST(clinkedlist_insert)
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
 	BYTE *data3 = (BYTE *)malloc(10);
-	list1->add(list1, data1, 10);
-	list1->add(list1, data3, 10);
-	list1->insert(list1, 1, data2, 10);
+	list1->add(list1, data1, 10, BYTE_TYPE);
+	list1->add(list1, data3, 10, BYTE_TYPE);
+	list1->insert(list1, 1, data2, 10, BYTE_TYPE);
 	ck_assert_ptr_eq(list1->head->next->data, data1);
 	ck_assert_ptr_eq(list1->head->next->next->data, data2);
 	ck_assert_ptr_eq(list1->head->next->next->next->data, data3);
@@ -49,9 +49,9 @@ START_TEST(clinkedlist_insert)
 	BYTE *data4 = (BYTE *)malloc(10);
 	BYTE *data5 = (BYTE *)malloc(10);
 	BYTE *data6 = (BYTE *)malloc(10);
-	list2->add(list2, data5, 10);
-	list2->add(list2, data6, 10);
-	list2->insert(list2, 0, data4, 10);
+	list2->add(list2, data5, 10, BYTE_TYPE);
+	list2->add(list2, data6, 10, BYTE_TYPE);
+	list2->insert(list2, 0, data4, 10, BYTE_TYPE);
 	ck_assert_ptr_eq(list2->head->next->data, data4);
 	ck_assert_ptr_eq(list2->head->next->next->data, data5);
 	ck_assert_ptr_eq(list2->head->next->next->next->data, data6);
@@ -66,8 +66,8 @@ START_TEST(clinkedlist_change)
 	CLinkedlist *list = new_CLinkedlist();
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
-	ck_assert(list->change(list, 0, data2, 10));
+	list->add(list, data1, 10, BYTE_TYPE);
+	ck_assert(list->change(list, 0, data2, 10, BYTE_TYPE));
 	ck_assert_ptr_eq(list->head->next->data, data2);
 	delete_CLinkedlist(list);
 }
@@ -79,9 +79,9 @@ START_TEST(clinkedlist_forward_traversing)
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
 	BYTE *data3 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
-	list->add(list, data2, 10);
-	list->add(list, data3, 10);
+	list->add(list, data1, 10, BYTE_TYPE);
+	list->add(list, data2, 10, BYTE_TYPE);
+	list->add(list, data3, 10, BYTE_TYPE);
 	CLinkedlistNode *node1 = list->head->next;
 	CLinkedlistNode *node2 = list->head->next->next;
 	CLinkedlistNode *node3 = list->head->next->next->next;
@@ -102,9 +102,9 @@ START_TEST(clinkedlist_backward_traversing)
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
 	BYTE *data3 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
-	list->add(list, data2, 10);
-	list->add(list, data3, 10);
+	list->add(list, data1, 10, BYTE_TYPE);
+	list->add(list, data2, 10, BYTE_TYPE);
+	list->add(list, data3, 10, BYTE_TYPE);
 	CLinkedlistNode *node1 = list->head->next;
 	CLinkedlistNode *node2 = list->head->next->next;
 	CLinkedlistNode *node3 = list->head->next->next->next;
@@ -125,9 +125,9 @@ START_TEST(clinkedlist_reverse)
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
 	BYTE *data3 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
-	list->add(list, data2, 10);
-	list->add(list, data3, 10);
+	list->add(list, data1, 10, BYTE_TYPE);
+	list->add(list, data2, 10, BYTE_TYPE);
+	list->add(list, data3, 10, BYTE_TYPE);
 	CLinkedlistNode *node1 = list->head->next;
 	CLinkedlistNode *node2 = list->head->next->next;
 	CLinkedlistNode *node3 = list->head->next->next->next;
@@ -149,11 +149,11 @@ START_TEST(clinkedlist_total_size)
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
 	BYTE *data3 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
+	list->add(list, data1, 10, BYTE_TYPE);
 	ck_assert_uint_eq(list->total_size(list), 10);
-	list->add(list, data2, 10);
+	list->add(list, data2, 10, BYTE_TYPE);
 	ck_assert_uint_eq(list->total_size(list), 20);
-	list->add(list, data3, 10);
+	list->add(list, data3, 10, BYTE_TYPE);
 	ck_assert_uint_eq(list->total_size(list), 30);
 	delete_CLinkedlist(list);
 }
@@ -164,12 +164,12 @@ START_TEST(clinkedlist_last_node)
 	CLinkedlist *list = new_CLinkedlist();
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
-	CLinkedlist *last1 = list->last_node(list);
+	list->add(list, data1, 10, BYTE_TYPE);
+	CLinkedlistNode *last1 = list->last_node(list);
 	ck_assert_ptr_eq(list->head->next, last1);
 	ck_assert_ptr_eq(list->head->next->data, data1);
-	list->add(list, data2, 10);
-	CLinkedlist *last2 = list->last_node(list);
+	list->add(list, data2, 10, BYTE_TYPE);
+	CLinkedlistNode *last2 = list->last_node(list);
 	ck_assert_ptr_eq(list->head->next->next, last2);
 	ck_assert_ptr_eq(list->head->next->next->data, data2);
 	delete_CLinkedlist(list);
@@ -182,9 +182,9 @@ START_TEST(clinkedlist_specific_node)
 	BYTE *data1 = (BYTE *)malloc(10);
 	BYTE *data2 = (BYTE *)malloc(10);
 	BYTE *data3 = (BYTE *)malloc(10);
-	list->add(list, data1, 10);
-	list->add(list, data2, 10);
-	list->add(list, data3, 10);
+	list->add(list, data1, 10, BYTE_TYPE);
+	list->add(list, data2, 10, BYTE_TYPE);
+	list->add(list, data3, 10, BYTE_TYPE);
 	CLinkedlistNode *node1 = list->head->next;
 	CLinkedlistNode *node2 = list->head->next->next;
 	CLinkedlistNode *node3 = list->head->next->next->next;

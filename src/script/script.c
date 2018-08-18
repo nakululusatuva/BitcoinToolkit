@@ -385,7 +385,7 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(data, p1_list[i]->data, size);
-		if (new->script->add(new->script, data, size) == false)
+		if (new->script->add(new->script, data, size, BYTE_TYPE) == false)
 		{
 			delete_Script(new);
 			free(p1_list);
@@ -407,7 +407,7 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(data, p2_list[i]->data, size);
-		if (new->script->add(new->script, data, size) == false)
+		if (new->script->add(new->script, data, size, BYTE_TYPE) == false)
 		{
 			delete_Script(new);
 			free(p1_list);
@@ -967,7 +967,7 @@ void * Script_add_opcode(Script *this, Opcode *op)
 {
 	if (this == NULL || op == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (this->script->add(this->script, op, 1)) == SUCCESS )
+	else if ( (this->script->add(this->script, op, 1, BYTE_TYPE)) == SUCCESS )
 		return SUCCESS;
 	else return MEMORY_ALLOCATE_FAILED;
 }
@@ -976,7 +976,7 @@ void * Script_add_data(Script *this, BYTE *data, size_t size)
 {
 	if (this == NULL || data == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (this->script->add(this->script, data, size)) == SUCCESS )
+	else if ( (this->script->add(this->script, data, size, BYTE_TYPE)) == SUCCESS )
 		return SUCCESS;
 	else return MEMORY_ALLOCATE_FAILED;
 }
@@ -1004,14 +1004,14 @@ uint8_t * Script_to_string(Script *this, size_t *size)
 // Data bytes element which doesn't have a PUSHDATA element before will cause and return an error code.
 for (uint32_t i = 0; i < this->get_length(this); ++i)
 {
-	BYTE op_buffer = ((BYTE *)(elements[i]->data))[0];
-	size_t op_buffer_size = elements[i]->size;
+	BYTE buffer = ((BYTE *)(elements[i]->data))[0];
+	size_t buffer_size = elements[i]->size;
 
-	if (op_buffer_size == 1 && BYTE_IS_NONAME_PUSHDATA(op_buffer))
+	if (buffer_size == 1 && BYTE_IS_NONAME_PUSHDATA(buffer))
 	{	// PUSHDATA BYTE
 		int8_t size_str[3];
 		BYTE  size_byte[1];
-		size_byte[0] = op_buffer;
+		size_byte[0] = buffer;
 		bytearr_to_hexstr(size_byte, 1, size_str);
 
 		uint8_t *PUSHDATA = (uint8_t *)calloc(14, sizeof(uint8_t));
@@ -1026,7 +1026,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		PUSHDATA[8] = '('; PUSHDATA[9] = '0'; PUSHDATA[10] = 'x';
 		PUSHDATA[11] = size_str[0]; PUSHDATA[12] = size_str[1]; PUSHDATA[13] = ')';
 
-		if (elements_str->add(elements_str, PUSHDATA, 12 * sizeof(uint8_t)) == false)
+		if (elements_str->add(elements_str, PUSHDATA, 14 * sizeof(uint8_t), BYTE_TYPE) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1038,7 +1038,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		uint32_t expected = elements[i+1]->size;
 		uint32_t str_len  = expected * 2 + 3;
 		uint8_t  str[str_len];
-		if (expected != op_buffer)
+		if (expected != buffer)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1063,7 +1063,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		memcpy(bracketed+1, str, str_len-3);
 		bracketed[str_len - 2] = ']';
 		bracketed[str_len - 1] = ' ';
-		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t)) == false)
+		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t), BYTE_TYPE) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1072,9 +1072,9 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		}
 		i+=1;
 	}
-	else if (op_buffer_size == 1 && BYTE_IS_124_PUSHDATA(op_buffer))
+	else if (buffer_size == 1 && BYTE_IS_124_PUSHDATA(buffer))
 	{	// PUSHDATA
-		const char * op_name = get_op_name(op_buffer);
+		const char * op_name = get_op_name(buffer);
 		size_t opname_len = strlen(op_name);
 		uint8_t *PUSHDATA = (uint8_t *)calloc(opname_len, sizeof(uint8_t));
 		if (PUSHDATA == NULL)
@@ -1084,7 +1084,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(PUSHDATA, op_name, opname_len);
-		if (elements_str->add(elements_str, PUSHDATA, opname_len * sizeof(uint8_t)) == false)
+		if (elements_str->add(elements_str, PUSHDATA, opname_len * sizeof(uint8_t), BYTE_TYPE) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1096,13 +1096,14 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		size_t  expected = 0;
 		size_t  str_len   = 0;
 		uint8_t *str      = NULL;
-		switch (op_buffer)
+		switch (buffer)
 		{
 			case OP_PUSHDATA1:
 			{
 				expected = ((BYTE *)(elements[i+1]->data))[0];
 				str_len = expected * 2 + 3;
 				str = (uint8_t *)malloc(str_len);
+				break;
 			}
 			case OP_PUSHDATA2:
 			{
@@ -1110,6 +1111,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 				expected = (expected << 8) + ((BYTE *)(elements[i+1]->data))[0];
 				str_len = expected * 2 + 3;
 				str = (uint8_t *)malloc(str_len);
+				break;
 			}
 			case OP_PUSHDATA4:
 			{
@@ -1119,6 +1121,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 				expected = (expected << 8) + ((BYTE *)(elements[i+1]->data))[0];
 				str_len = expected * 2 + 3;
 				str = (uint8_t *)malloc(str_len * sizeof(uint8_t));
+				break;
 			}
 		}
 
@@ -1148,7 +1151,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		memcpy(bracketed+1, str, str_len-3);
 		bracketed[str_len - 2] = ']';
 		bracketed[str_len - 1] = ' ';
-		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t)) == false)
+		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t), BYTE_TYPE) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1157,10 +1160,10 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		}
 		i+=2;
 	}
-	else if (op_buffer_size == 1 && BYTE_IS_OPCODE(op_buffer) &&
-	        !BYTE_IS_124_PUSHDATA(op_buffer) && !BYTE_IS_NONAME_PUSHDATA(op_buffer))
+	else if (buffer_size == 1 && BYTE_IS_OPCODE(buffer) &&
+	        !BYTE_IS_124_PUSHDATA(buffer) && !BYTE_IS_NONAME_PUSHDATA(buffer))
 	{	// NON-PUSH OPCODE
-		const char * op_name = get_op_name(op_buffer);
+		const char * op_name = get_op_name(buffer);
 		size_t len = strlen(op_name) + 1;
 		uint8_t *OPCODE = (uint8_t *)calloc(len, sizeof(uint8_t));
 		if (OPCODE == NULL)
@@ -1171,7 +1174,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		}
 		memcpy(OPCODE, op_name, len);
 		OPCODE[len - 1] = ' ';
-		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t)) == false)
+		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t), BYTE_TYPE) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1179,7 +1182,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 	}
-	else if (op_buffer_size == 1 && !BYTE_IS_OPCODE(op_buffer))
+	else if (buffer_size == 1 && !BYTE_IS_OPCODE(buffer))
 	{
 		const char * op_name = get_op_name(OP_INVALIDOPCODE);
 		size_t len = strlen(op_name) + 1;
@@ -1192,7 +1195,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		}
 		memcpy(OPCODE, op_name, len);
 		OPCODE[len - 1] = ' ';
-		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t)) == false)
+		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t), BYTE_TYPE) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1200,7 +1203,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 	}
-	else if (op_buffer_size > 1)
+	else if (buffer_size > 1)
 	{
 		free(elements);
 		delete_CLinkedlist(elements_str);
@@ -1416,7 +1419,7 @@ uint64_t Script_get_length(Script *this)
 {
 	if (this == NULL)
 		return (uint64_t)PASSING_NULL_POINTER;
-	return this->get_length(this);
+	return this->script->get_length(this->script);
 }
 
 void * Script_get_element(Script *this, uint64_t index, size_t *size)
@@ -1430,7 +1433,7 @@ void * Script_get_element(Script *this, uint64_t index, size_t *size)
 	else
 	{
 		size_t size_buff = this->script->specific_node(this->script, index)->size;
-		size[0] = size_buff;
+		if (size != NULL) size[0] = size_buff;
 		void *element_copy = (void *)malloc(size_buff);
 		if (element_copy == NULL)
 			return MEMORY_ALLOCATE_FAILED;

@@ -78,3 +78,16 @@ int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, int8_t *str)
 
 	return 0;
 }
+
+int32_t bytearr_reverse(BYTE *arr, size_t size)
+{
+	size_t len = 0;
+	if (size % 2 != 0) len = (size-1)/2;
+	for (size_t i = 0; i < len; ++i)
+	{
+		BYTE buffer = arr[i];
+		arr[i] = arr[size-1-i];
+		arr[size-1-i] = buffer;
+	}
+	return 0;
+}
