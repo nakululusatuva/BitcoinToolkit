@@ -1,4 +1,4 @@
-# Bitcoin Tool Kit - A Collection of Cryptocurrency Tools
+# Bitcoin Toolkit - A Collection of Cryptocurrency Tools
 
 ## Introduction
 
