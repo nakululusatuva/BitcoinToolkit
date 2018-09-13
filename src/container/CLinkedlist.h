@@ -3,8 +3,6 @@
 
 #include "../common.h"
 
-#define CLINKEDLIST_EMPTY (void *)0x001000
-
 /** Common Type Linked List. It stores the data's pointer, instead of the data itself **/
 typedef struct CLinkedlistNode CLinkedlistNode;
 struct CLinkedlistNode

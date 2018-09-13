@@ -4,14 +4,6 @@
 #include "../common.h"
 #include "../container/CLinkedlist.h"
 
-#define SCRIPT_MULTISIG_M_BIGGER_N              (void *)0x003000
-#define SCRIPT_BARE_MULTISIG_PUBKEYS_OVER_LIMIT (void *)0x003001
-#define SCRIPT_HAS_NO_ELEMENTS                  (void *)0x003002
-#define SCRIPT_REMAIN_BYTES_LESS_THAN_PUSH      (void *)0x003003
-#define SCRIPT_ELEMENT_SIZE_OVERLIMIT           (void *)0x003004
-#define SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED  (void *)0x003005
-#define SCRIPT_CONTAINED_INVALID_ELEMENT        (void *)0x003006
-
 #define MAX_SCRIPT_ELEMENT_SIZE      520 // Maximum number of bytes pushable to the stack
 #define MAX_OPS_PER_SCRIPT           201 // Maximum number of non-push operations per script
 #define MAX_PUBKEYS_PER_BARE_MULTISIG 20 // Maximum number of public keys per multisig

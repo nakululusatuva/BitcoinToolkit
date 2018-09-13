@@ -12,7 +12,8 @@
 // Constants
 void * EXC_OP_0_FALSE(CStack *stack);
 void * EXC_OP_1_TRUE(CStack *stack);
-void * EXC_OP_PUSHDATAX(CStack *stack, Script *script, uint64_t *pos);
+void * EXC_OP_PUSHDATA(CStack *stack, Script *script, uint64_t *pos);
+void * EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos);
 void * EXC_OP_1NEGATE(CStack *stack);
 void * EXC_OP_2_TO_16(CStack *stack, BYTE number);
 

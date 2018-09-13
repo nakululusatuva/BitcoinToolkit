@@ -4,11 +4,13 @@
 #include "script.h"
 #include "operation.h"
 #include "interpreter.h"
+#include "../err.h"
 #include "../codec/codec.h"
 #include "../container/CStack.h"
 
 void * EXC_OP_0_FALSE(CStack *stack)
 {
+	if (stack->is_full) return CSTACK_FULL;
 	BYTE *num = NULL;
 	stack->push(stack, num, 0, BYTE_TYPE);
 	return OPERATION_EXECUTED;
@@ -93,6 +95,7 @@ void * EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
 
 	// Push to stack.
 	stack->push(stack, data, size, BYTE_TYPE);
+	*pos = (*pos) + 3;
 	return OPERATION_EXECUTED;
 }
 
@@ -903,51 +906,66 @@ void * EXC_OP_EQUALVERIFY(CStack *stack)
 
 void * EXC_OP_1ADD(CStack *stack)
 {
-	size_t top_size;
-	BYTE *top = stack->pop(stack, &top_size, NULL);
+	size_t size;
+	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL);
 
-	// Little-endian to big-endian.
-	if ( !(bytearr_reverse(top, top_size)) ) return INTERPRETER_ERROR;
-	char *hex = (char *)malloc(top_size*2+1);
-	if (hex == NULL)
+	// Check if zero.
+	if ( (size == 0 && top == NULL) || (size == 1 && top != NULL) )
+	{
+		top = (BYTE *)malloc(1);
+		if (top == NULL) return MEMORY_ALLOCATE_FAILED;
+		top[0] = 0x01;
+		stack->push(stack, top, 1, BYTE_TYPE);
+		return OPERATION_EXECUTED;
+	}
+	else bytearr_reverse(top, size);
+	
+	// Big number initialization.
+	BIGNUM *bn = BN_new();
+	if (bn == NULL)
 	{
 		free(top);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	bytearr_to_hexstr(top, top_size, hex);
-
-	BIGNUM *bn = BN_new();
-	if (bn == NULL)
+	BIGNUM *one = BN_new();
+	if (one == NULL)
 	{
-		free(top); free(hex);
+		free(top); BN_free(bn);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-
-	BIGNUM *minus1 = BN_new();
-	if (minus1 == NULL)
+	BIGNUM *r = BN_new();
+	if (r == NULL)
 	{
-		free(top); free(hex); BN_free(bn);
+		free(top); BN_free(bn); BN_free(one);
 		return MEMORY_ALLOCATE_FAILED;
 	}
+	BN_hex2bn(&one, "1");
 
-	BIGNUM *result = BN_new();
-	if (result == NULL)
+	// Calculation.
+	char *r_str = NULL;
+	// Negative
+	if (top[0] > 0x80)
 	{
-		free(top); free(hex); BN_free(bn); BN_free(minus1);
-		return MEMORY_ALLOCATE_FAILED;
+		int8_t hexstr[size*2+1];
+		bytearr_to_hexstr(top, size, hexstr);
+		BN_hex2bn(&bn, (const char *)hexstr);
+		BN_sub(r, bn, one);
+		r_str = BN_bn2hex((const BIGNUM *)r);
+		BN_free(bn); BN_free(one); BN_free(r); free(top);
+	}
+	// Positive
+	else if (top[0] < 0x80)
+	{
+		int8_t hexstr[size*2+1];
+		bytearr_to_hexstr(top, size, hexstr);
+		BN_hex2bn(&bn, (const char *)hexstr);
+		BN_add(r, bn, one);
+		r_str = BN_bn2hex((const BIGNUM *)r);
+		BN_free(bn); BN_free(one); BN_free(r); free(top);
 	}
 
-	BN_hex2bn(&bn, (const char *)hex);
-	BN_hex2bn(&minus1, "-1");
-	BN_add(result, (const BIGNUM *)bn, (const BIGNUM *)minus1);
-
-	char *r_str = BN_bn2hex((const BIGNUM *)result);
-	size_t r_len = strlen((const char *)r_str);
-	BYTE *to_push = (BYTE *)malloc(r_len/2);
-	if (to_push == NULL)
-	{
-		free(top); free(hex); BN_free(bn); BN_free(minus1); BN_free(result); OPENSSL_free(r_str);
-		return MEMORY_ALLOCATE_FAILED;
-	}
-	hexstr_to_bytearr((int8_t *)r_str, r_len, to_push);
+	// Conversion.
+	size_t len = strlen((const char *)r_str);
+	BYTE *r_bytearr = (BYTE *)malloc(len/2);
+	hexstr_to_bytearr((int8_t *)r_str, len, r_bytearr);
 }

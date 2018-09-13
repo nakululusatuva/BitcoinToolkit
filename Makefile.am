@@ -2,6 +2,7 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 AM_CFLAGS = -Wall
 noinst_PROGRAMS = btctool
 btctool_SOURCES = src/btctool.c \
+	src/err.c \
 	src/address.c \
 	src/cJSON/cJSON.c \
 	src/codec/base.c \

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "../err.h"
 #include "../common.h"
 #include "../codec/codec.h"
 #include "../container/CStack.h"
@@ -799,24 +800,33 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 
 Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size)
 {
+	/*
 	if (size != 32)
 		return INVALID_SHA256_SIZE;
 	else if (sha256 == NULL)
 		return PASSING_NULL_POINTER;
+	*/
+	return NULL;
 }
 
 Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size)
 {
+	/*
 	if (size != 20)
 		return INVALID_SHA256_SIZE;
 	else if (hash160 == NULL)
 		return PASSING_NULL_POINTER;
+	*/
+	return NULL;
 }
 
 Script * new_Script_null_data(BYTE *data, size_t size)
 {
+	/*
 	if (data == NULL)
 		return PASSING_NULL_POINTER;
+	*/
+	return NULL;
 }
 
 void delete_Script(Script *this)
@@ -1389,23 +1399,32 @@ void * Script_is_p2sh_multisig(Script *this)
 
 void * Script_is_p2wsh(Script *this)
 {
+	/*
 	// ver + <32 bytes sha256 of redeem script>
 	if (this == NULL)
 		return PASSING_NULL_POINTER;
+	*/
+	return NULL;
 }
 
 void * Script_is_p2wpkh(Script *this)
 {
+	/*
 	// ver + <20 bytes hash160 of pubkey>
 	if (this == NULL)
 		return PASSING_NULL_POINTER;
+	*/
+	return NULL;
 }
 
 void * Script_is_null_data(Script *this)
 {
+	/*
 	// OP_RETURN + <0 to 40 bytes data>
 	if (this == NULL)
 		return PASSING_NULL_POINTER;
+	*/
+	return NULL;
 }
 
 bool Script_is_empty(Script *this)

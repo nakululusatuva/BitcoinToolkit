@@ -1,3 +1,4 @@
+#include "../err.h"
 #include "../common.h"
 #include "CLinkedlist.h"
 #include <stdlib.h>

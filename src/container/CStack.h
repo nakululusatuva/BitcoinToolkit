@@ -3,10 +3,6 @@
 
 #include "../common.h"
 
-#define CSTACK_EMPTY            (void *)0x002000
-#define CSTACK_FULL             (void *)0x002000
-#define CSTACK_INVALID_CAPACITY (void *)0x002002
-
 /** Common Type Stack. It stores the data's pointer, instead of the data itself **/
 typedef struct CStack CStack;
 struct CStack

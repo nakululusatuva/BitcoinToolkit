@@ -24,6 +24,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <getopt.h>
 #include <time.h>
+#include "err.h"
 #include "codec/codec.h"
 #include "common.h"
 #include "address.h"

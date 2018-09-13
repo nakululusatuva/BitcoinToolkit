@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "../err.h"
 #include "../common.h"
 #include "CStack.h"
 
