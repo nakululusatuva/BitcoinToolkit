@@ -1,5 +1,6 @@
 # custom
 clean.sh
+.vscode
 
 # Prerequisites
 *.d

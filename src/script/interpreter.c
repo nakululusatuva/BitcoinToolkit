@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "../err.h"
+#include "../status.h"
 #include "../common.h"
 #include "script.h"
 #include "interpreter.h"
@@ -42,33 +42,34 @@ void * delete_Interpreter(Interpreter *this)
 	else if (this->alt_stack != NULL) delete_CStack(this->alt_stack);
 	this->script = NULL;
 	free(this);
-	return SUCCESS;
+	return SUCCEEDED;
 }
 
 void * Interpreter_dump_data_stack(Interpreter *this)
 {
 	delete_CStack(this->data_stack);
 	this->data_stack = NULL;
-	return SUCCESS;
+	return SUCCEEDED;
 }
 
 void * Interpreter_dump_alt_stack(Interpreter *this)
 {
 	delete_CStack(this->alt_stack);
 	this->alt_stack = NULL;
-	return SUCCESS;
+	return SUCCEEDED;
 }
 
-void * Interpreter_launch(Interpreter *this, uint64_t pos)
+void * Interpreter_launch(Interpreter *this, uint64_t start_point)
 {
-	void *ret = NULL;
-	void *previous_status = NULL;
-	size_t size = 0;
+	void *status = NULL;
 	BYTE *element = NULL;
-
-for (uint64_t i = pos; i < this->script->get_length(this->script); ++i)
+	size_t size = 0;
+	uint64_t cursor = start_point;
+	
+while (cursor < this->script->get_length(this->script))
+//for (uint64_t cursor = start_point; cursor < this->script->get_length(this->script); ++cursor)
 {
-	element = this->script->get_element(this->script, i, &size);
+	element = this->script->get_element(this->script, cursor, &size);
 	if (size != 1) return SCRIPT_CONTAINED_INVALID_ELEMENT;
 
 	switch (element[0])
@@ -76,17 +77,17 @@ for (uint64_t i = pos; i < this->script->get_length(this->script); ++i)
 	// Constants
 		case OP_0: // OP_FALSE
 		{
-			ret = EXC_OP_0_FALSE(this->data_stack);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_0_FALSE(this->data_stack);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_1: // OP_TRUE
 		{
-			ret = EXC_OP_1_TRUE(this->data_stack);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_1_TRUE(this->data_stack);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case 0x01:case 0x02:case 0x03:case 0x04:case 0x05:case 0x06:case 0x07:case 0x08:case 0x09: \
 		case 0x0a:case 0x0b:case 0x0c:case 0x0d:case 0x0e:case 0x0f:case 0x10:case 0x11:case 0x12: \
@@ -98,97 +99,98 @@ for (uint64_t i = pos; i < this->script->get_length(this->script); ++i)
 		case 0x40:case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48: \
 		case 0x49:case 0x4a:case 0x4b:
 		{
-			ret = EXC_OP_PUSHDATA(this->data_stack, this->script, &i);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_PUSHDATA(this->data_stack, this->script, &cursor);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_PUSHDATA1:case OP_PUSHDATA2:case OP_PUSHDATA4:
 		{
-			ret = EXC_OP_PUSHDATAN(this->data_stack, this->script, &i);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_PUSHDATAN(this->data_stack, this->script, &cursor);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_1NEGATE:
 		{
-			ret = EXC_OP_1NEGATE(this->data_stack);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_1NEGATE(this->data_stack);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_2:case OP_3:case OP_4:case OP_5:case OP_6:case OP_7:case OP_8:case OP_9: \
 		case OP_10:case OP_11:case OP_12:case OP_13:case OP_14:case OP_15:case OP_16:
 		{
-			ret = EXC_OP_2_TO_16(this->data_stack, element[0]-0x50);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_2_TO_16(this->data_stack, element[0]-0x50);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 
 	// Flow control
 		case OP_NOP:
 		{
-			ret = EXC_OP_NOP();
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_NOP();
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_IF:
 		{
-			ret = EXC_OP_IF(this->data_stack, this->script, &i);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_IF(this->data_stack, this->script, &cursor);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_NOTIF:
 		{
-			ret = EXC_OP_NOTIF(this->data_stack, this->script, &i);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_NOTIF(this->data_stack, this->script, &cursor);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_ELSE:
 		{
-			ret = EXC_OP_ELSE(this->data_stack, this->script, &i, previous_status);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_ELSE(this->data_stack, this->script, &cursor, status);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_ENDIF:
 		{
-			ret = EXC_OP_ENDIF(this->data_stack, this->script, &i);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_ENDIF(this->data_stack, this->script, &cursor);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_VERIFY:
 		{
-			ret = EXC_OP_VERIFY(this->data_stack);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_VERIFY(this->data_stack);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 		case OP_RETURN:
 		{
-			ret = EXC_OP_RETURN(this->data_stack, this->script, &i);
-			previous_status = ret;
-			if (ret == OPERATION_EXECUTED || ret == OPERATION_NOT_EXECUTED) break;
-			else return ret;
+			status = EXC_OP_RETURN(this->script, cursor);
+			if (status == OPERATION_EXECUTED ||
+				status == OPERATION_NOT_EXECUTED) break;
+			else return status;
 		}
 	}
+	cursor++;
 }
 	size_t top_size;
 	BYTE *top = (BYTE *)this->data_stack->pop(this->data_stack, &top_size, NULL);
 	if ( (top_size == 1 && top == 0x00) || (top == NULL) )
 	{
 		free(top);
-		return INTERPRETER_BREAK;
+		return INTERPRETER_FALSE;
 	}
 	else
 	{
 		free(top);
-		return INTERPRETER_CORRECT;
+		return INTERPRETER_TRUE;
 	}
 }
 
@@ -196,7 +198,7 @@ void * Interpreter_load_script(Interpreter *this, Script *feed)
 {
 	if (this->script != NULL) return INTERPRETER_ALREADY_LOADED;
 	this->script = feed;
-	return SUCCESS;
+	return SUCCEEDED;
 }
 
 Script * Interpreter_unload_script(Interpreter *this)

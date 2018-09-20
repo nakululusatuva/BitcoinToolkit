@@ -4,7 +4,7 @@
 #include "script.h"
 #include "operation.h"
 #include "interpreter.h"
-#include "../err.h"
+#include "../status.h"
 #include "../codec/codec.h"
 #include "../container/CStack.h"
 
@@ -143,12 +143,11 @@ void * EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
 	BYTE *top = stack->pop(stack, &top_size, NULL);
 	if (top_size == 0 && top == NULL)
 	{	// Stack top element is NULL.
-		*pos = (*pos) + length + 1;
+		*pos = (*pos) + length;
 		return OPERATION_NOT_EXECUTED;
 	}
 	else if (top_size == 1 && top[0] != 0x00)
-	{	// Stack top element only one byte.
-		*pos = (*pos) + 1;
+	{	// Stack top element is zero.
 		free(top);
 		return OPERATION_EXECUTED;
 	}
@@ -159,12 +158,11 @@ void * EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
 		{
 			if (top[i] != 0x00)
 			{
-				*pos = (*pos) + 1;
 				free(top);
 				return OPERATION_EXECUTED;
 			}
 		}
-		*pos = (*pos) + length + 1;
+		*pos = (*pos) + length;
 		free(top);
 		return OPERATION_NOT_EXECUTED;
 	}
@@ -189,12 +187,10 @@ void * EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
 	BYTE *top = stack->pop(stack, &top_size, NULL);
 	if (top_size == 0 && top == NULL)
 	{	// Stack top element is NULL.
-		*pos = (*pos) + 1;
 		return OPERATION_EXECUTED;
 	}
 	else if (top_size == 1 && top[0] == 0x00)
 	{	// Stack top element only one byte.
-		*pos = (*pos) + 1;
 		free(top);
 		return OPERATION_EXECUTED;
 	}
@@ -205,11 +201,10 @@ void * EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
 		{
 			if (top[i] != 0x00)
 			{
-				*pos = (*pos) + length + 1;
+				*pos = (*pos) + length;
 				return OPERATION_NOT_EXECUTED;
 			}
 		}
-		*pos = (*pos) + 1;
 		free(top);
 		return OPERATION_EXECUTED;
 	}
@@ -245,12 +240,11 @@ void * EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_
 	// Previous not executed.
 	if (previous_status == OPERATION_EXECUTED)
 	{
-		*pos = (*pos) + length + 1;
+		*pos = (*pos) + length;
 		return OPERATION_NOT_EXECUTED;
 	}
 	else
 	{
-		*pos = (*pos) + 1;
 		return OPERATION_EXECUTED;
 	}
 }
@@ -267,11 +261,11 @@ void * EXC_OP_VERIFY(CStack *stack)
 	size_t size;
 	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL);
 
-	if (size == 0 && top == NULL) return INTERPRETER_BREAK;
+	if (size == 0 && top == NULL) return INTERPRETER_FALSE;
 	else if (size == 1 && top[0] == 0x00)
 	{
 		free(top);
-		return INTERPRETER_BREAK;
+		return INTERPRETER_FALSE;
 	}
 	else
 	{	// Stack top element more than one byte.
@@ -280,16 +274,16 @@ void * EXC_OP_VERIFY(CStack *stack)
 			if (top[i] != 0x00) return OPERATION_EXECUTED;
 		}
 		free(top);
-		return INTERPRETER_BREAK;
+		return INTERPRETER_FALSE;
 	}
 }
 
-void * EXC_OP_RETURN(CStack *stack, Script *script, uint64_t *pos)
+void * EXC_OP_RETURN(Script *script, uint64_t pos)
 {
 	size_t size;
-	script->get_element(script, *pos, &size);
+	script->get_element(script, pos+1, &size);
 	if (size > 40) return INTERPRETER_OP_RETURN_OVERSIZE;
-	else return INTERPRETER_BREAK;
+	else return INTERPRETER_FALSE;
 }
 
 void * EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack)
@@ -909,63 +903,5 @@ void * EXC_OP_1ADD(CStack *stack)
 	size_t size;
 	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL);
 
-	// Check if zero.
-	if ( (size == 0 && top == NULL) || (size == 1 && top != NULL) )
-	{
-		top = (BYTE *)malloc(1);
-		if (top == NULL) return MEMORY_ALLOCATE_FAILED;
-		top[0] = 0x01;
-		stack->push(stack, top, 1, BYTE_TYPE);
-		return OPERATION_EXECUTED;
-	}
-	else bytearr_reverse(top, size);
 	
-	// Big number initialization.
-	BIGNUM *bn = BN_new();
-	if (bn == NULL)
-	{
-		free(top);
-		return MEMORY_ALLOCATE_FAILED;
-	}
-	BIGNUM *one = BN_new();
-	if (one == NULL)
-	{
-		free(top); BN_free(bn);
-		return MEMORY_ALLOCATE_FAILED;
-	}
-	BIGNUM *r = BN_new();
-	if (r == NULL)
-	{
-		free(top); BN_free(bn); BN_free(one);
-		return MEMORY_ALLOCATE_FAILED;
-	}
-	BN_hex2bn(&one, "1");
-
-	// Calculation.
-	char *r_str = NULL;
-	// Negative
-	if (top[0] > 0x80)
-	{
-		int8_t hexstr[size*2+1];
-		bytearr_to_hexstr(top, size, hexstr);
-		BN_hex2bn(&bn, (const char *)hexstr);
-		BN_sub(r, bn, one);
-		r_str = BN_bn2hex((const BIGNUM *)r);
-		BN_free(bn); BN_free(one); BN_free(r); free(top);
-	}
-	// Positive
-	else if (top[0] < 0x80)
-	{
-		int8_t hexstr[size*2+1];
-		bytearr_to_hexstr(top, size, hexstr);
-		BN_hex2bn(&bn, (const char *)hexstr);
-		BN_add(r, bn, one);
-		r_str = BN_bn2hex((const BIGNUM *)r);
-		BN_free(bn); BN_free(one); BN_free(r); free(top);
-	}
-
-	// Conversion.
-	size_t len = strlen((const char *)r_str);
-	BYTE *r_bytearr = (BYTE *)malloc(len/2);
-	hexstr_to_bytearr((int8_t *)r_str, len, r_bytearr);
 }

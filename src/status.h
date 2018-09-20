@@ -1,9 +1,11 @@
-#ifndef _btk_err_
-#define _btk_err_
+#ifndef _btk_status_
+#define _btk_status_
+
+#include "common.h"
 
 /* 0x000000 ~ 0x0000ff : Common reserved */
 #define FAILED                 (void *)0x000000
-#define SUCCESS                (void *)0x000001
+#define SUCCEEDED              (void *)0x000001
 #define BYTE_TYPE              (void *)0x000002
 #define INT8_TYPE              (void *)0x000003
 #define INT16_TYPE             (void *)0x000004
@@ -47,8 +49,8 @@
 #define OPERATION_EXECUTED     (void *)0x001040 // No error and executed.
 #define OPERATION_NOT_EXECUTED (void *)0x001041 // No error but not executed.
 // Interpretation result.
-#define INTERPRETER_CORRECT (void *)0x001042
-#define INTERPRETER_BREAK   (void *)0x001043
+#define INTERPRETER_TRUE  (void *)0x001042
+#define INTERPRETER_FALSE (void *)0x001043
 // Interpret-time errors.
 #define INTERPRETER_ERROR                  (void *)0x001044
 #define INTERPRETER_OP_ELSE_WITHOUT_PREFIX (void *)0x001045
@@ -59,5 +61,9 @@
 // Functional errors.
 #define INTERPRETER_ALREADY_LOADED   (void *)0x00104A
 #define INTERPRETER_NO_SCRIPT_LOADED (void *)0x00104B
+
+bool __btc_is_status_ptr(void *ptr);
+void * __btc_status_ptr(const uintptr_t statusnum);
+uintptr_t __btc_status_num(const void *errptr);
 
 #endif

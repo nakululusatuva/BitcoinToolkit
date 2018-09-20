@@ -25,22 +25,23 @@ struct CStack
 // Construct and Destruct Fuctions.
 /** New a common type stack.
 *   \param  capacity    How many elements.
-*   \return error codes:
-*           INVALID_CAPACITY
-*           MEMORY_ALLOCATE_FAILED
-*   \else on success.
+*   \return errors INVALID_CAPACITY
+*                  MEMORY_ALLOCATE_FAILED
+*   \else on succeeded.
 **/
 CStack * new_CStack(const uint64_t capacity);
 void delete_CStack(CStack *this);
 
 // Member Fuctions.
 /** Push data onto stack.
-*   \param  data        Point to the data.
+*   \param  data        Data's pointer.
 *   \param  size        How many bytes.
-*   \return true on success.
-*          false on error.
-*   Parameter 'data' must be allocated on heap memory.
-*   Once CStack_push() returns true:
+*   \param  type        A pointer that prompt the data type, check ./src/status.h
+*                       NULL is allowed if you don't need to mark the data type.
+*   \return success: SUCCEEDED
+*           errors:  CSTACK_FULL
+*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
+*   Once CStack_push() returns SUCCEEDED:
 *   1. Do not push 'data' to another CStack.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
@@ -48,10 +49,11 @@ void * CStack_push(CStack *this, void *data, size_t size, void *type);
 
 /** Pop the top element.
 *   \param  size        Store the top element's data size (bytes).
-*   \return error codes:
-*           CSTACK_EMPTY
-*   \else on success.
-*   Once CStack_pop() success, you need to free the returned pointer manually.
+*   \param  type        Store a pointer that prompt the data type, check ./src/status.h
+*                       NULL is allowed if you don't need to know the data type.
+*   \return errors: CSTACK_EMPTY
+*   \else on succeeded.
+*   Once CStack_pop() success, you need to free the popped pointer manually.
 **/
 void * CStack_pop(CStack *this, size_t *size, void **type);
 
@@ -62,7 +64,7 @@ bool CStack_is_empty(CStack *this);
 bool CStack_is_full(CStack *this);
 
 /* Get total data size, return how many bytes */
-size_t CStack_total_size(CStack *this);
+uint64_t CStack_total_size(CStack *this);
 uint64_t CStack_get_depth(CStack *this);
 uint64_t CStack_get_capacity(CStack *this);
 

@@ -24,7 +24,7 @@ void * EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos);
 void * EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_status);
 void * EXC_OP_ENDIF(CStack *stack, Script *script, uint64_t *pos);
 void * EXC_OP_VERIFY(CStack *stack);
-void * EXC_OP_RETURN(CStack *stack, Script *script, uint64_t *pos);
+void * EXC_OP_RETURN(Script *script, uint64_t pos);
 
 // Stack
 void * EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack);

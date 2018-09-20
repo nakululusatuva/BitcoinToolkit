@@ -23,13 +23,13 @@ struct CLinkedlist
 	void * (*delete)(CLinkedlist *, uint64_t);
 	void * (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *);
 	void * (*change)(CLinkedlist *, uint64_t, void *, size_t, void *);
-	CLinkedlistNode ** (*forward_traversing)(CLinkedlist *);
-	CLinkedlistNode ** (*backward_traversing)(CLinkedlist *);
+	CLinkedlistNode ** (*forward_iter)(CLinkedlist *);
+	CLinkedlistNode ** (*backward_iter)(CLinkedlist *);
 	void * (*reverse)(CLinkedlist *);
 	bool (*is_empty)(CLinkedlist *);
 	size_t (*total_size)(CLinkedlist *);
 	CLinkedlistNode * (*last_node)(CLinkedlist *);
-	CLinkedlistNode * (*specific_node)(CLinkedlist *, uint64_t);
+	CLinkedlistNode * (*get_node)(CLinkedlist *, uint64_t);
 	uint64_t (*get_length)(CLinkedlist *);
 };
 
@@ -38,13 +38,15 @@ CLinkedlist * new_CLinkedlist();
 void delete_CLinkedlist(CLinkedlist *this);
 
 /** Member Fuctions **/
-/** Add a data's pointer.
+/** Add a data's pointer to the linked list.
 *   \param  data        Data's pointer.
 *   \param  size        Data's size, how many bytes.
-*   \return true on success.
-*          false on error.
-*   Parameter 'data' must be allocated on heap memory.
-*   Once CLinkedlist_add() returns true:
+*   \param  type        A pointer that prompt the data type, check ./src/status.h
+*                       NULL is allowed if you don't need to mark the data type.
+*   \return success: SUCCEEDED
+*           errors:  MEMORY_ALLOCATE_FAILED
+*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
+*   Once CLinkedlist_add() returns SUCCEEDED:
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
@@ -52,8 +54,9 @@ void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
 
 /** Delete a node.
 *   \param  index       Node's position, start from zero.
-*   \return true on success.
-*          false on error.
+*   \return success: SUCCEEDED
+*           errors:  CLINKEDLIST_EMPTY
+*                    INDEX_OUT_RANGE
 **/
 void * CLinkedlist_delete(CLinkedlist *this, uint64_t index);
 
@@ -61,69 +64,73 @@ void * CLinkedlist_delete(CLinkedlist *this, uint64_t index);
 *   \param  after       Node's position, the new node will be in front of it.
 *   \param  data        Data's pointer.
 *   \param  size        Data's size, how many bytes.
-*   \return true on success.
-*          false on error.
-*   Parameter 'data' must be allocated on heap memory.
-*   Once CLinkedlist_insert() returns true:
+*   \param  type        A pointer that prompt the data type, check ./src/status.h
+*                       NULL is allowed if you don't need to mark the data type.
+*   \return success: SUCCEEDED
+*           errors:  MEMORY_ALLOCATE_FAILED
+*                    INDEX_OUT_RANGE
+*				     CLINKEDLIST_EMPTY
+*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
+*   Once CLinkedlist_insert() returns SUCCEEDED:
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
 void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type);
 
-/** Change specific node's data.
-*   \param  index       Node's position, the node you want to edit.
-*   \param  data        New data's pointer, the old data itself will be freed.
+/** Change change node's data.
+*   \param  index       Node's position.
+*   \param  data        New data's pointer, the old data will be freed automatically.
 *   \param  size        New data's size, how many bytes.
-*   \return true on success.
-*          false on error.
-*   Parameter 'data' must be allocated on heap memory.
-*   Once CLinkedlist_insert() returns true:
+*   \param  type        A pointer that prompt the data type, check ./src/status.h
+*                       NULL is allowed if you don't need to mark the data type.
+*   \return success: SUCCEEDED
+*           errors:  INDEX_OUT_RANGE
+*                    CLINKEDLIST_EMPTY
+*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
+*   Once CLinkedlist_change() returns SUCCEEDED:
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
-*   3. The old data will be freed.
+*   3. The old data will be freed automatically.
 **/
 void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type);
 
-/** Forward traversing the linked list.
-*   \return error codes:
-*           CLINKEDLIST_EMPTY
-*           MEMORY_ALLOCATE_FAILED
-*   \else on a pointer-array that store the nodes' pointer.
-*   Need to be freed manually.
+/** Forward iterate the linked list.
+*   \return errors: CLINKEDLIST_EMPTY
+*                   MEMORY_ALLOCATE_FAILED
+*   \else on an array pointer that store the nodes' pointer, need to be freed manually.
 *   Do not free the nodes or the node->data manually.
 **/
-CLinkedlistNode ** CLinkedlist_forward_traversing(CLinkedlist *this);
+CLinkedlistNode ** CLinkedlist_forward_iter(CLinkedlist *this);
 
-/** Backward traversing the linked list.
-*   \return error codes:
-*           CLINKEDLIST_EMPTY
-*           MEMORY_ALLOCATE_FAILED
-*   \else on a pointer-array that store the nodes' pointer.
-*   Need to be freed manually.
+/** Backward iterate the linked list.
+*   \return errors: CLINKEDLIST_EMPTY
+*                   MEMORY_ALLOCATE_FAILED
+*   \else on an array pointer that store the nodes' pointer, need to be freed manually.
 *   Do not free the nodes or the node->data manually.
 **/
-CLinkedlistNode ** CLinkedlist_backward_traversing(CLinkedlist *this);
+CLinkedlistNode ** CLinkedlist_backward_iter(CLinkedlist *this);
+/* Reverse the linked list */
 void * CLinkedlist_reverse(CLinkedlist *this);
 bool CLinkedlist_is_empty(CLinkedlist *this);
-/* Get the total data size, return -1 on empty linked list, -2 on memory allocated failed */
-size_t CLinkedlist_total_size(CLinkedlist *this);
+/* Get the total data size
+* return -1(0xffffffffffffffff) on empty linked list
+* -2(0xfffffffffffffffe) on memory allocated failed */
+uint64_t CLinkedlist_total_size(CLinkedlist *this);
 
 /** Get the last node's pointer
-*   \return error codes:
-*           CLINKEDLIST_EMPTY
+*   \return errors: CLINKEDLIST_EMPTY
 *   \else on node's pointer.
 *   Do not free the node or the node->data manually.
 **/
 CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *this);
 
-/** Get the specific node's pointer
-*   \return error codes:
-*           CLINKEDLIST_EMPTY
-*           INDEX_OUT_RANGE
+/** Get the  node's pointer
+*   \return errors: CLINKEDLIST_EMPTY
+*                   INDEX_OUT_RANGE
 *   \else on node's pointer.
 *   Do not free the node or the node->data manually.
 **/
-CLinkedlistNode * CLinkedlist_specific_node(CLinkedlist *this, uint64_t index);
+CLinkedlistNode * CLinkedlist_get_node(CLinkedlist *this, uint64_t index);
 uint64_t CLinkedlist_get_length(CLinkedlist *this);
 
 #endif

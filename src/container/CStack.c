@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "../err.h"
+#include "../status.h"
 #include "../common.h"
 #include "CStack.h"
 
@@ -55,7 +55,7 @@ void delete_CStack(CStack *this)
 {
 	for (int i = 0; i < this->top - this->base; ++i)
 	{
-		free((this->base)[i]);
+		if ((this->base)[i]) free((this->base)[i]);
 	}
 	free(this->base);
 	free(this->size);
@@ -66,7 +66,7 @@ void delete_CStack(CStack *this)
 void * CStack_push(CStack *this, void *data, size_t size, void *type)
 {
 	if (CStack_is_full(this))
-		return CSTACK_EMPTY;
+		return CSTACK_FULL;
 	else
 	{
 		*(this->top) = data;
@@ -76,7 +76,7 @@ void * CStack_push(CStack *this, void *data, size_t size, void *type)
 			(this->size)[this->top - this->base] = size;
 		(this->type)[this->top - this->base] = type;
 		this->top++;
-		return SUCCESS;
+		return SUCCEEDED;
 	}
 }
 
@@ -113,11 +113,11 @@ bool CStack_is_full(CStack *this)
 	else return false;
 }
 
-size_t CStack_total_size(CStack *this)
+uint64_t CStack_total_size(CStack *this)
 {
-	size_t total_size = 0;
+	uint64_t total_size = 0;
 
-	for (size_t i = 0; i < this->capacity; ++i)
+	for (uint64_t i = 0; i < this->capacity; ++i)
 		total_size = total_size + (this->size)[i];
 
 	return total_size;

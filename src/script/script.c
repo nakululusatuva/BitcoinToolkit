@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "../err.h"
+#include "../status.h"
 #include "../common.h"
 #include "../codec/codec.h"
 #include "../container/CStack.h"
@@ -359,14 +359,14 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 	if (new == NULL)
 		return MEMORY_ALLOCATE_FAILED;
 
-	CLinkedlistNode **p1_list = p1->script->forward_traversing(p1->script);
+	CLinkedlistNode **p1_list = p1->script->forward_iter(p1->script);
 	if (p1_list == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
 		return MEMORY_ALLOCATE_FAILED;
 	}
 
-	CLinkedlistNode **p2_list = p2->script->forward_traversing(p2->script);
+	CLinkedlistNode **p2_list = p2->script->forward_iter(p2->script);
 	if (p2_list == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
@@ -723,7 +723,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 	}
 
 	// Add public keys.
-	CLinkedlistNode **keys = pubkeys->forward_traversing(pubkeys);
+	CLinkedlistNode **keys = pubkeys->forward_iter(pubkeys);
 	if (keys == MEMORY_ALLOCATE_FAILED)
 	{
 		delete_Script(new);
@@ -977,8 +977,8 @@ void * Script_add_opcode(Script *this, Opcode *op)
 {
 	if (this == NULL || op == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (this->script->add(this->script, op, 1, BYTE_TYPE)) == SUCCESS )
-		return SUCCESS;
+	else if ( (this->script->add(this->script, op, 1, BYTE_TYPE)) == SUCCEEDED )
+		return SUCCEEDED;
 	else return MEMORY_ALLOCATE_FAILED;
 }
 
@@ -986,8 +986,8 @@ void * Script_add_data(Script *this, BYTE *data, size_t size)
 {
 	if (this == NULL || data == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (this->script->add(this->script, data, size, BYTE_TYPE)) == SUCCESS )
-		return SUCCESS;
+	else if ( (this->script->add(this->script, data, size, BYTE_TYPE)) == SUCCEEDED )
+		return SUCCEEDED;
 	else return MEMORY_ALLOCATE_FAILED;
 }
 
@@ -998,7 +998,7 @@ uint8_t * Script_to_string(Script *this, size_t *size)
 	else if (this->is_empty(this))
 		return SCRIPT_HAS_NO_ELEMENTS;
 
-	CLinkedlistNode **elements = this->script->forward_traversing(this->script);
+	CLinkedlistNode **elements = this->script->forward_iter(this->script);
 	if (elements == MEMORY_ALLOCATE_FAILED)
 		return MEMORY_ALLOCATE_FAILED;
 
@@ -1229,7 +1229,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 		delete_CLinkedlist(elements_str);
 		return MEMORY_ALLOCATE_FAILED;
 	}
-	CLinkedlistNode **list = elements_str->forward_traversing(elements_str);
+	CLinkedlistNode **list = elements_str->forward_iter(elements_str);
 	if (list == MEMORY_ALLOCATE_FAILED)
 	{
 		free(elements);
@@ -1262,7 +1262,7 @@ BYTE * Script_to_bytes(Script *this, size_t *size)
 	BYTE *bytes = (BYTE *)malloc(total_size);
 	if (bytes == NULL)
 		return MEMORY_ALLOCATE_FAILED;
-	CLinkedlistNode **list = this->script->forward_traversing(this->script);
+	CLinkedlistNode **list = this->script->forward_iter(this->script);
 	if (list == NULL)
 	{
 		free(bytes);
@@ -1288,12 +1288,12 @@ void * Script_is_p2pkh(Script *this)
 	else if (this->get_length(this) != 6)
 		return FAILED;
 
-	BYTE op_dup      = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
-	BYTE op_hash160  = ((BYTE *)(this->script->specific_node(this->script, 1)->data))[0];
-	BYTE pushdata    = ((BYTE *)(this->script->specific_node(this->script, 2)->data))[0];
-	size_t data_size = this->script->specific_node(this->script, 3)->size;
-	BYTE op_equalverify = ((BYTE *)(this->script->specific_node(this->script, 4)->data))[0];
-	BYTE op_checksig = ((BYTE *)(this->script->specific_node(this->script, 5)->data))[0];
+	BYTE op_dup      = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
+	BYTE op_hash160  = ((BYTE *)(this->script->get_node(this->script, 1)->data))[0];
+	BYTE pushdata    = ((BYTE *)(this->script->get_node(this->script, 2)->data))[0];
+	size_t data_size = this->script->get_node(this->script, 3)->size;
+	BYTE op_equalverify = ((BYTE *)(this->script->get_node(this->script, 4)->data))[0];
+	BYTE op_checksig = ((BYTE *)(this->script->get_node(this->script, 5)->data))[0];
 
 	if (pushdata != 0x14 || data_size != 0x14)
 		return INVALID_RIPEMD160_SIZE;
@@ -1302,7 +1302,7 @@ void * Script_is_p2pkh(Script *this)
 		return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
 
 	else if (op_dup == OP_DUP && op_hash160 == OP_HASH160 && op_equalverify == OP_EQUALVERIFY && op_checksig == OP_CHECKSIG)
-		return SUCCESS;
+		return SUCCEEDED;
 
 	else return FAILED;
 }
@@ -1315,9 +1315,9 @@ void * Script_is_p2pk(Script *this)
 	else if (this->get_length(this) != 3)
 		return FAILED;
 
-	BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
-	size_t data_size = this->script->specific_node(this->script, 1)->size;
-	BYTE op_checksig = ((BYTE *)(this->script->specific_node(this->script, 2)->data))[0];
+	BYTE pushdata = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
+	size_t data_size = this->script->get_node(this->script, 1)->size;
+	BYTE op_checksig = ((BYTE *)(this->script->get_node(this->script, 2)->data))[0];
 
 	if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)
 		return INVALID_PUBKEY_SIZE;
@@ -1326,7 +1326,7 @@ void * Script_is_p2pk(Script *this)
 		return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
 
 	else if (op_checksig == OP_CHECKSIG && pushdata == data_size)
-		return SUCCESS;
+		return SUCCEEDED;
 
 	else return FAILED;
 }
@@ -1339,10 +1339,10 @@ void * Script_is_p2sh(Script *this)
 	else if (this->get_length(this) != 4)
 		return FAILED;
 
-	BYTE op_hash160 = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
-	BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, 1)->data))[0];
-	size_t data_size = this->script->specific_node(this->script, 2)->size;
-	BYTE op_equal = ((BYTE *)(this->script->specific_node(this->script, 3)->data))[0];
+	BYTE op_hash160 = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
+	BYTE pushdata = ((BYTE *)(this->script->get_node(this->script, 1)->data))[0];
+	size_t data_size = this->script->get_node(this->script, 2)->size;
+	BYTE op_equal = ((BYTE *)(this->script->get_node(this->script, 3)->data))[0];
 
 	if (pushdata != 0x14 || data_size != 0x14)
 		return INVALID_RIPEMD160_SIZE;
@@ -1351,7 +1351,7 @@ void * Script_is_p2sh(Script *this)
 		return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
 
 	else if (op_hash160 == OP_HASH160 && op_equal == OP_EQUAL)
-		return SUCCESS;
+		return SUCCEEDED;
 
 	else return FAILED;
 }
@@ -1365,7 +1365,7 @@ void * Script_is_p2sh_multisig(Script *this)
 	if (this->get_length(this) != 3 + n * 2 )
 		return FAILED;
 
-	BYTE op_n = ((BYTE *)(this->script->specific_node(this->script, 0)->data))[0];
+	BYTE op_n = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
 	BYTE op_m = ((BYTE *)(this->script->last_node(this->script)->previous->data))[0];
 	BYTE op_checkmultisig = ((BYTE *)(this->script->last_node(this->script)->data))[0];
 
@@ -1377,8 +1377,8 @@ void * Script_is_p2sh_multisig(Script *this)
 		uint32_t i;
 		for (i = 1; i <= n * 2; ++i)
 		{
-			BYTE pushdata = ((BYTE *)(this->script->specific_node(this->script, i)->data))[0];
-			size_t data_size = this->script->specific_node(this->script, i+1)->size;
+			BYTE pushdata = ((BYTE *)(this->script->get_node(this->script, i)->data))[0];
+			size_t data_size = this->script->get_node(this->script, i+1)->size;
 
 			if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)
 				return INVALID_PUBKEY_SIZE;
@@ -1390,7 +1390,7 @@ void * Script_is_p2sh_multisig(Script *this)
 		}
 		// pushdatas and pubkeys correct.
 		if (i > n * 2)
-			return SUCCESS;
+			return SUCCEEDED;
 		else return FAILED;
 	}
 	// op_n/op_m/op_checksig incorrect.
@@ -1451,12 +1451,12 @@ void * Script_get_element(Script *this, uint64_t index, size_t *size)
 		return INDEX_OUT_RANGE;
 	else
 	{
-		size_t size_buff = this->script->specific_node(this->script, index)->size;
+		size_t size_buff = this->script->get_node(this->script, index)->size;
 		if (size != NULL) size[0] = size_buff;
 		void *element_copy = (void *)malloc(size_buff);
 		if (element_copy == NULL)
 			return MEMORY_ALLOCATE_FAILED;
-		memcpy(element_copy, this->script->specific_node(this->script, index)->data, *size);
+		memcpy(element_copy, this->script->get_node(this->script, index)->data, *size);
 		return element_copy;
 	}
 }
@@ -1491,20 +1491,20 @@ uint64_t Script_check_element_size(Script *this)
 
 bool Script_is_standard(Script *this)
 {
-	if (this->is_p2pkh(this) == SUCCESS)
+	if (this->is_p2pkh(this) == SUCCEEDED)
 		return true;
-	else if (this->is_p2pk(this) == SUCCESS)
+	else if (this->is_p2pk(this) == SUCCEEDED)
 		return true;
-	else if (this->is_p2sh(this) == SUCCESS)
+	else if (this->is_p2sh(this) == SUCCEEDED)
 		return true;
-	else if (this->is_p2sh_multisig(this) == SUCCESS)
+	else if (this->is_p2sh_multisig(this) == SUCCEEDED)
 		return true;
 	/*
-	else if (this->is_p2wsh(this) == SUCCESS)
+	else if (this->is_p2wsh(this) == SUCCEEDED)
 		return true;
-	else if (this->is_p2wpkh(this) == SUCCESS)
+	else if (this->is_p2wpkh(this) == SUCCEEDED)
 		return true;
-	else if (this->is_null_data(this) == SUCCESS)
+	else if (this->is_null_data(this) == SUCCEEDED)
 		return true;
 	*/
 	else return false;
