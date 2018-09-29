@@ -1019,7 +1019,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 
 	if (buffer_size == 1 && BYTE_IS_NONAME_PUSHDATA(buffer))
 	{	// PUSHDATA BYTE
-		int8_t size_str[3];
+		uint8_t size_str[3];
 		BYTE  size_byte[1];
 		size_byte[0] = buffer;
 		bytearr_to_hexstr(size_byte, 1, size_str);
@@ -1061,7 +1061,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 			return SCRIPT_ELEMENT_SIZE_OVERLIMIT;
 		}
 
-		bytearr_to_hexstr((BYTE *)(elements[i+1]->data), expected, (int8_t *)str);
+		bytearr_to_hexstr((BYTE *)(elements[i+1]->data), expected, str);
 		uint8_t *bracketed = (uint8_t *)calloc(str_len, sizeof(uint8_t));
 		if (bracketed == NULL)
 		{
@@ -1104,8 +1104,8 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 
 		// DATA BYTES
 		size_t  expected = 0;
-		size_t  str_len   = 0;
-		uint8_t *str      = NULL;
+		size_t  str_len  = 0;
+		uint8_t *str     = NULL;
 		switch (buffer)
 		{
 			case OP_PUSHDATA1:
@@ -1148,7 +1148,7 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 
-		bytearr_to_hexstr((BYTE *)(elements[i+2]->data), expected, (int8_t *)str);
+		bytearr_to_hexstr((BYTE *)(elements[i+2]->data), expected, str);
 		uint8_t *bracketed = (uint8_t *)calloc(str_len, sizeof(uint8_t));
 		if (bracketed == NULL)
 		{

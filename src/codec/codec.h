@@ -19,7 +19,7 @@ int32_t get_strlen(int8_t *string);
 *           -2 on non-hexadecimal characters in the string.
 *   \example: "0A1B2C" -> {'0x0A', '0X1B', '0X2C'}
 **/
-int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr);
+int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr);
 
 /** Convert a byte array to a hexadecimal string.
 *   \param  arr         Byte array, byte's value range: -128 ~ 127.
@@ -29,7 +29,7 @@ int32_t hexstr_to_bytearr(int8_t *str, size_t str_len, BYTE *arr);
 *           -1 on byte(s) value out range.
 *   \example: {'0x0A', '0X1B', '0X2C'} -> "0A1B2C"
 **/
-int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, int8_t *str);
+int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str);
 int32_t bytearr_reverse(BYTE *arr, size_t size);
 
 #endif
@@ -47,7 +47,7 @@ int32_t bytearr_reverse(BYTE *arr, size_t size);
 *           -1 on byte's value out range.
 *         else on encoded payload's length, if param 'encoded' is NULL.
 **/
-int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
+size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 
 /** Base6 Decoder. (Leaading '0' characters will be ignored)
 *   \param  payload     The string need to be decode.

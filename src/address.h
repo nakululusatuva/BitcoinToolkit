@@ -1,161 +1,136 @@
-#ifndef BTC_ADDRESS_H
-#define BTC_ADDRESS_H
-
-#define MAX_PRIVKEY_WIF_SM "5Km2kuu7vtFDPpxywn4u3NLpbr5jKpTB3jsuDU2KYEqetqj84qw"
-#define MAX_PRIVKEY_WIF_CM "L5oLkpV3aqBjhki6LmvChTCV6odsp4SXM6FfU2Gppt5kFLaHLuZ9"
-#define MAX_PRIVKEY_WIF_ST "93XfLeifX7KMMtUGa7xouxtnFWSSUyzNPgjrJ6Npsyahfqjy7oJ"
-#define MAX_PRIVKEY_WIF_CT "cWALDjUu1tszsCBMjBjL4mhYj2wHUWYDR0Q8aSjLKzjkW5eBtpzu"
-#define MAX_PRIVKEY_HEX "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140"
-#define MAX_PRIVKEY_B6  "1021410542201502023034020312354303525141003020114142003134301540433233134222423333133255354344331040"
-
-#define PRIVATE_KEY_MAINNET_BYTE_PREFIX         0x80
-#define PRIVATE_KEY_TESTNET_BYTE_PREFIX         0xEF
-#define PRIVATE_KEY_COMPRESS_BYTE_SUFFIX        0X01
-#define ADDRESS_MAINNET_PUBKEY_HASH_BYTE_PREFIX 0x00
-#define ADDRESS_MAINNET_SCRIPT_HASH_BYTE_PREFIX 0x05
-#define ADDRESS_TESTNET_PUBKEY_HASH_BYTE_PREFIX 0x6F
-#define ADDRESS_TESTNET_SCRIPT_HASH_BYTE_PREFIX 0xC4
+#ifndef _BTC_ADDRESS_
+#define _BTC_ADDRESS_
 
 #include "common.h"
+#include "status.h"
 
-typedef struct address_st {
-	int32_t  cmpr_flag;             //  0 = no, 1 = yes.
-	BYTE     privkey_type;          //  1 byte long.
-	BYTE     address_type;          //  1 byte long.
-	BYTE     privkey[32];           // 32 byte long.
-	BYTE     pubkey[65];            // 65 byte long.
-	BYTE     pubkey_cmpr[33];       // 33 byte long.
-	uint8_t  privkey_wif[52];       // 51 charaters long + '\0' ending.
-	uint8_t  privkey_wif_cmpr[53];  // 52 charaters long + '\0' ending.
-	uint8_t  address[36];           // 34 or 35 charaters long + '\0' ending.
-} ADDRESS;
+// Type defines.
+typedef enum prefix {
+	PREFIX_PRIV_MAINNET = 0x80,
+	PREFIX_PRIV_TESTNET = 0xef,
+	PREFIX_ADDR_MAINNET_P2PKH = 0x00,
+	PREFIX_ADDR_MAINNET_P2SH  = 0x05,
+	PREFIX_ADDR_TESTNET_P2PKH = 0x6f,
+	PREFIX_ADDR_TESTNET_P2SH  = 0xc4,
+} PREFIX;
+typedef enum suffix {
+	SUFFIX_PRIV_COMPRESS = 0x01,
+} SUFFIX;
 
-/** Generate a ECDSA-secp256k1 private key.
-*   \param  privkey_raw  32 bytes long, store the raw private key.
-**/
-void generate_ecdsa_secp256k1_private_key(BYTE *privkey_raw);
+typedef enum address_type {
+	MAINNET_P2PKH = 0x01,
+	MAINNET_P2SH = 0x02,
+	TESTNET_P2PKH = 0x03,
+	TESTNET_P2SH = 0x04,
+} ADDRESS_TYPE;
+typedef enum network_type {
+	MAINNET = 0x01,
+	TESTNET = 0x02,
+} NETWORK_TYPE;
+typedef enum privkey_format {
+	RAW = 0x01,
+	HEX = 0x02,
+	WIF = 0x03,
+	BASE6 = 0x04,
+	BASE64 = 0x05,
+} PRIVKEY_FORMAT;
 
-/** Generate a ECDSA-secp256k1 public key by given raw private key.
-*   \param  privkey_raw  32 bytes long, the given raw private key.
-*   \param  pubkey_raw   65 or 33 bytes long, store the public key.
-*   \param  comp_flag    Compressed public key? 0=no 1=yes.
-*   \return  0 on success.
-*           -1 on invalid cmpr_flag.
-**/
-int32_t ecdsa_secp256k1_privkey_to_pubkey(BYTE *privkey_raw, BYTE *pubkey_raw, int32_t cmpr_flag);
+// Basic functions.
+void * ecdsa_secp256k1_generate_private_key(BYTE *priv_raw);
+void * ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool compress);
+void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE type);
+void * wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw);
+void * b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *priv_raw);
+void * pub_to_address(BYTE *pub_raw, uint8_t *address, bool compress, ADDRESS_TYPE addr_type);
+void * address_to_hash160(uint8_t *address, BYTE *hash160);
+void * privkey_validation(uint8_t *anyformat, size_t len);
+void * anyformat_to_raw(uint8_t *anyformat, BYTE *privkey_raw, bool compress, PRIVKEY_FORMAT priv_type, ADDRESS_TYPE addr_type);
+uint8_t selector(uint16_t item);
 
-/** Convert a private key from raw to wallet import format.
-*   \param  privkey_raw   ECDSA-secp256k1 private key byte array.
-*   \param  privkey_wif   34 characters long string, store the private key WIF.
-*   \param  cmpr_flag     Compressed private key WIF? 0=no 1=yes.
-*   \param  privkey_type  Prefix byte, '0x80' for mainnet, '0xef' for testnet.
-*   \return  0 on success.
-*           -1 on invalid privkey_type.
-*           -2 on invalid cmpr_flag.
-**/
-int32_t raw_to_wif(BYTE *privkey_raw, uint8_t *privkey_wif, int32_t cmpr_flag, BYTE privkey_type);
+/******************** Father ********************/
+typedef struct root_address_st root_Address;
+struct root_address_st {
+	BYTE priv_raw[32];
+	BYTE pub_raw[65];
+	BYTE pubc_raw[33];
+	BYTE * (*get_priv_raw)(root_Address *);
+	BYTE * (*get_pub_raw)(root_Address *);
+};
 
-/** Convert a private key from WIF to raw byte array.
-*   \param  privkey_wif  String, private key WIF.
-*   \param  privkey_raw  ECDSA-secp256k1 private key byte array.
-*   \return  0 on success.
-*           -1 on invalid WIF length.
-*           -2 on non-base58 charater in the private key WIF.
-*           -3 on invalid checksum.
-**/
-int32_t wif_to_raw(uint8_t *privkey_wif, BYTE *privkey_raw);
+/******************** P2PKH Mainnet Address ********************/
+typedef struct p2pkh_main_address_st P2PKH_Main_Address;
+struct p2pkh_main_address_st {
+	root_Address root;
+	uint8_t b58_address[35]; // 34(33) charaters long plus '\0'
+	BYTE * (*get_priv_raw)(P2PKH_Main_Address *);
+	BYTE * (*get_pub_raw)(P2PKH_Main_Address *);
+	BYTE * (*get_hash160)(P2PKH_Main_Address *);
+	uint8_t * (*get_wif)(P2PKH_Main_Address *);
+	bool compress;
+};
+// Allocate on heap memory.
+P2PKH_Main_Address * new_P2PKH_Main(bool compress);
+P2PKH_Main_Address * new_P2PKH_Main_from_key(const uint8_t *anyformat, bool compress);
+void * delete_P2PKH_Main(P2PKH_Main_Address *this);
+// Allocate on stack memory.
+void * Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
+void * Abandon_P2PKH_Main(P2PKH_Main_Address *addr);
 
-/** Convert a private key from base6 to raw byte array.
-*   \param  b6           String, private key B6 format, 99 or 100 charaters long.
-*   \param  b6_len       Length of the B6 private key.
-*   \param  privkey_raw  Byte array, store the raw private key.
-*   \return  0 on success.
-*         else on raw private key length, if param 'privkey_raw' is NULL.
-*                 sometimes will smaller than 32, due to the leading 0 number.
-**/
-int32_t b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *privkey_raw);
+/******************** P2PKH Testnet Address ********************/
+typedef struct p2pkh_test_address_st P2PKH_Test_Address;
+struct p2pkh_test_address_st {
+	root_Address root;
+	uint8_t b58_address[35]; // 34(33) charaters long plus '\0'
+	BYTE * (*get_priv_raw)(P2PKH_Test_Address *);
+	BYTE * (*get_pub_raw)(P2PKH_Test_Address *);
+	BYTE * (*get_hash160)(P2PKH_Test_Address *);
+	uint8_t * (*get_wif)(P2PKH_Test_Address *);
+	bool compress;
+};
+// Allocate on heap memory.
+P2PKH_Test_Address * new_P2PKH_Test(bool compress);
+P2PKH_Test_Address * new_P2PKH_Test_from_key(const uint8_t *anyformat, bool compress);
+void * delete_P2PKH_Test(P2PKH_Test_Address *this);
+// ALlocate on stack memory.
+void * Initialize_P2PKH_Test(P2PKH_Test_Address *addr, bool compress);
+void * Abandon_P2PKH_Test(P2PKH_Test_Address *addr);
 
-/** Convert a public key to bitcoin address.
-*   \param  pubkey_raw    ECDSA-secp256k1 public key byte array.
-*   \param  cmpr_flag     Compressed ECDSA-secp256k1 public key? 0=no, 1=yes.
-*   \param  address_type  Address type
-*   \param  address       String, 34 characters long, store the address.
-*   \return  0 on success.
-*           -1 on invalid address_type.
-*           -2 on invalid cmpr_flag.
-**/
-int32_t pub_to_address(BYTE *pubkey_raw, int32_t cmpr_flag, BYTE address_type, uint8_t *address);
+/******************** P2SH Mainnet Address ********************/
+typedef struct p2sh_main_address_st P2SH_Main_Address;
+struct p2sh_main_address_st {
+	root_Address root;
+	uint8_t b58_address[35]; // 34(33) charaters long plus '\0'
+	BYTE * (*get_priv_raw)(P2SH_Main_Address *);
+	BYTE * (*get_pub_raw)(P2SH_Main_Address *);
+	BYTE * (*get_hash160)(P2SH_Main_Address *);
+	uint8_t * (*get_wif)(P2SH_Main_Address *);
+	bool compress;
+};
+// Allocate on heap memory.
+P2SH_Main_Address * new_P2SH_Main(bool compress);
+P2SH_Main_Address * new_P2SH_Main_from_key(const uint8_t *anyformat, bool compress);
+void * delete_P2SH_Main(P2SH_Main_Address *this);
+// ALlocate on stack memory.
+void * Initialize_P2SH_Main(P2SH_Main_Address *addr, bool compress);
+void * Abandon_P2SH_Main(P2SH_Main_Address *addr);
 
-/** Get a bitcoin address's hash160 value.
-*   \param  address     String, bitcoin address.
-*   \param  hash160     Byte array, 20 bytes long, store the hash160 value.
-*   \return  0 on success.
-*           -1 on invalid charaters in the address.
-*           -2 on invalid address length.
-*           -3 on invalid checksum.
-**/
-int32_t address_to_hash160(uint8_t *address, BYTE *hash160);
-
-/** Get the private key format and check validation.
-*   \param  anyformat   String, private key in [B6], [WIF], [Hexadecimal] format.
-*   \param  length      Character length of 'anyformat'.
-*   \return -1 on EC key value out range.
-*           -2 on unsupported format.
-*           -3 on invalid base58 string.
-*           -4 on invalid checksum.
-*           -5 on invalid HEX string.
-*           -6 on invalid B6 string.
-*           -7 on invalid B64 string.
-*         0x00 on valid WIF   format
-*         0x01 on valid HEX   format.
-*         0x02 on valid B6    format.
-*         0x03 on valid B64   format.
-*         0x04 on valid BIP38 format
-**/
-#define ECKEY_VALUE_OUT_RANGE -1
-#define UNSUPPORTED_FORMAT    -2
-#define INVALID_BASE58_STRING -3
-#define INVALID_WIF_CHECKSUM  -4
-#define INVALID_HEX_STRING    -5
-#define INVALID_BASE6_STRING  -6
-#define INVALID_BASE64_STRING -7
-#define VALID_WIF_FORMAT    0X00
-#define VALID_HEX_FORMAT    0X01
-#define VALID_BASE6_FORMAT  0x02
-#define VALID_BASE64_FORMAT 0x03
-#define VALID_BIP38_FORMAT  0x04
-int32_t privkey_validation(int8_t *anyformat, size_t length);
-
-/** Generate an address by given private key type and address type.
-*   \param  cmpr_flag     Compressed address? 0=no 1=yes.
-*   \param  privkey_type  Private key type byte prefix.
-*   \param  address_type  Address key type byte prefix.
-**/
-ADDRESS generate_address(int32_t cmpr_flag, BYTE privkey_type, BYTE address_type);
-
-/** Generate an address by given private key type, address type and raw private key.
-*   \param  cmpr_flag     Compressed address? 0=no 1=yes.
-*   \param  privkey_type  Private key type byte prefix.
-*   \param  address_type  Address key type byte prefix.
-*   \param  privkey_raw   Raw private key.
-**/
-ADDRESS generate_address_by_private_key(int32_t cmpr_flag, BYTE privkey_type, BYTE address_type, BYTE *privkey_raw);
-
-/** Convert the private key from any format to hexadecimal byte array.
-*   \param  anyformat     Any format private key string.
-*   \param  cmpr_flag     Store the compress flag, 0 or 1.
-*   \param  privkey_type  Store the private key type prefix byte, 1 byte long.
-*   \param  address_type  Store the address type prefix byte, 1 byte long.
-*   \param  privkey_raw   Store the raw private key.
-*   \return  0 on cmpr_flag/privkey_type/address_type are known.
-*            1 on cmpr_flag/privkey_type/address_type are N/A.
-**/
-int32_t anyformat_to_raw(int8_t *anyformat, int32_t *cmpr_flag, BYTE *privkey_type, BYTE *address_type, BYTE *privkey_raw);
-
-/** Print the address.
-*   \param  addr  An ADDRESS structure that stored the address.
-*   It prints the address, public key, private key WIF and private key hexadecimal.
-**/
-void print_address(ADDRESS addr);
+/******************** P2SH Testnet Address ********************/
+typedef struct p2sh_test_address_st P2SH_Test_Address;
+struct p2sh_test_address_st {
+	root_Address root;
+	uint8_t b58_address[36]; // 35 charaters long plus '\0'
+	BYTE * (*get_priv_raw)(P2SH_Test_Address *);
+	BYTE * (*get_pub_raw)(P2SH_Test_Address *);
+	BYTE * (*get_hash160)(P2SH_Test_Address *);
+	uint8_t * (*get_wif)(P2SH_Test_Address *);
+	bool compress;
+};
+// Allocate on heap memory.
+P2SH_Test_Address * new_P2SH_Test(bool compress);
+P2SH_Test_Address * new_P2SH_Test_from_key(const uint8_t *anyformat, bool compress);
+void * delete_P2SH_Test(P2SH_Test_Address *this);
+// ALlocate on stack memory.
+void * Initialize_P2SH_Test(P2SH_Test_Address *addr, bool compress);
+void * Abandon_P2SH_Test(P2SH_Test_Address *addr);
 
 #endif

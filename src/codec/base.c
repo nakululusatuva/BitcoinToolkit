@@ -3,12 +3,12 @@
 #include "../common.h"
 #include "codec.h"
 
-int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
 	const uint8_t base6table[6] = {'0', '1', '2', '3', '4', '5'};
 
-	int8_t payload_hexstr[payload_len*2];
-	int8_t raw_encoded[payload_len*2];
+	uint8_t payload_hexstr[payload_len*2];
+	uint8_t raw_encoded[payload_len*2];
 
 	BIGNUM *bn  = BN_new();     BIGNUM *bn0 = BN_new();     BIGNUM *bn6 = BN_new();
 	BIGNUM *dv  = BN_new();     BIGNUM *rem = BN_new();
@@ -24,7 +24,7 @@ int32_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_set_word(dv,1);
 
 	// Get the raw encoded payload (need to be reversed).
-	int32_t encoded_len = 0;
+	size_t encoded_len = 0;
 	while(BN_cmp(dv, bn0) > 0)
 	{	
 		BN_div(dv, rem, bn, bn6, ctx);
@@ -118,7 +118,7 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		return decoded_len;
 	}
 
-	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
+	hexstr_to_bytearr((uint8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
 
 	BN_free(bn);             BN_free(bn6);            BN_free(b6value);
 	BN_free(power);          BN_free(powered);
@@ -137,8 +137,8 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
 		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-	int8_t payload_hexstr[payload_len*2];
-	int8_t raw_encoded[payload_len*2];
+	uint8_t payload_hexstr[payload_len*2];
+	uint8_t raw_encoded[payload_len*2];
 
 	BIGNUM *bn  = BN_new();     BIGNUM *bn0 = BN_new();     BIGNUM *bn58 = BN_new();
 
@@ -284,7 +284,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		return decoded_len;
 	}
 
-	hexstr_to_bytearr((int8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
+	hexstr_to_bytearr((uint8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
 
 	// Add the leading 0x00 byte.
 	for (int32_t i = 0; i < decoded_len; ++i)

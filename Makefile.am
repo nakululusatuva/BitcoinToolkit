@@ -3,7 +3,6 @@ AM_CFLAGS = -Wall -fPIC -shared -O3
 noinst_PROGRAMS = libbtctool.so
 libbtctool_so_SOURCES = src/status.c \
 	src/address.c \
-	src/cJSON/cJSON.c \
 	src/codec/base.c \
 	src/codec/strings.c \
 	src/container/CStack.c \
