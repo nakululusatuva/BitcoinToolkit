@@ -3,10 +3,21 @@
 #include "../common.h"
 #include "codec.h"
 
+const uint8_t base6table[6] = {'0', '1', '2', '3', '4', '5'};
+const uint8_t base58table[58] =
+	{'1', '2', '3', '4', '5', '6', '7', '8', '9','A', 'B', 'C', 'D', 'E', 'F',
+	'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+	'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
+	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+const uint8_t base64table[64] =
+	{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+	'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+	'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+	't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', '+', '/'};
+
 size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
-	const uint8_t base6table[6] = {'0', '1', '2', '3', '4', '5'};
-
 	uint8_t payload_hexstr[payload_len*2];
 	uint8_t raw_encoded[payload_len*2];
 
@@ -16,7 +27,7 @@ size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 	// Convert the payload from byte array to hex string.
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
-		return -1;
+		return 0xffffffffffffffff;
 
 	BN_hex2bn(&bn, (const char*)payload_hexstr);
 	BN_set_word(bn0,0);
@@ -42,7 +53,7 @@ size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		return encoded_len;
 	}
 
-	for (int32_t i = 0; i < encoded_len; ++i)
+	for (size_t i = 0; i < encoded_len; ++i)
 		encoded[encoded_len - 1 -i] = raw_encoded[i];
 	encoded[encoded_len] = '\0';
 
@@ -53,16 +64,14 @@ size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	return 0;
 }
 
-int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
-	const uint8_t base6table[6] = {'0', '1', '2', '3', '4', '5'};
-
 	uint8_t raw_payload[payload_len];
 
 	// Check Validation.
-	for (int32_t i = 0; i < payload_len; ++i)
+	for (size_t i = 0; i < payload_len; ++i)
 	{
-		int32_t j = 0;
+		size_t j = 0;
 		for ( ; j < 6; ++j)
 		{
 			if (payload[i] == base6table[j])
@@ -72,7 +81,7 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			}
 		}
 		if (j == 6)
-			return -1;
+			return 0xffffffffffffffff;
 	}
 	/*
 	*  Convert b6 value array to a big number.
@@ -90,7 +99,7 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 
 	BN_CTX *ctx1 = BN_CTX_new(); BN_CTX *ctx2 = BN_CTX_new();
 
-	for (int32_t i = 0; i < payload_len; ++i)
+	for (size_t i = 0; i < payload_len; ++i)
 	{
 		BN_set_word(b6value, raw_payload[i]);
 		BN_set_word(power, payload_len - 1 - i);
@@ -129,14 +138,8 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	return 0;
 }
 
-int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
-	const uint8_t base58table[58] =
-		{'1', '2', '3', '4', '5', '6', '7', '8', '9','A', 'B', 'C', 'D', 'E', 'F',
-		'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-		'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
-		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-
 	uint8_t payload_hexstr[payload_len*2];
 	uint8_t raw_encoded[payload_len*2];
 
@@ -147,8 +150,8 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_CTX *ctx = BN_CTX_new();
 
 	// Get leading 0x00 byte count.
-	int32_t leading_zero_count = 0;
-	for (int32_t i = 0; i < payload_len; ++i)
+	size_t leading_zero_count = 0;
+	for (size_t i = 0; i < payload_len; ++i)
 	{
 		if (payload[i] == 0x00)
 			leading_zero_count += 1;
@@ -157,7 +160,7 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 	// Convert the payload from string to a big number.
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
-		return -1;
+		return 0xffffffffffffffff;
 
 	BN_hex2bn(&bn, (const char*)payload_hexstr);
 	BN_set_word(bn0,0);
@@ -165,7 +168,7 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	BN_set_word(dv,1);
 
 	// Get the raw encoded payload (need to be reversed).
-	int32_t raw_encoded_len = 0;
+	size_t raw_encoded_len = 0;
 	while(BN_cmp(dv, bn0) > 0)
 	{	
 		BN_div(dv, rem, bn, bn58, ctx);
@@ -175,7 +178,7 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	}
 
 	// Add the leading '1' charater and reverse the raw encoded data.
-	int32_t encoded_len = raw_encoded_len + leading_zero_count;
+	size_t encoded_len = raw_encoded_len + leading_zero_count;
 
 	if (encoded == NULL) {
 		// Free Memory, Bug Fixed Apr. 29 2018
@@ -186,10 +189,10 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 		return encoded_len;
 	}
 
-	for (int32_t i = 0; i < leading_zero_count; ++i)
+	for (size_t i = 0; i < leading_zero_count; ++i)
 		encoded[i] = '1';
 
-	for (int32_t i = 0; i < raw_encoded_len; ++i)
+	for (size_t i = 0; i < raw_encoded_len; ++i)
 		encoded[encoded_len - 1 -i] = raw_encoded[i];
 	encoded[encoded_len] = '\0';
 
@@ -200,35 +203,29 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	return 0;
 }
 
-int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
-	const uint8_t base58table[58] =
-		{'1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-		'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-		'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm',
-		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-
 	// Get the count of leading '1' charater.
-	int32_t leading_one_count = 0;
+	size_t leading_one_count = 0;
 
-	for (int32_t i = 0; ; ++i)
+	for (size_t i = 0; ; ++i)
 	{
 		if (payload[i] == '1')
 			leading_one_count++;
 		else break;
 	}
 
-	int32_t raw_payload_len = payload_len - leading_one_count;
+	size_t raw_payload_len = payload_len - leading_one_count;
 	uint8_t raw_payload[raw_payload_len];
 
 	// Get the leading '1' striped raw payload.
-	for (int32_t i = 0; i < payload_len; ++i)
+	for (size_t i = 0; i < payload_len; ++i)
 		raw_payload[i] = payload[leading_one_count + i];
 
 	// Get b58 value of each charaters in raw payload string, and check the validation.
-	for (int32_t i = 0; i < raw_payload_len; ++i)
+	for (size_t i = 0; i < raw_payload_len; ++i)
 	{
-		int32_t j = 0;
+		size_t j = 0;
 		for ( ; j < 58; ++j)
 		{
 			if (raw_payload[i] == base58table[j])
@@ -238,7 +235,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			}
 		}
 		if (j == 58)
-			return -1;
+			return 0xffffffffffffffff;
 	}
 	/*
 	*  Convert b58 value array to a big number.
@@ -256,7 +253,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 
 	BN_CTX *ctx1 = BN_CTX_new(); BN_CTX *ctx2 = BN_CTX_new();
 
-	for (int32_t i = 0; i < raw_payload_len; ++i)
+	for (size_t i = 0; i < raw_payload_len; ++i)
 	{
 		BN_set_word(b58value, raw_payload[i]);
 		BN_set_word(power, raw_payload_len - 1 - i);
@@ -272,7 +269,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	raw_decoded_hexstr = BN_bn2hex(bn);
 
 	// Convert raw decoded hexadecimal string to byte array.
-	int32_t decoded_len = get_strlen((int8_t*)raw_decoded_hexstr) / 2 + leading_one_count;
+	size_t decoded_len = get_strlen((int8_t*)raw_decoded_hexstr) / 2 + leading_one_count;
 	if (decoded == NULL) {
 		// Free Memory, Bug Fixed Apr. 29 2018
 		BN_free(bn);             BN_free(bn58);           BN_free(b58value);
@@ -287,9 +284,9 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	hexstr_to_bytearr((uint8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
 
 	// Add the leading 0x00 byte.
-	for (int32_t i = 0; i < decoded_len; ++i)
+	for (size_t i = 0; i < decoded_len; ++i)
 		decoded[decoded_len - 1 -i] = decoded[decoded_len - 1 - leading_one_count -i];
-	for (int32_t i = 0; i < leading_one_count; ++i)
+	for (size_t i = 0; i < leading_one_count; ++i)
 		decoded[i] = 0x00;
 
 	BN_free(bn);             BN_free(bn58);           BN_free(b58value);
@@ -301,7 +298,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	return 0;
 }
 
-int32_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
 	int32_t to_base58_len = payload_len + 4;
 	BYTE first_sha256[32], second_sha256[32], to_base58[to_base58_len];
@@ -317,18 +314,18 @@ int32_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	if (encoded == NULL)
 		return base58encode(to_base58, to_base58_len, NULL);
 
-	int32_t ret = base58encode(to_base58, to_base58_len, encoded);
-	if (ret == -1)
-		return -1;
+	size_t ret = base58encode(to_base58, to_base58_len, encoded);
+	if (ret == 0xffffffffffffffff)
+		return 0xffffffffffffffff;
 
 	return 0;
 }
 
-int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
 	int32_t b58decoded_len = base58decode(payload, payload_len, NULL);
 	if (b58decoded_len == -1)
-		return -1;
+		return 0xffffffffffffffff;
 	int32_t data_len = b58decoded_len-4;
 	BYTE b58decoded[b58decoded_len];
 
@@ -348,7 +345,7 @@ int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	for (int32_t i = 0; i < 4; ++i)
 	{
 		if (payload_checksum[i] != second_sha256[i])
-			return -2;
+			return 0xffffffffffffffff;
 	}
 
 	if (decoded == NULL)
@@ -363,15 +360,8 @@ int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	return 0;
 }
 
-int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 {
-	const uint8_t base64table[64] =
-		{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-		'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
-		'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
-		't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-		'8', '9', '+', '/'};
-
 	int32_t encoded_len;
 	int32_t ending = payload_len % 3;
 
@@ -415,15 +405,8 @@ int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	else return 0;
 }
 
-int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
-	const uint8_t base64table[64] =
-		{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-		'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
-		'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
-		't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-		'8', '9', '+', '/'};
-
 	int32_t ending = 0;
 	for (int32_t i = payload_len - 1; i >= 0; --i )
 	{
@@ -453,7 +436,7 @@ int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			}
 		}
 		if (j == 64)
-			return -1;
+			return 0xffffffffffffffff;
 	}
 
 	for (int32_t i = 0; i < payload_copy_len; i+=4)

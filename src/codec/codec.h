@@ -57,7 +57,7 @@ size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 *           -1 on non-base6 character(s) in the payload string.
 *         else on decoded payload length, if param 'decoded' is NULL.
 **/
-int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
+size_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 
 /** Base58 Encoder. (Leaading '0x00' bytes will be replaced by character '1')
 *   \param  payload     Byte array, byte's value range: 0x00 ~ 0xFF.
@@ -67,7 +67,7 @@ int32_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 *           -1 on byte's value out range.
 *         else on encoded payload length, if param 'encoded' is NULL.
 **/
-int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
+size_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 
 /** Base58 Decoder. (Leaading '1' characters will be replaced by byte '0x00')
 *   \param  payload     The string need to be decode.
@@ -77,7 +77,7 @@ int32_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 *           -1 on non-base58 character(s) in the payload string.
 *         else on decoded payload length, if param 'decoded' is NULL.
 **/
-int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
+size_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 
 /** Base58 Encoder. (Leaading '0x00' bytes will be replaced by character '1')
 *   \param  payload     Byte array, byte's value range: 0x00 ~ 0xFF.
@@ -87,7 +87,7 @@ int32_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 *           -1 on byte's value out range.
 *         else on encoded payload length, if param 'encoded' is NULL.
 **/
-int32_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
+size_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 
 /** Base58 Decoder. (Leaading '1' characters will be replaced by byte '0x00')
 *   \param  payload     The string need to be decode.
@@ -98,7 +98,7 @@ int32_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 *           -2 on Invalid Checksum.
 *         else on decoded payload length, if param 'decoded' is NULL.
 **/
-int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
+size_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 
 /** Base64 Encoder.
 *   \param  payload     Byte array, byte's value range: 0x00 ~ 0xFF.
@@ -107,7 +107,7 @@ int32_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 *   \return  0 on success.
 *         else on decoded payload length, if param 'decoded' is NULL.
 **/
-int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
+size_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 
 /** Base64 Decoder.
 *   \param  payload     The string need to be decode.
@@ -117,6 +117,6 @@ int32_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 *           -1 on non-base64 character(s) in the payload string.
 *         else on encoded payload length, if param 'encoded' is NULL.
 **/
-int32_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
+size_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 
 #endif
