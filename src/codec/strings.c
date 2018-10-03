@@ -1,6 +1,6 @@
 #include "../common.h"
-
-int32_t get_strlen(int8_t *string)
+/**
+int32_t get_strlen(uint8_t *string)
 {
 	int32_t length = 0;
 
@@ -13,15 +13,16 @@ int32_t get_strlen(int8_t *string)
 
 	return length;
 }
-
-int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
+**/
+// fix it
+void * hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 {
-	int8_t high, low;
+	uint8_t high, low;
 
 	if (str_len % 2 == 1)
-		return -1;
+		return NULL;
 
-	for (int32_t i = 0; i < str_len; i+=2)
+	for (size_t i = 0; i < str_len; i+=2)
 	{
 		high = str[i];
 		low = str[i+1];
@@ -32,7 +33,7 @@ int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 			high = high - 'A' + 10;
 		else if (high >= 'a' && high <= 'f')
 			high = high - 'a' + 10;
-		else return -2;
+		else return NULL;
 
 		if (low >= '0' && low <= '9')
 			low = low - '0';
@@ -40,7 +41,7 @@ int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 			low = low - 'A' + 10;
 		else if (low >= 'a' && low <= 'f')
 			low = low - 'a' + 10;
-		else return -2;
+		else return NULL;
 
 		arr[i/2] = (high << 4) | low;
 	}
@@ -48,14 +49,15 @@ int32_t hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 	return 0;
 }
 
-int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
+// fix it
+void * bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
 {
 	uint8_t high, low;
 
-	for (int32_t i = 0; i < arr_len; ++i)
+	for (size_t i = 0; i < arr_len; ++i)
 	{
 		if (arr[i] > 0xFF || arr[i] < 0x00)
-			return -1;
+			return NULL;
 
 		high = arr[i];
 		low = arr[i];
@@ -79,7 +81,8 @@ int32_t bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
 	return 0;
 }
 
-int32_t bytearr_reverse(BYTE *arr, size_t size)
+// fix it
+void * bytearr_reverse(BYTE *arr, size_t size)
 {
 	size_t len = 0;
 	if (size % 2 != 0) len = (size-1)/2;

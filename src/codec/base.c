@@ -1,9 +1,11 @@
+#include <string.h>
 #include <openssl/bn.h>
 #include <openssl/sha.h>
 #include "../common.h"
 #include "codec.h"
 
-const uint8_t base6table[6] = {'0', '1', '2', '3', '4', '5'};
+const uint8_t base6table[6] =
+	{'0', '1', '2', '3', '4', '5'};
 const uint8_t base58table[58] =
 	{'1', '2', '3', '4', '5', '6', '7', '8', '9','A', 'B', 'C', 'D', 'E', 'F',
 	'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
@@ -27,7 +29,7 @@ size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 	// Convert the payload from byte array to hex string.
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
-		return 0xffffffffffffffff;
+		return -1; // 0xffffffffffffffff
 
 	BN_hex2bn(&bn, (const char*)payload_hexstr);
 	BN_set_word(bn0,0);
@@ -37,7 +39,7 @@ size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	// Get the raw encoded payload (need to be reversed).
 	size_t encoded_len = 0;
 	while(BN_cmp(dv, bn0) > 0)
-	{	
+	{
 		BN_div(dv, rem, bn, bn6, ctx);
 		BN_copy(bn, dv);
 		raw_encoded[encoded_len] = base6table[BN_get_word(rem)];
@@ -81,7 +83,7 @@ size_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			}
 		}
 		if (j == 6)
-			return 0xffffffffffffffff;
+			return -1; // 0xffffffffffffffff
 	}
 	/*
 	*  Convert b6 value array to a big number.
@@ -115,7 +117,7 @@ size_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	raw_decoded_hexstr = BN_bn2hex(bn);
 
 	// Convert raw decoded hexadecimal string to byte array.
-	int32_t decoded_len = get_strlen((int8_t*)raw_decoded_hexstr) / 2;
+	int32_t decoded_len = strlen((const char *)raw_decoded_hexstr) / 2;
 	if (decoded == NULL) {
 		// Free Memory, Bug Fixed Apr. 29 2018
 		BN_free(bn);             BN_free(bn6);            BN_free(b6value);
@@ -127,7 +129,7 @@ size_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		return decoded_len;
 	}
 
-	hexstr_to_bytearr((uint8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
+	hexstr_to_bytearr((uint8_t*)raw_decoded_hexstr, strlen((const char *)raw_decoded_hexstr), decoded);
 
 	BN_free(bn);             BN_free(bn6);            BN_free(b6value);
 	BN_free(power);          BN_free(powered);
@@ -160,7 +162,7 @@ size_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 	// Convert the payload from string to a big number.
 	if (bytearr_to_hexstr(payload, payload_len, payload_hexstr) != 0)
-		return 0xffffffffffffffff;
+		return -1; // 0xffffffffffffffff
 
 	BN_hex2bn(&bn, (const char*)payload_hexstr);
 	BN_set_word(bn0,0);
@@ -235,7 +237,7 @@ size_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			}
 		}
 		if (j == 58)
-			return 0xffffffffffffffff;
+			return -1; // 0xffffffffffffffff
 	}
 	/*
 	*  Convert b58 value array to a big number.
@@ -269,7 +271,7 @@ size_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	raw_decoded_hexstr = BN_bn2hex(bn);
 
 	// Convert raw decoded hexadecimal string to byte array.
-	size_t decoded_len = get_strlen((int8_t*)raw_decoded_hexstr) / 2 + leading_one_count;
+	size_t decoded_len = strlen((const char *)raw_decoded_hexstr) / 2 + leading_one_count;
 	if (decoded == NULL) {
 		// Free Memory, Bug Fixed Apr. 29 2018
 		BN_free(bn);             BN_free(bn58);           BN_free(b58value);
@@ -281,7 +283,7 @@ size_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		return decoded_len;
 	}
 
-	hexstr_to_bytearr((uint8_t*)raw_decoded_hexstr, get_strlen((int8_t*)raw_decoded_hexstr), decoded);
+	hexstr_to_bytearr((uint8_t*)raw_decoded_hexstr, strlen((const char *)raw_decoded_hexstr), decoded);
 
 	// Add the leading 0x00 byte.
 	for (size_t i = 0; i < decoded_len; ++i)
@@ -316,7 +318,7 @@ size_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 
 	size_t ret = base58encode(to_base58, to_base58_len, encoded);
 	if (ret == 0xffffffffffffffff)
-		return 0xffffffffffffffff;
+		return -1; // 0xffffffffffffffff
 
 	return 0;
 }
@@ -325,7 +327,7 @@ size_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 {
 	int32_t b58decoded_len = base58decode(payload, payload_len, NULL);
 	if (b58decoded_len == -1)
-		return 0xffffffffffffffff;
+		return -1; // 0xffffffffffffffff
 	int32_t data_len = b58decoded_len-4;
 	BYTE b58decoded[b58decoded_len];
 
@@ -345,7 +347,7 @@ size_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	for (int32_t i = 0; i < 4; ++i)
 	{
 		if (payload_checksum[i] != second_sha256[i])
-			return 0xffffffffffffffff;
+			return -1; // 0xffffffffffffffff
 	}
 
 	if (decoded == NULL)
@@ -436,7 +438,7 @@ size_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 			}
 		}
 		if (j == 64)
-			return 0xffffffffffffffff;
+			return -1; // 0xffffffffffffffff
 	}
 
 	for (int32_t i = 0; i < payload_copy_len; i+=4)

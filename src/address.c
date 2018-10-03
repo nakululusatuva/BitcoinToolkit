@@ -31,6 +31,8 @@ void * ecdsa_secp256k1_generate_private_key(BYTE *priv_raw)
 	}while(i < 256);
 
 	hexstr_to_bytearr(hexarray, 64, priv_raw);
+
+	return SUCCEEDED;
 }
 void * ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool compress)
 {	
@@ -69,7 +71,7 @@ void * ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool com
 	return SUCCEEDED;
 }
 
-void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE n_type)
+void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE network)
 {
 	uint8_t extended_length, to_base58_length;
 	BYTE *extended, extended_key[33], extended_key_cmpr[34];
@@ -81,7 +83,7 @@ void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE
 		case true:
 		{
 			extended         = extended_key;
-			extended[0]      = n_type == MAINNET ? PREFIX_PRIV_MAINNET : PREFIX_PRIV_TESTNET;
+			extended[0]      = network == MAINNET ? PREFIX_PRIV_MAINNET : PREFIX_PRIV_TESTNET;
 			extended_length  = 33;
 			to_base58        = ready_to_base58;
 			to_base58_length = 37;
@@ -90,7 +92,7 @@ void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE
 		case false:
 		{
 			extended         = extended_key_cmpr;
-			extended[0]      = n_type == MAINNET ? PREFIX_PRIV_MAINNET : PREFIX_PRIV_TESTNET;
+			extended[0]      = network == MAINNET ? PREFIX_PRIV_MAINNET : PREFIX_PRIV_TESTNET;
 			extended_length  = 34;
 			extended[33]     = SUFFIX_PRIV_COMPRESS;
 			to_base58        = ready_to_base58_cmpr;
@@ -120,14 +122,14 @@ void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE
 
 void * wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw)
 {
-	uint8_t decoded_len = base58decode(priv_wif, get_strlen((int8_t*)priv_wif), NULL);
+	uint8_t decoded_len = base58decode(priv_wif, strlen((const char *)priv_wif), NULL);
 	if (decoded_len != 37 && decoded_len != 38)
 		return NULL;
 	else if (decoded_len == -1)
 		return NULL;
 
 	BYTE decoded[decoded_len];
-	base58decode(priv_wif, get_strlen((int8_t*)priv_wif), decoded);
+	base58decode(priv_wif, strlen((const char *)priv_wif), decoded);
 
 	BYTE to_sha256[decoded_len - 4], checksum_origin[4];
 	for (uint8_t i = 0; i < (decoded_len - 4); ++i)
@@ -160,8 +162,8 @@ void * b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *priv_raw)
 	raw_len = base6decode(b6, b6_len, NULL);
 	prefix_zero_count = 32 - raw_len;
 
-	if (priv_raw == NULL)
-		return raw_len;
+//	if (priv_raw == NULL)
+//		return raw_len;
 
 	BYTE copy[raw_len];
 	base6decode(b6, b6_len, copy);
@@ -244,3 +246,20 @@ uint8_t selector(uint16_t item)
 	}
 	return 0xff;
 }
+
+P2PKH_Main_Address * new_P2PKH_Main(bool compress)
+{
+	P2PKH_Main_Address *new = (P2PKH_Main_Address *)calloc(1, sizeof(P2PKH_Main_Address));
+	if (!new) return MEMORY_ALLOCATE_FAILED;
+
+	ecdsa_secp256k1_generate_private_key(new->root.priv_raw);
+	ecdsa_secp256k1_privkey_to_pubkey(new->root.priv_raw, compress?new->root.pubc_raw:new->root.pub_raw, compress);
+	raw_to_wif(new->root.priv_raw, new->b58_address, compress, MAINNET);
+	new->compress = compress;
+
+	return new;
+}
+P2PKH_Main_Address * new_P2PKH_Main_from_key(const uint8_t *anyformat, bool compress);
+void * delete_P2PKH_Main(P2PKH_Main_Address *this);
+void * Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
+void * Abandon_P2PKH_Main(P2PKH_Main_Address *addr);

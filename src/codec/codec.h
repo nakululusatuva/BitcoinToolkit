@@ -7,9 +7,9 @@
 *   \param  string      The given string.
 *   \return -1 on error.
 *         else on string length.
-**/
-int32_t get_strlen(int8_t *string);
 
+int32_t get_strlen(int8_t *string);
+**/
 /** Convert a hexadecimal string to a byte array.
 *   \param  str         Hexadecimal string.
 *   \param  str_len     String length, must be even.
