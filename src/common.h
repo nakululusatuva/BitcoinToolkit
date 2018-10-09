@@ -8,5 +8,6 @@
 #include <stddef.h>  // For 'size_t' type
 #include <float.h>
 typedef uint8_t BYTE;
+typedef void* Status;
 
 #endif

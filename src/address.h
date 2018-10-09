@@ -36,15 +36,14 @@ typedef enum privkey_format {
 } PRIVKEY_FORMAT;
 
 // Basic functions.
-void * ecdsa_secp256k1_generate_private_key(BYTE *priv_raw);
-void * ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool compress);
-void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE type);
-void * wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw);
-void * b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *priv_raw);
-void * pub_to_address(BYTE *pub_raw, uint8_t *address, bool compress, ADDRESS_TYPE addr_type);
-void * address_to_hash160(uint8_t *address, BYTE *hash160);
-void * privkey_validation(uint8_t *anyformat, size_t len);
-void * anyformat_to_raw(uint8_t *anyformat, BYTE *privkey_raw, bool compress, PRIVKEY_FORMAT priv_type, ADDRESS_TYPE addr_type);
+void ecdsa_secp256k1_generate_private_key(BYTE *priv_raw);
+Status ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool compress);
+void raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE type);
+Status wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw);
+Status b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *priv_raw);
+void pub_to_address(BYTE *pub_raw, uint8_t *address, bool compress, ADDRESS_TYPE addr_type);
+Status address_to_hash160(uint8_t *address, BYTE *hash160);
+Status privkey_validation(uint8_t *key, size_t len, PRIVKEY_FORMAT format);
 uint8_t selector(uint16_t item);
 
 /******************** Father ********************/
@@ -71,10 +70,10 @@ struct p2pkh_main_address_st {
 // Allocate on heap memory.
 P2PKH_Main_Address * new_P2PKH_Main(bool compress);
 P2PKH_Main_Address * new_P2PKH_Main_from_key(const uint8_t *anyformat, bool compress);
-void * delete_P2PKH_Main(P2PKH_Main_Address *this);
+Status delete_P2PKH_Main(P2PKH_Main_Address *this);
 // Allocate on stack memory.
-void * Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
-void * Abandon_P2PKH_Main(P2PKH_Main_Address *addr);
+Status Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
+Status Abandon_P2PKH_Main(P2PKH_Main_Address *addr);
 
 /******************** P2PKH Testnet Address ********************/
 typedef struct p2pkh_test_address_st P2PKH_Test_Address;
@@ -90,10 +89,10 @@ struct p2pkh_test_address_st {
 // Allocate on heap memory.
 P2PKH_Test_Address * new_P2PKH_Test(bool compress);
 P2PKH_Test_Address * new_P2PKH_Test_from_key(const uint8_t *anyformat, bool compress);
-void * delete_P2PKH_Test(P2PKH_Test_Address *this);
+Status delete_P2PKH_Test(P2PKH_Test_Address *this);
 // ALlocate on stack memory.
-void * Initialize_P2PKH_Test(P2PKH_Test_Address *addr, bool compress);
-void * Abandon_P2PKH_Test(P2PKH_Test_Address *addr);
+Status Initialize_P2PKH_Test(P2PKH_Test_Address *addr, bool compress);
+Status Abandon_P2PKH_Test(P2PKH_Test_Address *addr);
 
 /******************** P2SH Mainnet Address ********************/
 typedef struct p2sh_main_address_st P2SH_Main_Address;
@@ -109,10 +108,10 @@ struct p2sh_main_address_st {
 // Allocate on heap memory.
 P2SH_Main_Address * new_P2SH_Main(bool compress);
 P2SH_Main_Address * new_P2SH_Main_from_key(const uint8_t *anyformat, bool compress);
-void * delete_P2SH_Main(P2SH_Main_Address *this);
+Status delete_P2SH_Main(P2SH_Main_Address *this);
 // ALlocate on stack memory.
-void * Initialize_P2SH_Main(P2SH_Main_Address *addr, bool compress);
-void * Abandon_P2SH_Main(P2SH_Main_Address *addr);
+Status Initialize_P2SH_Main(P2SH_Main_Address *addr, bool compress);
+Status Abandon_P2SH_Main(P2SH_Main_Address *addr);
 
 /******************** P2SH Testnet Address ********************/
 typedef struct p2sh_test_address_st P2SH_Test_Address;
@@ -128,9 +127,9 @@ struct p2sh_test_address_st {
 // Allocate on heap memory.
 P2SH_Test_Address * new_P2SH_Test(bool compress);
 P2SH_Test_Address * new_P2SH_Test_from_key(const uint8_t *anyformat, bool compress);
-void * delete_P2SH_Test(P2SH_Test_Address *this);
+Status delete_P2SH_Test(P2SH_Test_Address *this);
 // ALlocate on stack memory.
-void * Initialize_P2SH_Test(P2SH_Test_Address *addr, bool compress);
-void * Abandon_P2SH_Test(P2SH_Test_Address *addr);
+Status Initialize_P2SH_Test(P2SH_Test_Address *addr, bool compress);
+Status Abandon_P2SH_Test(P2SH_Test_Address *addr);
 
 #endif

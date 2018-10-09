@@ -1,3 +1,4 @@
+#include "../status.h"
 #include "../common.h"
 /**
 int32_t get_strlen(uint8_t *string)
@@ -15,12 +16,12 @@ int32_t get_strlen(uint8_t *string)
 }
 **/
 // fix it
-void * hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
+Status hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 {
 	uint8_t high, low;
 
 	if (str_len % 2 == 1)
-		return NULL;
+		return FAILED;
 
 	for (size_t i = 0; i < str_len; i+=2)
 	{
@@ -33,7 +34,7 @@ void * hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 			high = high - 'A' + 10;
 		else if (high >= 'a' && high <= 'f')
 			high = high - 'a' + 10;
-		else return NULL;
+		else return FAILED;
 
 		if (low >= '0' && low <= '9')
 			low = low - '0';
@@ -41,23 +42,23 @@ void * hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 			low = low - 'A' + 10;
 		else if (low >= 'a' && low <= 'f')
 			low = low - 'a' + 10;
-		else return NULL;
+		else return FAILED;
 
 		arr[i/2] = (high << 4) | low;
 	}
 
-	return 0;
+	return SUCCEEDED;
 }
 
 // fix it
-void * bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
+Status bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
 {
 	uint8_t high, low;
 
 	for (size_t i = 0; i < arr_len; ++i)
 	{
 		if (arr[i] > 0xFF || arr[i] < 0x00)
-			return NULL;
+			return FAILED;
 
 		high = arr[i];
 		low = arr[i];
@@ -78,11 +79,11 @@ void * bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
 	}
 	str[arr_len*2] = '\0';
 
-	return 0;
+	return SUCCEEDED;
 }
 
 // fix it
-void * bytearr_reverse(BYTE *arr, size_t size)
+void bytearr_reverse(BYTE *arr, size_t size)
 {
 	size_t len = 0;
 	if (size % 2 != 0) len = (size-1)/2;
@@ -92,5 +93,4 @@ void * bytearr_reverse(BYTE *arr, size_t size)
 		arr[i] = arr[size-1-i];
 		arr[size-1-i] = buffer;
 	}
-	return 0;
 }

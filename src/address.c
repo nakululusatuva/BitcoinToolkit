@@ -8,7 +8,7 @@
 #include "common.h"
 #include "address.h"
 
-void * ecdsa_secp256k1_generate_private_key(BYTE *priv_raw)
+void ecdsa_secp256k1_generate_private_key(BYTE *priv_raw)
 {
 	uint8_t bin[256];
 	uint8_t hexarray[64];
@@ -31,10 +31,8 @@ void * ecdsa_secp256k1_generate_private_key(BYTE *priv_raw)
 	}while(i < 256);
 
 	hexstr_to_bytearr(hexarray, 64, priv_raw);
-
-	return SUCCEEDED;
 }
-void * ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool compress)
+Status ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool compress)
 {	
 	point_conversion_form_t forms[] = {
 		POINT_CONVERSION_UNCOMPRESSED,
@@ -71,7 +69,7 @@ void * ecdsa_secp256k1_privkey_to_pubkey(BYTE *priv_raw, BYTE *pub_raw, bool com
 	return SUCCEEDED;
 }
 
-void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE network)
+void raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE network)
 {
 	uint8_t extended_length, to_base58_length;
 	BYTE *extended, extended_key[33], extended_key_cmpr[34];
@@ -116,17 +114,15 @@ void * raw_to_wif(BYTE *priv_raw, uint8_t *priv_wif, bool compress, NETWORK_TYPE
 
 	// Step 4 : Base58 encode the 'to_base' for wallet import format.
 	base58encode(to_base58, to_base58_length, priv_wif);
-
-	return SUCCEEDED;
 }
 
-void * wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw)
+Status wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw)
 {
-	uint8_t decoded_len = base58decode(priv_wif, strlen((const char *)priv_wif), NULL);
+	size_t decoded_len = base58decode(priv_wif, strlen((const char *)priv_wif), NULL);
 	if (decoded_len != 37 && decoded_len != 38)
-		return NULL;
-	else if (decoded_len == -1)
-		return NULL;
+		return FAILED;
+	else if (decoded_len == (size_t)-1)
+		return FAILED;
 
 	BYTE decoded[decoded_len];
 	base58decode(priv_wif, strlen((const char *)priv_wif), decoded);
@@ -144,7 +140,7 @@ void * wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw)
 	for (uint8_t i = 0; i < 4; ++i)
 	{
 		if (checksum_origin[i] != second_sha256[i])
-			return NULL;
+			return FAILED;
 	}
 
 	for (uint8_t i = 0; i < 32; ++i)
@@ -153,17 +149,13 @@ void * wif_to_raw(uint8_t *priv_wif, BYTE *priv_raw)
 	return SUCCEEDED;
 }
 
-// fix it.
-void * b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *priv_raw)
+// fix it, the prefix 0x00 are ignored.
+Status b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *priv_raw)
 {
-	uint8_t raw_len;
-	uint8_t prefix_zero_count;
-
-	raw_len = base6decode(b6, b6_len, NULL);
-	prefix_zero_count = 32 - raw_len;
-
-//	if (priv_raw == NULL)
-//		return raw_len;
+	size_t raw_len = base6decode(b6, b6_len, NULL);
+	if (raw_len == (size_t)-1)
+		return FAILED;
+	size_t prefix_zero_count = 32 - raw_len;
 
 	BYTE copy[raw_len];
 	base6decode(b6, b6_len, copy);
@@ -176,7 +168,7 @@ void * b6_to_hex(uint8_t *b6, size_t b6_len, BYTE *priv_raw)
 	return SUCCEEDED;
 }
 
-void * pub_to_address(BYTE *pub_raw, uint8_t *address, bool compress, ADDRESS_TYPE addr_type)
+void pub_to_address(BYTE *pub_raw, uint8_t *address, bool compress, ADDRESS_TYPE addr_type)
 {
 	BYTE pub_sha256[32], pub_ripemd160[20];
 
@@ -210,18 +202,50 @@ void * pub_to_address(BYTE *pub_raw, uint8_t *address, bool compress, ADDRESS_TY
 
 	// Step 5 : Base58 encode the 'to_base' payload, get an address.
 	base58encode(to_base58, 25, address);
+}
+
+// fix it.
+Status address_to_hash160(uint8_t *address, BYTE *hash160)
+{
+	// Get and check the decoded data's length.
+	size_t decoded_len = base58decode(address, get_strlen((int8_t*)address), NULL);
+	
+	if (decoded_len != 25)
+		return FAILED;
+	else if (decoded_len == (size_t)-1)
+		return FAILED;
+
+	// b58decode the address.
+	BYTE decoded[decoded_len];
+	base58decode(address, get_strlen((int8_t*)address), decoded);
+	
+	// Separate the hash160 part and checksum part.
+	BYTE hash160_origin[21], checksum_origin[4];
+	for (int32_t i = 0; i < 21; ++i)
+		hash160_origin[i] = decoded[i];
+
+	for (int32_t i = 0; i < 4; ++i)
+		checksum_origin[i] = decoded[decoded_len-4+i];
+
+	// Double sha256 the hash160 and check the checksum.
+	BYTE first_sha256[32], second_sha256[32];
+	SHA256(hash160_origin, 21, first_sha256);
+	SHA256(first_sha256, 32, second_sha256);
+
+	for (int32_t i = 0; i < 4; ++i)
+	{
+		if (checksum_origin[i] != second_sha256[i])
+			return FAILED;
+	}
+
+	// Get the hash160 value if checksum is correct.
+	for (int32_t i = 0; i < 20; ++i)
+		hash160[i] = hash160_origin[i+1];
 
 	return SUCCEEDED;
 }
 
-// fix it.
-void * address_to_hash160(uint8_t *address, BYTE *hash160)
-{
-	
-}
-
-void * privkey_validation(uint8_t *anyformat, size_t len);
-void * anyformat_to_raw(uint8_t *anyformat, BYTE *privkey_raw, bool compress, PRIVKEY_FORMAT priv_type, ADDRESS_TYPE addr_type);
+Status privkey_validation(uint8_t *key, size_t len, PRIVKEY_FORMAT format);
 
 uint8_t selector(uint16_t item)
 {
