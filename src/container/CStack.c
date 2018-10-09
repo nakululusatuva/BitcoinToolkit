@@ -63,7 +63,7 @@ void delete_CStack(CStack *this)
 	free(this);
 }
 
-void * CStack_push(CStack *this, void *data, size_t size, void *type)
+Status CStack_push(CStack *this, void *data, size_t size, void *type)
 {
 	if (CStack_is_full(this))
 		return CSTACK_FULL;
@@ -80,7 +80,7 @@ void * CStack_push(CStack *this, void *data, size_t size, void *type)
 	}
 }
 
-void * CStack_pop(CStack *this, size_t *size, void **type)
+Status CStack_pop(CStack *this, size_t *size, void **type)
 {
 	if (CStack_is_empty(this))
 		return CSTACK_EMPTY;

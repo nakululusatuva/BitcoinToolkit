@@ -208,7 +208,7 @@ void pub_to_address(BYTE *pub_raw, uint8_t *address, bool compress, ADDRESS_TYPE
 Status address_to_hash160(uint8_t *address, BYTE *hash160)
 {
 	// Get and check the decoded data's length.
-	size_t decoded_len = base58decode(address, get_strlen((int8_t*)address), NULL);
+	size_t decoded_len = base58decode(address, strlen((char*)address), NULL);
 	
 	if (decoded_len != 25)
 		return FAILED;
@@ -217,7 +217,7 @@ Status address_to_hash160(uint8_t *address, BYTE *hash160)
 
 	// b58decode the address.
 	BYTE decoded[decoded_len];
-	base58decode(address, get_strlen((int8_t*)address), decoded);
+	base58decode(address, strlen((char*)address), decoded);
 	
 	// Separate the hash160 part and checksum part.
 	BYTE hash160_origin[21], checksum_origin[4];
@@ -284,6 +284,6 @@ P2PKH_Main_Address * new_P2PKH_Main(bool compress)
 	return new;
 }
 P2PKH_Main_Address * new_P2PKH_Main_from_key(const uint8_t *anyformat, bool compress);
-void * delete_P2PKH_Main(P2PKH_Main_Address *this);
-void * Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
-void * Abandon_P2PKH_Main(P2PKH_Main_Address *addr);
+Status delete_P2PKH_Main(P2PKH_Main_Address *this);
+Status Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
+Status Abandon_P2PKH_Main(P2PKH_Main_Address *addr);

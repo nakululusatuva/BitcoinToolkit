@@ -12,19 +12,19 @@ struct Interpreter
 	CStack *data_stack;
 	CStack *alt_stack;
 
-	void * (*dump_data_stack)(Interpreter *);
-	void * (*dump_alt_stack)(Interpreter *);
-	void * (*launch)(Interpreter *, uint64_t);
-	void * (*load_script)(Interpreter *, Script *);
+	Status (*dump_data_stack)(Interpreter *);
+	Status (*dump_alt_stack)(Interpreter *);
+	Status (*launch)(Interpreter *, uint64_t);
+	Status (*load_script)(Interpreter *, Script *);
 	Script * (*unload_script)(Interpreter *);
 };
 
 Interpreter * new_Interpreter();
-void * delete_Interpreter(Interpreter *this);
-void * Interpreter_dump_data_stack(Interpreter *this);
-void * Interpreter_dump_alt_stack(Interpreter *this);
-void * Interpreter_launch(Interpreter *this, uint64_t pos);
-void * Interpreter_load_script(Interpreter *this, Script *feed);
+Status delete_Interpreter(Interpreter *this);
+Status Interpreter_dump_data_stack(Interpreter *this);
+Status Interpreter_dump_alt_stack(Interpreter *this);
+Status Interpreter_launch(Interpreter *this, uint64_t pos);
+Status Interpreter_load_script(Interpreter *this, Script *feed);
 Script * Interpreter_unload_script(Interpreter *this);
 
 #endif

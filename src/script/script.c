@@ -973,7 +973,7 @@ const char * get_op_name(Opcode op)
     }
 }
 
-void * Script_add_opcode(Script *this, Opcode *op)
+Status Script_add_opcode(Script *this, Opcode *op)
 {
 	if (this == NULL || op == NULL)
 		return PASSING_NULL_POINTER;
@@ -982,7 +982,7 @@ void * Script_add_opcode(Script *this, Opcode *op)
 	else return MEMORY_ALLOCATE_FAILED;
 }
 
-void * Script_add_data(Script *this, BYTE *data, size_t size)
+Status Script_add_data(Script *this, BYTE *data, size_t size)
 {
 	if (this == NULL || data == NULL)
 		return PASSING_NULL_POINTER;
@@ -1280,7 +1280,7 @@ BYTE * Script_to_bytes(Script *this, size_t *size)
 	return bytes;
 }
 
-void * Script_is_p2pkh(Script *this)
+Status Script_is_p2pkh(Script *this)
 {
 	// OP_DUP + OP_HASH160 + pushdata(20) + pubkey_hash(20) + OP_EQUALVERIFY + OP_CHECKSIG
 	if (this == NULL)
@@ -1307,7 +1307,7 @@ void * Script_is_p2pkh(Script *this)
 	else return FAILED;
 }
 
-void * Script_is_p2pk(Script *this)
+Status Script_is_p2pk(Script *this)
 {
 	// pushdata(65/33) + pubkey(65/33) + OP_CHECKSIG
 	if (this == NULL)
@@ -1331,7 +1331,7 @@ void * Script_is_p2pk(Script *this)
 	else return FAILED;
 }
 
-void * Script_is_p2sh(Script *this)
+Status Script_is_p2sh(Script *this)
 {
 	// OP_HASH160 + pushdata(20) + script_hash(20) + OP_EQUAL
 	if (this == NULL)
@@ -1356,7 +1356,7 @@ void * Script_is_p2sh(Script *this)
 	else return FAILED;
 }
 
-void * Script_is_p2sh_multisig(Script *this)
+Status Script_is_p2sh_multisig(Script *this)
 {
 	// OP_N + pushdata(65/33) + pubkey1(65/33) +...+ pushdata(65/33) + pubkeyM(65/33) + OP_M + OP_CHECKMULTISIG
 	if (this == NULL)
@@ -1397,7 +1397,7 @@ void * Script_is_p2sh_multisig(Script *this)
 	else return FAILED;
 }
 
-void * Script_is_p2wsh(Script *this)
+Status Script_is_p2wsh(Script *this)
 {
 	/*
 	// ver + <32 bytes sha256 of redeem script>
@@ -1407,7 +1407,7 @@ void * Script_is_p2wsh(Script *this)
 	return NULL;
 }
 
-void * Script_is_p2wpkh(Script *this)
+Status Script_is_p2wpkh(Script *this)
 {
 	/*
 	// ver + <20 bytes hash160 of pubkey>
@@ -1417,7 +1417,7 @@ void * Script_is_p2wpkh(Script *this)
 	return NULL;
 }
 
-void * Script_is_null_data(Script *this)
+Status Script_is_null_data(Script *this)
 {
 	/*
 	// OP_RETURN + <0 to 40 bytes data>
@@ -1441,7 +1441,7 @@ uint64_t Script_get_length(Script *this)
 	return this->script->get_length(this->script);
 }
 
-void * Script_get_element(Script *this, uint64_t index, size_t *size)
+Status Script_get_element(Script *this, uint64_t index, size_t *size)
 {
 	if (this == NULL)
 		return PASSING_NULL_POINTER;

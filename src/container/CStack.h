@@ -13,8 +13,8 @@ struct CStack
 	uint32_t *size;
 	void   **type;
 
-	void * (*push)(CStack *, void *, size_t, void *);
-	void * (*pop)(CStack *, size_t *, void **);
+	Status (*push)(CStack *, void *, size_t, void *);
+	Status (*pop)(CStack *, size_t *, void **);
 	bool (*is_empty)(CStack *);
 	bool (*is_full)(CStack *);
 	size_t (*total_size)(CStack *);
@@ -45,7 +45,7 @@ void delete_CStack(CStack *this);
 *   1. Do not push 'data' to another CStack.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-void * CStack_push(CStack *this, void *data, size_t size, void *type);
+Status CStack_push(CStack *this, void *data, size_t size, void *type);
 
 /** Pop the top element.
 *   \param  size        Store the top element's data size (bytes).
@@ -55,7 +55,7 @@ void * CStack_push(CStack *this, void *data, size_t size, void *type);
 *   \else on succeeded.
 *   Once CStack_pop() success, you need to free the popped pointer manually.
 **/
-void * CStack_pop(CStack *this, size_t *size, void **type);
+Status CStack_pop(CStack *this, size_t *size, void **type);
 
 /* Check if stack is empty */
 bool CStack_is_empty(CStack *this);

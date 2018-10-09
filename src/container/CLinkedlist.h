@@ -19,10 +19,10 @@ struct CLinkedlist
 	CLinkedlistNode *head;
 	uint64_t length;
 
-	void * (*add)(CLinkedlist *, void *, size_t, void *);
-	void * (*delete)(CLinkedlist *, uint64_t);
-	void * (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *);
-	void * (*change)(CLinkedlist *, uint64_t, void *, size_t, void *);
+	Status (*add)(CLinkedlist *, void *, size_t, void *);
+	Status (*delete)(CLinkedlist *, uint64_t);
+	Status (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *);
+	Status (*change)(CLinkedlist *, uint64_t, void *, size_t, void *);
 	CLinkedlistNode ** (*forward_iter)(CLinkedlist *);
 	CLinkedlistNode ** (*backward_iter)(CLinkedlist *);
 	void * (*reverse)(CLinkedlist *);
@@ -50,7 +50,7 @@ void delete_CLinkedlist(CLinkedlist *this);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
+Status CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
 
 /** Delete a node.
 *   \param  index       Node's position, start from zero.
@@ -58,7 +58,7 @@ void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
 *           errors:  CLINKEDLIST_EMPTY
 *                    INDEX_OUT_RANGE
 **/
-void * CLinkedlist_delete(CLinkedlist *this, uint64_t index);
+Status CLinkedlist_delete(CLinkedlist *this, uint64_t index);
 
 /** Insert a data's pointer.
 *   \param  after       Node's position, the new node will be in front of it.
@@ -75,7 +75,7 @@ void * CLinkedlist_delete(CLinkedlist *this, uint64_t index);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type);
+Status CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type);
 
 /** Change change node's data.
 *   \param  index       Node's position.
@@ -92,7 +92,7 @@ void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t 
 *   2. Do not free 'data' manually, the destruct function will do the job.
 *   3. The old data will be freed automatically.
 **/
-void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type);
+Status CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type);
 
 /** Forward iterate the linked list.
 *   \return errors: CLINKEDLIST_EMPTY
@@ -110,7 +110,7 @@ CLinkedlistNode ** CLinkedlist_forward_iter(CLinkedlist *this);
 **/
 CLinkedlistNode ** CLinkedlist_backward_iter(CLinkedlist *this);
 /* Reverse the linked list */
-void * CLinkedlist_reverse(CLinkedlist *this);
+Status CLinkedlist_reverse(CLinkedlist *this);
 bool CLinkedlist_is_empty(CLinkedlist *this);
 /* Get the total data size
 * return -1(0xffffffffffffffff) on empty linked list

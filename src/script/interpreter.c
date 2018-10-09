@@ -36,7 +36,7 @@ Interpreter * new_Interpreter()
 	return new;
 }
 
-void * delete_Interpreter(Interpreter *this)
+Status delete_Interpreter(Interpreter *this)
 {
 	if (this->data_stack != NULL) delete_CStack(this->data_stack);
 	else if (this->alt_stack != NULL) delete_CStack(this->alt_stack);
@@ -45,21 +45,21 @@ void * delete_Interpreter(Interpreter *this)
 	return SUCCEEDED;
 }
 
-void * Interpreter_dump_data_stack(Interpreter *this)
+Status Interpreter_dump_data_stack(Interpreter *this)
 {
 	delete_CStack(this->data_stack);
 	this->data_stack = NULL;
 	return SUCCEEDED;
 }
 
-void * Interpreter_dump_alt_stack(Interpreter *this)
+Status Interpreter_dump_alt_stack(Interpreter *this)
 {
 	delete_CStack(this->alt_stack);
 	this->alt_stack = NULL;
 	return SUCCEEDED;
 }
 
-void * Interpreter_launch(Interpreter *this, uint64_t start_point)
+Status Interpreter_launch(Interpreter *this, uint64_t start_point)
 {
 	void *status = NULL;
 	BYTE *element = NULL;
@@ -194,7 +194,7 @@ while (cursor < this->script->get_length(this->script))
 	}
 }
 
-void * Interpreter_load_script(Interpreter *this, Script *feed)
+Status Interpreter_load_script(Interpreter *this, Script *feed)
 {
 	if (this->script != NULL) return INTERPRETER_ALREADY_LOADED;
 	this->script = feed;

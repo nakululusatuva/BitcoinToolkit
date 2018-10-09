@@ -172,20 +172,20 @@ struct Script
 {
 	CLinkedlist *script;
 
-	void * (*add_opcode)(Script *, Opcode *);
-	void * (*add_data)(Script *, BYTE *, size_t);
+	Status (*add_opcode)(Script *, Opcode *);
+	Status (*add_data)(Script *, BYTE *, size_t);
 	uint8_t * (*to_string)(Script *, size_t *);
 	BYTE * (*to_bytes)(Script *, size_t *);
-	void * (*is_p2pkh)(Script *);
-	void * (*is_p2pk)(Script *);
-	void * (*is_p2sh)(Script *);
-	void * (*is_p2sh_multisig)(Script *);
-	void * (*is_p2wsh)(Script *);
-	void * (*is_p2wpkh)(Script *);
-	void * (*is_null_data)(Script *);
+	Status (*is_p2pkh)(Script *);
+	Status (*is_p2pk)(Script *);
+	Status (*is_p2sh)(Script *);
+	Status (*is_p2sh_multisig)(Script *);
+	Status (*is_p2wsh)(Script *);
+	Status (*is_p2wpkh)(Script *);
+	Status (*is_null_data)(Script *);
 	bool (*is_empty)(Script *);
 	uint64_t (*get_length)(Script *);
-	void * (*get_element)(Script *, uint64_t, size_t *);
+	Status (*get_element)(Script *, uint64_t, size_t *);
 	size_t (*total_size)(Script *);
 	uint64_t (*check_element_size)(Script *);
 };
@@ -279,7 +279,7 @@ void delete_Script(Script *this);
 *   do not add 'op' to another Script or free 'op' by delete_Opcode() manually,
 *   the destruct function will do the job.
 **/
-void * Script_add_opcode(Script *this, Opcode *op);
+Status Script_add_opcode(Script *this, Opcode *op);
 
 /** Add data bytes.
 *   \param  data        The data bytes.
@@ -292,7 +292,7 @@ void * Script_add_opcode(Script *this, Opcode *op);
 *   Once Script_add_data() returns true, do not add 'data' to another Script or free 'data' manually,
 *   the destruct function will do the job.
 **/
-void * Script_add_data(Script *this, BYTE *data, size_t size);
+Status Script_add_data(Script *this, BYTE *data, size_t size);
 
 /** Script to string.
 *   \param  size        Store the string's size, how many bytes.
@@ -314,16 +314,16 @@ uint8_t * Script_to_string(Script *this, size_t *size);
 **/
 BYTE * Script_to_bytes(Script *this, size_t *size);
 /* Check if a valid P2PKH script */
-void * Script_is_p2pkh(Script *this);
+Status Script_is_p2pkh(Script *this);
 /* Check if a valid P2PK script */
-void * Script_is_p2pk(Script *this);
+Status Script_is_p2pk(Script *this);
 /* Check if a valid P2SH script */
-void * Script_is_p2sh(Script *this);
+Status Script_is_p2sh(Script *this);
 /* Check if a valid multisig script */
-void * Script_is_p2sh_multisig(Script *this);
-void * Script_is_p2wsh(Script *this);
-void * Script_is_p2wpkh(Script *this);
-void * Script_is_null_data(Script *this);
+Status Script_is_p2sh_multisig(Script *this);
+Status Script_is_p2wsh(Script *this);
+Status Script_is_p2wpkh(Script *this);
+Status Script_is_null_data(Script *this);
 /* Check if the script has no statements */
 bool Script_is_empty(Script *this);
 /* How many statements */
@@ -337,7 +337,7 @@ uint64_t Script_get_length(Script *this);
 *           INDEX_OUT_RANGE
 *   \else on success.
 **/
-void * Script_get_element(Script *this, uint64_t index, size_t *size);
+Status Script_get_element(Script *this, uint64_t index, size_t *size);
 size_t Script_total_size(Script *this);
 uint64_t Script_check_element_size(Script *this);
 

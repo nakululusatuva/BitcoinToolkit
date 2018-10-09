@@ -8,7 +8,7 @@
 #include "../codec/codec.h"
 #include "../container/CStack.h"
 
-void * EXC_OP_0_FALSE(CStack *stack)
+Status EXC_OP_0_FALSE(CStack *stack)
 {
 	if (stack->is_full) return CSTACK_FULL;
 	BYTE *num = NULL;
@@ -16,7 +16,7 @@ void * EXC_OP_0_FALSE(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_1_TRUE(CStack *stack)
+Status EXC_OP_1_TRUE(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	BYTE *num = (BYTE *)malloc(1);
@@ -26,7 +26,7 @@ void * EXC_OP_1_TRUE(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_PUSHDATA(CStack *stack, Script *script, uint64_t *pos)
+Status EXC_OP_PUSHDATA(CStack *stack, Script *script, uint64_t *pos)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	// Get the expected size (current element).
@@ -48,7 +48,7 @@ void * EXC_OP_PUSHDATA(CStack *stack, Script *script, uint64_t *pos)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
+Status EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	// Check if data size equal to expected.
@@ -99,7 +99,7 @@ void * EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_1NEGATE(CStack *stack)
+Status EXC_OP_1NEGATE(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	BYTE *num = (BYTE *)malloc(1);
@@ -109,7 +109,7 @@ void * EXC_OP_1NEGATE(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_2_TO_16(CStack *stack, BYTE number)
+Status EXC_OP_2_TO_16(CStack *stack, BYTE number)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	BYTE *num = (BYTE *)malloc(1);
@@ -119,12 +119,12 @@ void * EXC_OP_2_TO_16(CStack *stack, BYTE number)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_NOP()
+Status EXC_OP_NOP()
 {
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
+Status EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
 {
 	// Get the statements length.
 	uint64_t length = 0;
@@ -168,7 +168,7 @@ void * EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
 	}
 }
 
-void * EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
+Status EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
 {
 	// Get the statements length.
 	uint64_t length = 0;
@@ -210,7 +210,7 @@ void * EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
 	}
 }
 
-void * EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_status)
+Status EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_status)
 {
 	// Check if without OP_IF / OP_NOTIF / OP_ELSE.
 	int64_t i;
@@ -249,12 +249,12 @@ void * EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_
 	}
 }
 
-void * EXC_OP_ENDIF(CStack *stack, Script *script, uint64_t *pos)
+Status EXC_OP_ENDIF(CStack *stack, Script *script, uint64_t *pos)
 {
 	
 }
 
-void * EXC_OP_VERIFY(CStack *stack)
+Status EXC_OP_VERIFY(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	// Marks transaction as invalid if top stack value is not true. The top stack value is removed.
@@ -278,7 +278,7 @@ void * EXC_OP_VERIFY(CStack *stack)
 	}
 }
 
-void * EXC_OP_RETURN(Script *script, uint64_t pos)
+Status EXC_OP_RETURN(Script *script, uint64_t pos)
 {
 	size_t size;
 	script->get_element(script, pos+1, &size);
@@ -286,7 +286,7 @@ void * EXC_OP_RETURN(Script *script, uint64_t pos)
 	else return INTERPRETER_FALSE;
 }
 
-void * EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack)
+Status EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack)
 {
 	if (data_stack->is_empty(data_stack)) return CSTACK_EMPTY;
 	else if (alt_stack->is_full(alt_stack)) return CSTACK_FULL;
@@ -297,7 +297,7 @@ void * EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_FROMALTSTACK(CStack *data_stack, CStack *alt_stack)
+Status EXC_OP_FROMALTSTACK(CStack *data_stack, CStack *alt_stack)
 {
 	if (data_stack->is_full(data_stack)) return CSTACK_FULL;
 	else if (alt_stack->is_empty(alt_stack)) return CSTACK_EMPTY;
@@ -308,7 +308,7 @@ void * EXC_OP_FROMALTSTACK(CStack *data_stack, CStack *alt_stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_IFDUP(CStack *stack)
+Status EXC_OP_IFDUP(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
@@ -355,7 +355,7 @@ void * EXC_OP_IFDUP(CStack *stack)
 	}
 }
 
-void * EXC_OP_DEPTH(CStack *stack)
+Status EXC_OP_DEPTH(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	uint64_t depth = stack->get_depth(stack);
@@ -402,7 +402,7 @@ void * EXC_OP_DEPTH(CStack *stack)
 	}
 }
 
-void * EXC_OP_DROP(CStack *stack)
+Status EXC_OP_DROP(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	void *popped = stack->pop(stack, NULL, NULL);
@@ -410,7 +410,7 @@ void * EXC_OP_DROP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_DUP(CStack *stack)
+Status EXC_OP_DUP(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
@@ -433,7 +433,7 @@ void * EXC_OP_DUP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_NIP(CStack *stack)
+Status EXC_OP_NIP(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	size_t top_size;
@@ -445,7 +445,7 @@ void * EXC_OP_NIP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_OVER(CStack *stack)
+Status EXC_OP_OVER(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
@@ -478,7 +478,7 @@ void * EXC_OP_OVER(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_PICK(CStack *stack, uint64_t index)
+Status EXC_OP_PICK(CStack *stack, uint64_t index)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
@@ -513,7 +513,7 @@ void * EXC_OP_PICK(CStack *stack, uint64_t index)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_ROLL(CStack *stack, uint64_t index)
+Status EXC_OP_ROLL(CStack *stack, uint64_t index)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	void *ptrs[index+1];
@@ -530,7 +530,7 @@ void * EXC_OP_ROLL(CStack *stack, uint64_t index)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_ROT(CStack *stack)
+Status EXC_OP_ROT(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	void *ptrs[3];
@@ -544,7 +544,7 @@ void * EXC_OP_ROT(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_SWAP(CStack *stack)
+Status EXC_OP_SWAP(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	void *ptrs[2];
@@ -557,7 +557,7 @@ void * EXC_OP_SWAP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_TUCK(CStack *stack)
+Status EXC_OP_TUCK(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
@@ -589,7 +589,7 @@ void * EXC_OP_TUCK(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_2DROP(CStack *stack)
+Status EXC_OP_2DROP(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	void *ptrs[3];
@@ -603,7 +603,7 @@ void * EXC_OP_2DROP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_2DUP(CStack *stack)
+Status EXC_OP_2DUP(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
@@ -639,7 +639,7 @@ void * EXC_OP_2DUP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_3DUP(CStack *stack)
+Status EXC_OP_3DUP(CStack *stack)
 {
 	// Same as EXC_OP_2DUP(), just change some numbers
 	if (stack->is_full(stack)) return CSTACK_FULL;
@@ -676,7 +676,7 @@ void * EXC_OP_3DUP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_2OVER(CStack *stack)
+Status EXC_OP_2OVER(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
@@ -719,7 +719,7 @@ void * EXC_OP_2OVER(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_2ROT(CStack *stack)
+Status EXC_OP_2ROT(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 
@@ -740,7 +740,7 @@ void * EXC_OP_2ROT(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_2SWAP(CStack *stack)
+Status EXC_OP_2SWAP(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 
@@ -761,27 +761,27 @@ void * EXC_OP_2SWAP(CStack *stack)
 	return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_CAT(CStack *stack)
+Status EXC_OP_CAT(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_SUBSTR(CStack *stack)
+Status EXC_OP_SUBSTR(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_LEFT(CStack *stack)
+Status EXC_OP_LEFT(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_RIGHT(CStack *stack)
+Status EXC_OP_RIGHT(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_SIZE(CStack *stack)
+Status EXC_OP_SIZE(CStack *stack)
 {
 	uint32_t size = stack->size[stack->get_depth(stack) - 1];
 	BYTE little_endian[4];
@@ -827,27 +827,27 @@ void * EXC_OP_SIZE(CStack *stack)
 	}
 }
 
-void * EXC_OP_INVERT(CStack *stack)
+Status EXC_OP_INVERT(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_AND(CStack *stack)
+Status EXC_OP_AND(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_OR(CStack *stack)
+Status EXC_OP_OR(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_XOR(CStack *stack)
+Status EXC_OP_XOR(CStack *stack)
 {	// Disabled
 	return OPERATION_NOT_EXECUTED;
 }
 
-void * EXC_OP_EQUAL(CStack *stack)
+Status EXC_OP_EQUAL(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 
@@ -889,7 +889,7 @@ void * EXC_OP_EQUAL(CStack *stack)
 	}
 }
 
-void * EXC_OP_EQUALVERIFY(CStack *stack)
+Status EXC_OP_EQUALVERIFY(CStack *stack)
 {
 	void *ret1 = EXC_OP_EQUAL(stack);
 	if (ret1 != OPERATION_EXECUTED) return ret1;
@@ -898,7 +898,7 @@ void * EXC_OP_EQUALVERIFY(CStack *stack)
 	else return OPERATION_EXECUTED;
 }
 
-void * EXC_OP_1ADD(CStack *stack)
+Status EXC_OP_1ADD(CStack *stack)
 {
 	size_t size;
 	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL);

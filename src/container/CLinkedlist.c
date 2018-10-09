@@ -112,7 +112,7 @@ CLinkedlistNode * CLinkedlist_get_node(CLinkedlist *this, uint64_t index)
 	return buffer;
 }
 
-void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type)
+Status CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type)
 {
 	CLinkedlistNode *last = CLinkedlist_last_node(this);
 	// If empty, the last one will be the head.
@@ -136,7 +136,7 @@ void * CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type)
 	return SUCCEEDED;
 }
 
-void * CLinkedlist_delete(CLinkedlist *this, uint64_t index)
+Status CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 {
 	CLinkedlistNode *target = CLinkedlist_get_node(this, index);
 
@@ -188,7 +188,7 @@ void * CLinkedlist_delete(CLinkedlist *this, uint64_t index)
 	}
 }
 
-void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type)
+Status CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type)
 {
 	CLinkedlistNode *new_node   = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
 	if (new_node == NULL)
@@ -222,7 +222,7 @@ void * CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t 
 	}
 }
 
-void * CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type)
+Status CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type)
 {
 	CLinkedlistNode *target = CLinkedlist_get_node(this, index);
 
@@ -279,7 +279,7 @@ CLinkedlistNode ** CLinkedlist_backward_iter(CLinkedlist *this)
 	return list;
 }
 
-void * CLinkedlist_reverse(CLinkedlist *this)
+Status CLinkedlist_reverse(CLinkedlist *this)
 {
 	// Check if empty.
 	CLinkedlistNode *last = CLinkedlist_last_node(this);
