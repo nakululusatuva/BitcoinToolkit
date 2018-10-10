@@ -7,6 +7,6 @@ libbtctool_so_SOURCES = src/status.c \
 	src/codec/strings.c \
 	src/container/CStack.c \
 	src/container/CLinkedlist.c \
-	src/script/script.c \
-	src/script/interpreter.c \
-	src/script/operation.c
+	src/machine/script.c \
+	src/machine/interpreter.c \
+	src/machine/operation.c
