@@ -4,9 +4,10 @@
 #include <openssl/ec.h>
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
-#include "codec/codec.h"
-#include "common.h"
-#include "address.h"
+#include "internal/codec/base.h"
+#include "internal/codec/strings.h"
+#include "internal/common.h"
+#include "internal/address.h"
 
 void ecdsa_secp256k1_generate_private_key(BYTE *priv_raw)
 {

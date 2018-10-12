@@ -1,7 +1,10 @@
 #ifndef _CLINKEDLIST_
 #define _CLINKEDLIST_
 
-#include "../common.h"
+#include "internal/common.h"
+
+/* 0x1000 ~ 0x100f : CLinkedlist */
+#define CLINKEDLIST_EMPTY (void *)0x1000
 
 /** Common Type Linked List. It stores the data's pointer, instead of the data itself **/
 typedef struct CLinkedlistNode CLinkedlistNode;

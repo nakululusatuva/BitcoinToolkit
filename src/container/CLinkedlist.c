@@ -1,6 +1,4 @@
-#include "../status.h"
-#include "../common.h"
-#include "CLinkedlist.h"
+#include "internal/container/CLinkedlist.h"
 #include <stdlib.h>
 #include <string.h>
 

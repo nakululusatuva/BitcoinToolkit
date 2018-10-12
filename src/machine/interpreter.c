@@ -1,10 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include "../status.h"
-#include "../common.h"
-#include "script.h"
-#include "interpreter.h"
-#include "operation.h"
+#include "internal/machine/script.h"
+#include "internal/machine/interpreter.h"
+#include "internal/machine/operation.h"
 
 Interpreter * new_Interpreter()
 {

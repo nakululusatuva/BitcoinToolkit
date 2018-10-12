@@ -2,7 +2,6 @@
 #define _BTC_ADDRESS_
 
 #include "common.h"
-#include "status.h"
 
 // Type defines.
 typedef enum prefix {

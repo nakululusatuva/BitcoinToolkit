@@ -1,8 +1,8 @@
 #include <string.h>
 #include <openssl/bn.h>
 #include <openssl/sha.h>
-#include "../common.h"
-#include "codec.h"
+#include "internal/codec/base.h"
+#include "internal/codec/strings.h"
 
 const uint8_t base6table[6] =
 	{'0', '1', '2', '3', '4', '5'};

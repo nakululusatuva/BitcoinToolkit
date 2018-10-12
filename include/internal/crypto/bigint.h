@@ -1,19 +1,21 @@
 #ifndef _BIGINT_
 #define _BIGINT_
 
-#include "../common.h"
+#include "internal/common.h"
 
 typedef struct Bigint_st Bigint;
 struct Bigint_st {
 	uint32_t *d;
-	uint32_t top;
+	uint32_t len;
 	bool neg;
 };
 
 Bigint * new_Bigint(void);
 void delete_Bigint(Bigint *bn);
-Status Bigint_set_bytearr(Bigint *bn, BYTE *num, size_t length);
-Status Bigint_set_hexstr(Bigint *bn, uint8_t *num, size_t length);
+// Receive a byte array in little-endian.
+Bigint * Bigint_set_bytearr(BYTE *arr, size_t len, bool neg);
+// Receive a hexadecimal string in little-endian, first charater '-' means negative.
+Bigint Bigint_set_hexstr(Bigint *bn, uint8_t *str, size_t len);
 Bigint * Bigint_add(Bigint *a, Bigint *b);
 Bigint * Bigint_sub(Bigint *a, Bigint *b);
 Bigint * Bigint_mul(Bigint *a, Bigint *b);

@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "../status.h"
-#include "../common.h"
-#include "CStack.h"
+#include "internal/container/CStack.h"
 
 CStack * new_CStack(const uint64_t capacity)
 {

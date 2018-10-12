@@ -1,5 +1,5 @@
-#include "../status.h"
-#include "../common.h"
+#include "internal/codec/strings.h"
+#include <string.h>
 /**
 int32_t get_strlen(uint8_t *string)
 {
@@ -82,7 +82,6 @@ Status bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
 	return SUCCEEDED;
 }
 
-// fix it
 void bytearr_reverse(BYTE *arr, size_t size)
 {
 	size_t len = 0;
@@ -95,46 +94,47 @@ void bytearr_reverse(BYTE *arr, size_t size)
 	}
 }
 
-size_t lstrip(void *arr, size_t size, void *r)
+void hexstr_reverse(uint8_t *str, size_t len)
+{
+
+}
+
+void * lstrip(const void *arr, size_t arr_size, size_t *r_size)
 {
 	size_t count = 0;
-	for (size_t i = 0; i < size; ++i)
+	for (size_t i = 0; i < arr_size; ++i)
 	{
 		if ( ((BYTE *)arr)[i] == 0x00 )
 			count++;
 	}
-	if (!r) return size-count; // If r is NULL, return leading 0 count.
+	r_size[0] = arr_size-count;
 
-	if (count >= 0 && count < size)
-	{
-		for (size_t i = 0; i < size-count; ++i)
-		{
-			((BYTE *)r)[i] = ((BYTE *)arr)[i+count];
-		}
-		return 0;
-	}
-	else return count;  // count == size, all zero, do nothing.
+	if (count == arr_size) return BYTEARRAY_ALL_ZERO; // All zero.
+
+	void *r = (void *)malloc(r_size[0]);
+	if (!r) return MEMORY_ALLOCATE_FAILED;
+	memcpy(r, arr+count, r_size[0]);
+
+	return r;
 }
 
-size_t rsrtip(void *arr, size_t size, void *r)
+void * rsrtip(const void *arr, size_t arr_size, size_t *r_size)
 {
 	size_t count = 0;
-	for (size_t i = size-1; i > 0; --i)
+	for (size_t i = arr_size-1; i > 0; --i)
 	{
 		if ( ((BYTE *)arr)[i] == 0x00 )
 			count++;
 	}
 	if ( ((BYTE *)arr)[0] == 0x00 )
 		count++;
-	if (!r) return size-count; // If r is NULL, return ending 0 count.
-	
-	if (count >= 0 && count < size)
-	{
-		for (size_t i = 0; i < size-count; ++i)
-		{
-			((BYTE *)r)[i] = ((BYTE *)arr)[i];
-		}
-		return 0;
-	}
-	else return count; // count == size, all zero, do nothing.
+	r_size[0] = arr_size-count;
+
+	if (count == arr_size) return BYTEARRAY_ALL_ZERO; // All zero.
+
+	void *r = (void *)malloc(r_size[0]);
+	if (!r) return MEMORY_ALLOCATE_FAILED;
+	memcpy(r, arr, r_size[0]);
+
+	return r;
 }

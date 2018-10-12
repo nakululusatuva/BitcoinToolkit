@@ -1,7 +1,12 @@
 #ifndef _CSTACK_
 #define _CSTACK_
 
-#include "../common.h"
+#include "internal/common.h"
+
+/* 0x001010 ~ 0x00101f : CStack */
+#define CSTACK_EMPTY            (void *)0x1010
+#define CSTACK_FULL             (void *)0x1011
+#define CSTACK_INVALID_CAPACITY (void *)0x1012
 
 /** Common Type Stack. It stores the data's pointer, instead of the data itself **/
 typedef struct CStack CStack;

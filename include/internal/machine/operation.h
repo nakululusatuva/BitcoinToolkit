@@ -1,9 +1,9 @@
 #ifndef _OPERATION_
 #define _OPERATION_
 
-#include "script.h"
-#include "interpreter.h"
-#include "../container/CStack.h"
+#include "internal/machine/script.h"
+#include "internal/machine/interpreter.h"
+#include "internal/container/CStack.h"
 
 // EXC returns OPERATION_EXECUTED     : no error and executed,
 //             OPERATION_NOT_EXECUTED : no error but not executed,

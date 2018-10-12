@@ -1,11 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
-#include "../status.h"
-#include "../common.h"
-#include "../codec/codec.h"
-#include "../container/CStack.h"
-#include "../container/CLinkedlist.h"
-#include "script.h"
+#include "internal/common.h"
+#include "internal/container/CStack.h"
+#include "internal/container/CLinkedlist.h"
+#include "internal/machine/script.h"
 
 Opcode * new_Opcode(BYTE value)
 {

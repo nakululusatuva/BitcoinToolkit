@@ -1,8 +1,16 @@
 #ifndef _SCRIPT_
 #define _SCRIPT_
 
-#include "../common.h"
-#include "../container/CLinkedlist.h"
+#include "internal/common.h"
+#include "internal/container/CLinkedlist.h"
+
+/* 0x1020 ~ 0x103f : Script */
+#define SCRIPT_MULTISIG_M_BIGGER_N              (void *)0x1020
+#define SCRIPT_HAS_NO_ELEMENTS                  (void *)0x1021
+#define SCRIPT_REMAIN_BYTES_LESS_THAN_PUSH      (void *)0x1022
+#define SCRIPT_ELEMENT_SIZE_OVERLIMIT           (void *)0x1023
+#define SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED  (void *)0x1024
+#define SCRIPT_CONTAINED_INVALID_ELEMENT        (void *)0x1025
 
 #define MAX_SCRIPT_ELEMENT_SIZE      520 // Maximum number of bytes pushable to the stack
 #define MAX_OPS_PER_SCRIPT           201 // Maximum number of non-push operations per script

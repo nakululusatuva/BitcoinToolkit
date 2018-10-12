@@ -1,12 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <openssl/bn.h>
-#include "script.h"
-#include "operation.h"
-#include "interpreter.h"
-#include "../status.h"
-#include "../codec/codec.h"
-#include "../container/CStack.h"
+#include "internal/machine/script.h"
+#include "internal/machine/operation.h"
+#include "internal/machine/interpreter.h"
+#include "internal/codec/strings.h"
+#include "internal/container/CStack.h"
 
 Status EXC_OP_0_FALSE(CStack *stack)
 {
