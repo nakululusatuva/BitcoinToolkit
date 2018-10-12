@@ -94,3 +94,47 @@ void bytearr_reverse(BYTE *arr, size_t size)
 		arr[size-1-i] = buffer;
 	}
 }
+
+size_t lstrip(void *arr, size_t size, void *r)
+{
+	size_t count = 0;
+	for (size_t i = 0; i < size; ++i)
+	{
+		if ( ((BYTE *)arr)[i] == 0x00 )
+			count++;
+	}
+	if (!r) return size-count; // If r is NULL, return leading 0 count.
+
+	if (count >= 0 && count < size)
+	{
+		for (size_t i = 0; i < size-count; ++i)
+		{
+			((BYTE *)r)[i] = ((BYTE *)arr)[i+count];
+		}
+		return 0;
+	}
+	else return count;  // count == size, all zero, do nothing.
+}
+
+size_t rsrtip(void *arr, size_t size, void *r)
+{
+	size_t count = 0;
+	for (size_t i = size-1; i > 0; --i)
+	{
+		if ( ((BYTE *)arr)[i] == 0x00 )
+			count++;
+	}
+	if ( ((BYTE *)arr)[0] == 0x00 )
+		count++;
+	if (!r) return size-count; // If r is NULL, return ending 0 count.
+	
+	if (count >= 0 && count < size)
+	{
+		for (size_t i = 0; i < size-count; ++i)
+		{
+			((BYTE *)r)[i] = ((BYTE *)arr)[i];
+		}
+		return 0;
+	}
+	else return count; // count == size, all zero, do nothing.
+}
