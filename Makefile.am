@@ -14,4 +14,4 @@ libbitcointk_so_SOURCES = src/address.c \
 	src/machine/script.c \
 	src/machine/interpreter.c \
 	src/machine/operation.c
-include_HEADERS = include/internal/common.h
+include_HEADERS = include/bitcointk/*.h
