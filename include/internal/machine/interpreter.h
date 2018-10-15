@@ -38,11 +38,11 @@ struct Interpreter
 };
 
 Interpreter * new_Interpreter();
-Status delete_Interpreter(Interpreter *this);
-Status Interpreter_dump_data_stack(Interpreter *this);
-Status Interpreter_dump_alt_stack(Interpreter *this);
-Status Interpreter_launch(Interpreter *this, uint64_t pos);
-Status Interpreter_load_script(Interpreter *this, Script *feed);
-Script * Interpreter_unload_script(Interpreter *this);
+Status delete_Interpreter(Interpreter *self);
+Status Interpreter_dump_data_stack(Interpreter *self);
+Status Interpreter_dump_alt_stack(Interpreter *self);
+Status Interpreter_launch(Interpreter *self, uint64_t pos);
+Status Interpreter_load_script(Interpreter *self, Script *feed);
+Script * Interpreter_unload_script(Interpreter *self);
 
 #endif

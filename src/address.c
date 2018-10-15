@@ -285,6 +285,6 @@ P2PKH_Main_Address * new_P2PKH_Main(bool compress)
 	return new;
 }
 P2PKH_Main_Address * new_P2PKH_Main_from_key(const uint8_t *anyformat, bool compress);
-Status delete_P2PKH_Main(P2PKH_Main_Address *this);
+Status delete_P2PKH_Main(P2PKH_Main_Address *self);
 Status Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
 Status Abandon_P2PKH_Main(P2PKH_Main_Address *addr);

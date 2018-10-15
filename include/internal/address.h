@@ -69,7 +69,7 @@ struct p2pkh_main_address_st {
 // Allocate on heap memory.
 P2PKH_Main_Address * new_P2PKH_Main(bool compress);
 P2PKH_Main_Address * new_P2PKH_Main_from_key(const uint8_t *anyformat, bool compress);
-Status delete_P2PKH_Main(P2PKH_Main_Address *this);
+Status delete_P2PKH_Main(P2PKH_Main_Address *self);
 // Allocate on stack memory.
 Status Initialize_P2PKH_Main(P2PKH_Main_Address *addr, bool compress);
 Status Abandon_P2PKH_Main(P2PKH_Main_Address *addr);
@@ -88,7 +88,7 @@ struct p2pkh_test_address_st {
 // Allocate on heap memory.
 P2PKH_Test_Address * new_P2PKH_Test(bool compress);
 P2PKH_Test_Address * new_P2PKH_Test_from_key(const uint8_t *anyformat, bool compress);
-Status delete_P2PKH_Test(P2PKH_Test_Address *this);
+Status delete_P2PKH_Test(P2PKH_Test_Address *self);
 // ALlocate on stack memory.
 Status Initialize_P2PKH_Test(P2PKH_Test_Address *addr, bool compress);
 Status Abandon_P2PKH_Test(P2PKH_Test_Address *addr);
@@ -107,7 +107,7 @@ struct p2sh_main_address_st {
 // Allocate on heap memory.
 P2SH_Main_Address * new_P2SH_Main(bool compress);
 P2SH_Main_Address * new_P2SH_Main_from_key(const uint8_t *anyformat, bool compress);
-Status delete_P2SH_Main(P2SH_Main_Address *this);
+Status delete_P2SH_Main(P2SH_Main_Address *self);
 // ALlocate on stack memory.
 Status Initialize_P2SH_Main(P2SH_Main_Address *addr, bool compress);
 Status Abandon_P2SH_Main(P2SH_Main_Address *addr);
@@ -126,7 +126,7 @@ struct p2sh_test_address_st {
 // Allocate on heap memory.
 P2SH_Test_Address * new_P2SH_Test(bool compress);
 P2SH_Test_Address * new_P2SH_Test_from_key(const uint8_t *anyformat, bool compress);
-Status delete_P2SH_Test(P2SH_Test_Address *this);
+Status delete_P2SH_Test(P2SH_Test_Address *self);
 // ALlocate on stack memory.
 Status Initialize_P2SH_Test(P2SH_Test_Address *addr, bool compress);
 Status Abandon_P2SH_Test(P2SH_Test_Address *addr);

@@ -14,11 +14,11 @@ Bigint * new_Bigint()
 	return bn;
 }
 
-void delete_Bigint(Bigint *this)
+void delete_Bigint(Bigint *self)
 {
-	if (!(this->d))
-		free(this->d);
-	free(this);
+	if (!(self->d))
+		free(self->d);
+	free(self);
 }
 
 Bigint * Bigint_set_bytearr(BYTE *arr, size_t len, bool neg)

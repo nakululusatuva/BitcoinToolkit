@@ -827,10 +827,10 @@ Script * new_Script_null_data(BYTE *data, size_t size)
 	return NULL;
 }
 
-void delete_Script(Script *this)
+void delete_Script(Script *self)
 {
-	delete_CLinkedlist(this->script);
-	free(this);
+	delete_CLinkedlist(self->script);
+	free(self);
 }
 
 const char * get_op_name(Opcode op)
@@ -971,32 +971,32 @@ const char * get_op_name(Opcode op)
     }
 }
 
-Status Script_add_opcode(Script *this, Opcode *op)
+Status Script_add_opcode(Script *self, Opcode *op)
 {
-	if (this == NULL || op == NULL)
+	if (self == NULL || op == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (this->script->add(this->script, op, 1, BYTE_TYPE)) == SUCCEEDED )
+	else if ( (self->script->add(self->script, op, 1, BYTE_TYPE)) == SUCCEEDED )
 		return SUCCEEDED;
 	else return MEMORY_ALLOCATE_FAILED;
 }
 
-Status Script_add_data(Script *this, BYTE *data, size_t size)
+Status Script_add_data(Script *self, BYTE *data, size_t size)
 {
-	if (this == NULL || data == NULL)
+	if (self == NULL || data == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (this->script->add(this->script, data, size, BYTE_TYPE)) == SUCCEEDED )
+	else if ( (self->script->add(self->script, data, size, BYTE_TYPE)) == SUCCEEDED )
 		return SUCCEEDED;
 	else return MEMORY_ALLOCATE_FAILED;
 }
 
-uint8_t * Script_to_string(Script *this, size_t *size)
+uint8_t * Script_to_string(Script *self, size_t *size)
 {
-	if (this == NULL || size == NULL)
+	if (self == NULL || size == NULL)
 		return PASSING_NULL_POINTER;
-	else if (this->is_empty(this))
+	else if (self->is_empty(self))
 		return SCRIPT_HAS_NO_ELEMENTS;
 
-	CLinkedlistNode **elements = this->script->forward_iter(this->script);
+	CLinkedlistNode **elements = self->script->forward_iter(self->script);
 	if (elements == MEMORY_ALLOCATE_FAILED)
 		return MEMORY_ALLOCATE_FAILED;
 
@@ -1010,7 +1010,7 @@ uint8_t * Script_to_string(Script *this, size_t *size)
 // Script elements loop, convert one element to one string and add to linked list.
 // Data bytes element will be processed and skip.
 // Data bytes element which doesn't have a PUSHDATA element before will cause and return an error code.
-for (uint32_t i = 0; i < this->get_length(this); ++i)
+for (uint32_t i = 0; i < self->get_length(self); ++i)
 {
 	BYTE buffer = ((BYTE *)(elements[i]->data))[0];
 	size_t buffer_size = elements[i]->size;
@@ -1246,21 +1246,21 @@ for (uint32_t i = 0; i < this->get_length(this); ++i)
 	return string;
 }
 
-BYTE * Script_to_bytes(Script *this, size_t *size)
+BYTE * Script_to_bytes(Script *self, size_t *size)
 {
-	if (this == NULL || size == NULL)
+	if (self == NULL || size == NULL)
 		return PASSING_NULL_POINTER;
-	else if (this->is_empty(this))
+	else if (self->is_empty(self))
 		return SCRIPT_HAS_NO_ELEMENTS;
 
-	uint32_t script_len = this->get_length(this);
-	size_t   total_size = this->total_size(this);
+	uint32_t script_len = self->get_length(self);
+	size_t   total_size = self->total_size(self);
 	size[0] = total_size;
 
 	BYTE *bytes = (BYTE *)malloc(total_size);
 	if (bytes == NULL)
 		return MEMORY_ALLOCATE_FAILED;
-	CLinkedlistNode **list = this->script->forward_iter(this->script);
+	CLinkedlistNode **list = self->script->forward_iter(self->script);
 	if (list == NULL)
 	{
 		free(bytes);
@@ -1278,20 +1278,20 @@ BYTE * Script_to_bytes(Script *this, size_t *size)
 	return bytes;
 }
 
-Status Script_is_p2pkh(Script *this)
+Status Script_is_p2pkh(Script *self)
 {
 	// OP_DUP + OP_HASH160 + pushdata(20) + pubkey_hash(20) + OP_EQUALVERIFY + OP_CHECKSIG
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
-	else if (this->get_length(this) != 6)
+	else if (self->get_length(self) != 6)
 		return FAILED;
 
-	BYTE op_dup      = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
-	BYTE op_hash160  = ((BYTE *)(this->script->get_node(this->script, 1)->data))[0];
-	BYTE pushdata    = ((BYTE *)(this->script->get_node(this->script, 2)->data))[0];
-	size_t data_size = this->script->get_node(this->script, 3)->size;
-	BYTE op_equalverify = ((BYTE *)(this->script->get_node(this->script, 4)->data))[0];
-	BYTE op_checksig = ((BYTE *)(this->script->get_node(this->script, 5)->data))[0];
+	BYTE op_dup      = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
+	BYTE op_hash160  = ((BYTE *)(self->script->get_node(self->script, 1)->data))[0];
+	BYTE pushdata    = ((BYTE *)(self->script->get_node(self->script, 2)->data))[0];
+	size_t data_size = self->script->get_node(self->script, 3)->size;
+	BYTE op_equalverify = ((BYTE *)(self->script->get_node(self->script, 4)->data))[0];
+	BYTE op_checksig = ((BYTE *)(self->script->get_node(self->script, 5)->data))[0];
 
 	if (pushdata != 0x14 || data_size != 0x14)
 		return INVALID_RIPEMD160_SIZE;
@@ -1305,17 +1305,17 @@ Status Script_is_p2pkh(Script *this)
 	else return FAILED;
 }
 
-Status Script_is_p2pk(Script *this)
+Status Script_is_p2pk(Script *self)
 {
 	// pushdata(65/33) + pubkey(65/33) + OP_CHECKSIG
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
-	else if (this->get_length(this) != 3)
+	else if (self->get_length(self) != 3)
 		return FAILED;
 
-	BYTE pushdata = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
-	size_t data_size = this->script->get_node(this->script, 1)->size;
-	BYTE op_checksig = ((BYTE *)(this->script->get_node(this->script, 2)->data))[0];
+	BYTE pushdata = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
+	size_t data_size = self->script->get_node(self->script, 1)->size;
+	BYTE op_checksig = ((BYTE *)(self->script->get_node(self->script, 2)->data))[0];
 
 	if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)
 		return INVALID_PUBKEY_SIZE;
@@ -1329,18 +1329,18 @@ Status Script_is_p2pk(Script *this)
 	else return FAILED;
 }
 
-Status Script_is_p2sh(Script *this)
+Status Script_is_p2sh(Script *self)
 {
 	// OP_HASH160 + pushdata(20) + script_hash(20) + OP_EQUAL
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
-	else if (this->get_length(this) != 4)
+	else if (self->get_length(self) != 4)
 		return FAILED;
 
-	BYTE op_hash160 = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
-	BYTE pushdata = ((BYTE *)(this->script->get_node(this->script, 1)->data))[0];
-	size_t data_size = this->script->get_node(this->script, 2)->size;
-	BYTE op_equal = ((BYTE *)(this->script->get_node(this->script, 3)->data))[0];
+	BYTE op_hash160 = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
+	BYTE pushdata = ((BYTE *)(self->script->get_node(self->script, 1)->data))[0];
+	size_t data_size = self->script->get_node(self->script, 2)->size;
+	BYTE op_equal = ((BYTE *)(self->script->get_node(self->script, 3)->data))[0];
 
 	if (pushdata != 0x14 || data_size != 0x14)
 		return INVALID_RIPEMD160_SIZE;
@@ -1354,18 +1354,18 @@ Status Script_is_p2sh(Script *this)
 	else return FAILED;
 }
 
-Status Script_is_p2sh_multisig(Script *this)
+Status Script_is_p2sh_multisig(Script *self)
 {
 	// OP_N + pushdata(65/33) + pubkey1(65/33) +...+ pushdata(65/33) + pubkeyM(65/33) + OP_M + OP_CHECKMULTISIG
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
-	uint8_t n = ((Opcode *)(this->script->last_node(this->script)->previous->data))[0] - 0x50;
-	if (this->get_length(this) != 3 + n * 2 )
+	uint8_t n = ((Opcode *)(self->script->last_node(self->script)->previous->data))[0] - 0x50;
+	if (self->get_length(self) != 3 + n * 2 )
 		return FAILED;
 
-	BYTE op_n = ((BYTE *)(this->script->get_node(this->script, 0)->data))[0];
-	BYTE op_m = ((BYTE *)(this->script->last_node(this->script)->previous->data))[0];
-	BYTE op_checkmultisig = ((BYTE *)(this->script->last_node(this->script)->data))[0];
+	BYTE op_n = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
+	BYTE op_m = ((BYTE *)(self->script->last_node(self->script)->previous->data))[0];
+	BYTE op_checkmultisig = ((BYTE *)(self->script->last_node(self->script)->data))[0];
 
 	// Check op_n/op_m/op_checkmultisig.
 	if (op_n > OP_0 && op_n < OP_16 && op_m > OP_0 && op_m < OP_16 &&
@@ -1375,8 +1375,8 @@ Status Script_is_p2sh_multisig(Script *this)
 		uint32_t i;
 		for (i = 1; i <= n * 2; ++i)
 		{
-			BYTE pushdata = ((BYTE *)(this->script->get_node(this->script, i)->data))[0];
-			size_t data_size = this->script->get_node(this->script, i+1)->size;
+			BYTE pushdata = ((BYTE *)(self->script->get_node(self->script, i)->data))[0];
+			size_t data_size = self->script->get_node(self->script, i+1)->size;
 
 			if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)
 				return INVALID_PUBKEY_SIZE;
@@ -1395,90 +1395,90 @@ Status Script_is_p2sh_multisig(Script *this)
 	else return FAILED;
 }
 
-Status Script_is_p2wsh(Script *this)
+Status Script_is_p2wsh(Script *self)
 {
 	/*
 	// ver + <32 bytes sha256 of redeem script>
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
 	*/
 	return NULL;
 }
 
-Status Script_is_p2wpkh(Script *this)
+Status Script_is_p2wpkh(Script *self)
 {
 	/*
 	// ver + <20 bytes hash160 of pubkey>
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
 	*/
 	return NULL;
 }
 
-Status Script_is_null_data(Script *this)
+Status Script_is_null_data(Script *self)
 {
 	/*
 	// OP_RETURN + <0 to 40 bytes data>
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
 	*/
 	return NULL;
 }
 
-bool Script_is_empty(Script *this)
+bool Script_is_empty(Script *self)
 {
-	if (this->script->is_empty(this->script))
+	if (self->script->is_empty(self->script))
 		return true;
 	else return false;
 }
 
-uint64_t Script_get_length(Script *this)
+uint64_t Script_get_length(Script *self)
 {
-	if (this == NULL)
+	if (self == NULL)
 		return (uint64_t)PASSING_NULL_POINTER;
-	return this->script->get_length(this->script);
+	return self->script->get_length(self->script);
 }
 
-Status Script_get_element(Script *this, uint64_t index, size_t *size)
+Status Script_get_element(Script *self, uint64_t index, size_t *size)
 {
-	if (this == NULL)
+	if (self == NULL)
 		return PASSING_NULL_POINTER;
-	else if (this->is_empty(this))
+	else if (self->is_empty(self))
 		return SCRIPT_HAS_NO_ELEMENTS;
-	else if (this->get_length(this) <= index || index == 0)
+	else if (self->get_length(self) <= index || index == 0)
 		return INDEX_OUT_RANGE;
 	else
 	{
-		size_t size_buff = this->script->get_node(this->script, index)->size;
+		size_t size_buff = self->script->get_node(self->script, index)->size;
 		if (size != NULL) size[0] = size_buff;
 		void *element_copy = (void *)malloc(size_buff);
 		if (element_copy == NULL)
 			return MEMORY_ALLOCATE_FAILED;
-		memcpy(element_copy, this->script->get_node(this->script, index)->data, *size);
+		memcpy(element_copy, self->script->get_node(self->script, index)->data, *size);
 		return element_copy;
 	}
 }
 
-size_t Script_total_size(Script *this)
+size_t Script_total_size(Script *self)
 {
-	if (this == NULL)
+	if (self == NULL)
 		return (size_t)PASSING_NULL_POINTER;
-	else if (this->is_empty(this))
+	else if (self->is_empty(self))
 		return (size_t)SCRIPT_HAS_NO_ELEMENTS;
 
-	return this->script->total_size(this->script);
+	return self->script->total_size(self->script);
 }
 
-uint64_t Script_check_element_size(Script *this)
+uint64_t Script_check_element_size(Script *self)
 {
-	if (this->is_empty(this))
+	if (self->is_empty(self))
 		return (uint64_t)SCRIPT_HAS_NO_ELEMENTS;
 
 	uint32_t i;
-	for (i = 0; i < this->get_length(this); ++i)
+	for (i = 0; i < self->get_length(self); ++i)
 	{
 		size_t element_size = 0;
-		void *element = (this->get_element(this, i, &element_size));
+		void *element = (self->get_element(self, i, &element_size));
 		free(element);
 		if (element_size > 520)
 			return i;
@@ -1487,22 +1487,22 @@ uint64_t Script_check_element_size(Script *this)
 	return (uint64_t)FAILED;
 }
 
-bool Script_is_standard(Script *this)
+bool Script_is_standard(Script *self)
 {
-	if (this->is_p2pkh(this) == SUCCEEDED)
+	if (self->is_p2pkh(self) == SUCCEEDED)
 		return true;
-	else if (this->is_p2pk(this) == SUCCEEDED)
+	else if (self->is_p2pk(self) == SUCCEEDED)
 		return true;
-	else if (this->is_p2sh(this) == SUCCEEDED)
+	else if (self->is_p2sh(self) == SUCCEEDED)
 		return true;
-	else if (this->is_p2sh_multisig(this) == SUCCEEDED)
+	else if (self->is_p2sh_multisig(self) == SUCCEEDED)
 		return true;
 	/*
-	else if (this->is_p2wsh(this) == SUCCEEDED)
+	else if (self->is_p2wsh(self) == SUCCEEDED)
 		return true;
-	else if (this->is_p2wpkh(this) == SUCCEEDED)
+	else if (self->is_p2wpkh(self) == SUCCEEDED)
 		return true;
-	else if (this->is_null_data(this) == SUCCEEDED)
+	else if (self->is_null_data(self) == SUCCEEDED)
 		return true;
 	*/
 	else return false;

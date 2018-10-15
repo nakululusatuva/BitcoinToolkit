@@ -38,7 +38,7 @@ struct CLinkedlist
 
 /** Construct and Destruct Functions **/
 CLinkedlist * new_CLinkedlist();
-void delete_CLinkedlist(CLinkedlist *this);
+void delete_CLinkedlist(CLinkedlist *self);
 
 /** Member Fuctions **/
 /** Add a data's pointer to the linked list.
@@ -53,7 +53,7 @@ void delete_CLinkedlist(CLinkedlist *this);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-Status CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
+Status CLinkedlist_add(CLinkedlist *self, void *data, size_t size, void *type);
 
 /** Delete a node.
 *   \param  index       Node's position, start from zero.
@@ -61,7 +61,7 @@ Status CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
 *           errors:  CLINKEDLIST_EMPTY
 *                    INDEX_OUT_RANGE
 **/
-Status CLinkedlist_delete(CLinkedlist *this, uint64_t index);
+Status CLinkedlist_delete(CLinkedlist *self, uint64_t index);
 
 /** Insert a data's pointer.
 *   \param  after       Node's position, the new node will be in front of it.
@@ -78,7 +78,7 @@ Status CLinkedlist_delete(CLinkedlist *this, uint64_t index);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-Status CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type);
+Status CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t size, void *type);
 
 /** Change change node's data.
 *   \param  index       Node's position.
@@ -95,7 +95,7 @@ Status CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t 
 *   2. Do not free 'data' manually, the destruct function will do the job.
 *   3. The old data will be freed automatically.
 **/
-Status CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type);
+Status CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t size, void *type);
 
 /** Forward iterate the linked list.
 *   \return errors: CLINKEDLIST_EMPTY
@@ -103,7 +103,7 @@ Status CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t 
 *   \else on an array pointer that store the nodes' pointer, need to be freed manually.
 *   Do not free the nodes or the node->data manually.
 **/
-CLinkedlistNode ** CLinkedlist_forward_iter(CLinkedlist *this);
+CLinkedlistNode ** CLinkedlist_forward_iter(CLinkedlist *self);
 
 /** Backward iterate the linked list.
 *   \return errors: CLINKEDLIST_EMPTY
@@ -111,21 +111,21 @@ CLinkedlistNode ** CLinkedlist_forward_iter(CLinkedlist *this);
 *   \else on an array pointer that store the nodes' pointer, need to be freed manually.
 *   Do not free the nodes or the node->data manually.
 **/
-CLinkedlistNode ** CLinkedlist_backward_iter(CLinkedlist *this);
+CLinkedlistNode ** CLinkedlist_backward_iter(CLinkedlist *self);
 /* Reverse the linked list */
-Status CLinkedlist_reverse(CLinkedlist *this);
-bool CLinkedlist_is_empty(CLinkedlist *this);
+Status CLinkedlist_reverse(CLinkedlist *self);
+bool CLinkedlist_is_empty(CLinkedlist *self);
 /* Get the total data size
 * return -1(0xffffffffffffffff) on empty linked list
 * -2(0xfffffffffffffffe) on memory allocated failed */
-uint64_t CLinkedlist_total_size(CLinkedlist *this);
+uint64_t CLinkedlist_total_size(CLinkedlist *self);
 
 /** Get the last node's pointer
 *   \return errors: CLINKEDLIST_EMPTY
 *   \else on node's pointer.
 *   Do not free the node or the node->data manually.
 **/
-CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *this);
+CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *self);
 
 /** Get the  node's pointer
 *   \return errors: CLINKEDLIST_EMPTY
@@ -133,7 +133,7 @@ CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *this);
 *   \else on node's pointer.
 *   Do not free the node or the node->data manually.
 **/
-CLinkedlistNode * CLinkedlist_get_node(CLinkedlist *this, uint64_t index);
-uint64_t CLinkedlist_get_length(CLinkedlist *this);
+CLinkedlistNode * CLinkedlist_get_node(CLinkedlist *self, uint64_t index);
+uint64_t CLinkedlist_get_length(CLinkedlist *self);
 
 #endif

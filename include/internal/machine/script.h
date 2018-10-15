@@ -18,7 +18,7 @@
 #define MAX_SCRIPT_SIZE            10000 // Maximum script length in bytes
 #define MAX_SCRIPT_STACK_SIZE       1000 // Maximum number of values on script interpreter stack
 
-// Threshold for nLockTime: below this value it is interpreted as block number,
+// Threshold for nLockTime: below self value it is interpreted as block number,
 // otherwise as UNIX timestamp.
 #define LOCKTIME_THRESHOLD 500000000; // Tue Nov  5 00:53:20 1985 UTC
 
@@ -170,7 +170,7 @@ typedef enum opcode
 /* New an opcode object, value range: 0x00~0xFF, return NULL on error */
 Opcode * new_Opcode(BYTE value);
 /* Delete an opcode object that created by new_opcode() */
-void delete_Opcode(Opcode *this);
+void delete_Opcode(Opcode *self);
 /* Return the opcode name string */
 const char * get_op_name(Opcode op);
 
@@ -274,7 +274,7 @@ Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size);
 Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size);
 Script * new_Script_null_data(BYTE *data, size_t size);
 /* Delete an Script object which created by construct function */
-void delete_Script(Script *this);
+void delete_Script(Script *self);
 
 /** Member Functions **/
 /** Add an opcode.
@@ -287,7 +287,7 @@ void delete_Script(Script *this);
 *   do not add 'op' to another Script or free 'op' by delete_Opcode() manually,
 *   the destruct function will do the job.
 **/
-Status Script_add_opcode(Script *this, Opcode *op);
+Status Script_add_opcode(Script *self, Opcode *op);
 
 /** Add data bytes.
 *   \param  data        The data bytes.
@@ -300,7 +300,7 @@ Status Script_add_opcode(Script *this, Opcode *op);
 *   Once Script_add_data() returns true, do not add 'data' to another Script or free 'data' manually,
 *   the destruct function will do the job.
 **/
-Status Script_add_data(Script *this, BYTE *data, size_t size);
+Status Script_add_data(Script *self, BYTE *data, size_t size);
 
 /** Script to string.
 *   \param  size        Store the string's size, how many bytes.
@@ -310,7 +310,7 @@ Status Script_add_data(Script *this, BYTE *data, size_t size);
 *   \else on success.
 *   The returned string must be freed manually.
 **/
-uint8_t * Script_to_string(Script *this, size_t *size);
+uint8_t * Script_to_string(Script *self, size_t *size);
 
 /** Script to byte array.
 *   \param  size        Store the byte array's size, how many bytes.
@@ -320,22 +320,22 @@ uint8_t * Script_to_string(Script *this, size_t *size);
 *   \else on success.
 *   The returned byte array must be freed manually.
 **/
-BYTE * Script_to_bytes(Script *this, size_t *size);
+BYTE * Script_to_bytes(Script *self, size_t *size);
 /* Check if a valid P2PKH script */
-Status Script_is_p2pkh(Script *this);
+Status Script_is_p2pkh(Script *self);
 /* Check if a valid P2PK script */
-Status Script_is_p2pk(Script *this);
+Status Script_is_p2pk(Script *self);
 /* Check if a valid P2SH script */
-Status Script_is_p2sh(Script *this);
+Status Script_is_p2sh(Script *self);
 /* Check if a valid multisig script */
-Status Script_is_p2sh_multisig(Script *this);
-Status Script_is_p2wsh(Script *this);
-Status Script_is_p2wpkh(Script *this);
-Status Script_is_null_data(Script *this);
+Status Script_is_p2sh_multisig(Script *self);
+Status Script_is_p2wsh(Script *self);
+Status Script_is_p2wpkh(Script *self);
+Status Script_is_null_data(Script *self);
 /* Check if the script has no statements */
-bool Script_is_empty(Script *this);
+bool Script_is_empty(Script *self);
 /* How many statements */
-uint64_t Script_get_length(Script *this);
+uint64_t Script_get_length(Script *self);
 
 /** Get an element's pointer from script
 *   \param  index       Position of the element.
@@ -345,8 +345,8 @@ uint64_t Script_get_length(Script *this);
 *           INDEX_OUT_RANGE
 *   \else on success.
 **/
-Status Script_get_element(Script *this, uint64_t index, size_t *size);
-size_t Script_total_size(Script *this);
-uint64_t Script_check_element_size(Script *this);
+Status Script_get_element(Script *self, uint64_t index, size_t *size);
+size_t Script_total_size(Script *self);
+uint64_t Script_check_element_size(Script *self);
 
 #endif
