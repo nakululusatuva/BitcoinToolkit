@@ -1,9 +1,11 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _INTERPRETER_
 #define _INTERPRETER_
 
 #include "internal/common.h"
 #include "internal/machine/script.h"
 #include "internal/container/CStack.h"
+/** AUTOHEADER TAG: DELETE END **/
 
 /* 0x1040 ~ 0x1050 : Interpreter */
 // Opcode execution status.
@@ -39,6 +41,8 @@ struct Interpreter
 
 Interpreter * new_Interpreter();
 Status delete_Interpreter(Interpreter *self);
+
+/** AUTOHEADER TAG: DELETE BEGIN **/
 Status Interpreter_dump_data_stack(Interpreter *self);
 Status Interpreter_dump_alt_stack(Interpreter *self);
 Status Interpreter_launch(Interpreter *self, uint64_t pos);
@@ -46,3 +50,4 @@ Status Interpreter_load_script(Interpreter *self, Script *feed);
 Script * Interpreter_unload_script(Interpreter *self);
 
 #endif
+/** AUTOHEADER TAG: DELETE END **/

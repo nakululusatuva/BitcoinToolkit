@@ -1,8 +1,10 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _SCRIPT_
 #define _SCRIPT_
 
 #include "internal/common.h"
 #include "internal/container/CLinkedlist.h"
+/** AUTOHEADER TAG: DELETE END **/
 
 /* 0x1020 ~ 0x103f : Script */
 #define SCRIPT_MULTISIG_M_BIGGER_N              (void *)0x1020
@@ -276,6 +278,7 @@ Script * new_Script_null_data(BYTE *data, size_t size);
 /* Delete an Script object which created by construct function */
 void delete_Script(Script *self);
 
+/** AUTOHEADER TAG: DELETE BEGIN **/
 /** Member Functions **/
 /** Add an opcode.
 *   \param  op          An opcode.
@@ -350,3 +353,4 @@ size_t Script_total_size(Script *self);
 uint64_t Script_check_element_size(Script *self);
 
 #endif
+/** AUTOHEADER TAG: DELETE END **/

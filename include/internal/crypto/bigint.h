@@ -1,7 +1,9 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _BIGINT_
 #define _BIGINT_
 
 #include "internal/common.h"
+/** AUTOHEADER TAG: DELETE END **/
 
 typedef struct Bigint_st Bigint;
 struct Bigint_st {
@@ -23,4 +25,6 @@ Bigint * Bigint_div(Bigint *a, Bigint *b);
 Bigint * Bigint_pow(Bigint *a, Bigint *order);
 Bigint * Bigint_ext(Bigint *a, Bigint *order);
 
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #endif
+/** AUTOHEADER TAG: DELETE END **/

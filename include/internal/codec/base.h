@@ -1,7 +1,9 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _BASE_
 #define _BASE_
 
 #include "internal/common.h"
+/** AUTOHEADER TAG: DELETE END **/
 
 /** Base6 Encoder. (Leaading '0x00' bytes will be ignored)
 *   \param  payload     Byte array, bytes's value range: 0x00 ~ 0xFF.
@@ -83,4 +85,6 @@ size_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded);
 **/
 size_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded);
 
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #endif
+/** AUTOHEADER TAG: DELETE END **/

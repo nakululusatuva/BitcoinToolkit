@@ -1,3 +1,4 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _OPERATION_
 #define _OPERATION_
 
@@ -66,3 +67,4 @@ Status EXC_OP_EQUALVERIFY(CStack *stack);
 Status EXC_OP_1ADD(CStack *stack);
 
 #endif
+/** AUTOHEADER TAG: DELETE END **/

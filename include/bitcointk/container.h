@@ -1,7 +1,33 @@
-#ifndef _CLINKEDLIST_
-#define _CLINKEDLIST_
+/** 
+*  MIT LICENSE
+*  Copyright (c) 2018 Yirain Suen
+*  Permission is hereby granted, free of charge, to any person obtaining a copy
+*  of this software and associated documentation files (the "Software"), to
+*  deal in the Software without restriction, including without limitation the
+*  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+*  sell copies of the Software, and to permit persons to whom the Software is
+*  furnished to do so, subject to the following conditions:
+*  
+*  The above copyright notice and this permission notice shall be included in
+*  all copies or substantial portions of the Software.
+*  
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+*  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+*  IN THE SOFTWARE.
+**/
+/** 
+*  AUTO-GENERATED CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
+*  Maintainers: Do not include this header internal to this library.
+**/
+#ifdef __cpluscplus
+extern "C" {
+#endif
+#include "common.h"
 
-#include "internal/common.h"
 
 /* 0x1000 ~ 0x100f : CLinkedlist */
 #define CLINKEDLIST_EMPTY (void *)0x1000
@@ -38,108 +64,9 @@ struct CLinkedlist
 
 /** Construct and Destruct Functions **/
 CLinkedlist * new_CLinkedlist();
-void delete_CLinkedlist(CLinkedlist *this);
+void delete_CLinkedlist(CLinkedlist *self);
 
-/** Member Fuctions **/
-/** Add a data's pointer to the linked list.
-*   \param  data        Data's pointer.
-*   \param  size        Data's size, how many bytes.
-*   \param  type        A pointer that prompt the data type, check ./src/status.h
-*                       NULL is allowed if you don't need to mark the data type.
-*   \return success: SUCCEEDED
-*           errors:  MEMORY_ALLOCATE_FAILED
-*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
-*   Once CLinkedlist_add() returns SUCCEEDED:
-*   1. Do not add or insert 'data' to another CLinkedlist.
-*   2. Do not free 'data' manually, the destruct function will do the job.
-**/
-Status CLinkedlist_add(CLinkedlist *this, void *data, size_t size, void *type);
 
-/** Delete a node.
-*   \param  index       Node's position, start from zero.
-*   \return success: SUCCEEDED
-*           errors:  CLINKEDLIST_EMPTY
-*                    INDEX_OUT_RANGE
-**/
-Status CLinkedlist_delete(CLinkedlist *this, uint64_t index);
-
-/** Insert a data's pointer.
-*   \param  after       Node's position, the new node will be in front of it.
-*   \param  data        Data's pointer.
-*   \param  size        Data's size, how many bytes.
-*   \param  type        A pointer that prompt the data type, check ./src/status.h
-*                       NULL is allowed if you don't need to mark the data type.
-*   \return success: SUCCEEDED
-*           errors:  MEMORY_ALLOCATE_FAILED
-*                    INDEX_OUT_RANGE
-*				     CLINKEDLIST_EMPTY
-*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
-*   Once CLinkedlist_insert() returns SUCCEEDED:
-*   1. Do not add or insert 'data' to another CLinkedlist.
-*   2. Do not free 'data' manually, the destruct function will do the job.
-**/
-Status CLinkedlist_insert(CLinkedlist *this, uint64_t after, void *data, size_t size, void *type);
-
-/** Change change node's data.
-*   \param  index       Node's position.
-*   \param  data        New data's pointer, the old data will be freed automatically.
-*   \param  size        New data's size, how many bytes.
-*   \param  type        A pointer that prompt the data type, check ./src/status.h
-*                       NULL is allowed if you don't need to mark the data type.
-*   \return success: SUCCEEDED
-*           errors:  INDEX_OUT_RANGE
-*                    CLINKEDLIST_EMPTY
-*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
-*   Once CLinkedlist_change() returns SUCCEEDED:
-*   1. Do not add or insert 'data' to another CLinkedlist.
-*   2. Do not free 'data' manually, the destruct function will do the job.
-*   3. The old data will be freed automatically.
-**/
-Status CLinkedlist_change(CLinkedlist *this, uint64_t index, void *data, size_t size, void *type);
-
-/** Forward iterate the linked list.
-*   \return errors: CLINKEDLIST_EMPTY
-*                   MEMORY_ALLOCATE_FAILED
-*   \else on an array pointer that store the nodes' pointer, need to be freed manually.
-*   Do not free the nodes or the node->data manually.
-**/
-CLinkedlistNode ** CLinkedlist_forward_iter(CLinkedlist *this);
-
-/** Backward iterate the linked list.
-*   \return errors: CLINKEDLIST_EMPTY
-*                   MEMORY_ALLOCATE_FAILED
-*   \else on an array pointer that store the nodes' pointer, need to be freed manually.
-*   Do not free the nodes or the node->data manually.
-**/
-CLinkedlistNode ** CLinkedlist_backward_iter(CLinkedlist *this);
-/* Reverse the linked list */
-Status CLinkedlist_reverse(CLinkedlist *this);
-bool CLinkedlist_is_empty(CLinkedlist *this);
-/* Get the total data size
-* return -1(0xffffffffffffffff) on empty linked list
-* -2(0xfffffffffffffffe) on memory allocated failed */
-uint64_t CLinkedlist_total_size(CLinkedlist *this);
-
-/** Get the last node's pointer
-*   \return errors: CLINKEDLIST_EMPTY
-*   \else on node's pointer.
-*   Do not free the node or the node->data manually.
-**/
-CLinkedlistNode * CLinkedlist_last_node(CLinkedlist *this);
-
-/** Get the  node's pointer
-*   \return errors: CLINKEDLIST_EMPTY
-*                   INDEX_OUT_RANGE
-*   \else on node's pointer.
-*   Do not free the node or the node->data manually.
-**/
-CLinkedlistNode * CLinkedlist_get_node(CLinkedlist *this, uint64_t index);
-uint64_t CLinkedlist_get_length(CLinkedlist *this);
-
-#endif#ifndef _CSTACK_
-#define _CSTACK_
-
-#include "internal/common.h"
 
 /* 0x001010 ~ 0x00101f : CStack */
 #define CSTACK_EMPTY            (void *)0x1010
@@ -173,42 +100,8 @@ struct CStack
 *   \else on succeeded.
 **/
 CStack * new_CStack(const uint64_t capacity);
-void delete_CStack(CStack *this);
+void delete_CStack(CStack *self);
 
-// Member Fuctions.
-/** Push data onto stack.
-*   \param  data        Data's pointer.
-*   \param  size        How many bytes.
-*   \param  type        A pointer that prompt the data type, check ./src/status.h
-*                       NULL is allowed if you don't need to mark the data type.
-*   \return success: SUCCEEDED
-*           errors:  CSTACK_FULL
-*   Parameter 'data' must be allocated on heap memory, NULL is allowed.
-*   Once CStack_push() returns SUCCEEDED:
-*   1. Do not push 'data' to another CStack.
-*   2. Do not free 'data' manually, the destruct function will do the job.
-**/
-Status CStack_push(CStack *this, void *data, size_t size, void *type);
-
-/** Pop the top element.
-*   \param  size        Store the top element's data size (bytes).
-*   \param  type        Store a pointer that prompt the data type, check ./src/status.h
-*                       NULL is allowed if you don't need to know the data type.
-*   \return errors: CSTACK_EMPTY
-*   \else on succeeded.
-*   Once CStack_pop() success, you need to free the popped pointer manually.
-**/
-Status CStack_pop(CStack *this, size_t *size, void **type);
-
-/* Check if stack is empty */
-bool CStack_is_empty(CStack *this);
-
-/* Check if stack is full */
-bool CStack_is_full(CStack *this);
-
-/* Get total data size, return how many bytes */
-uint64_t CStack_total_size(CStack *this);
-uint64_t CStack_get_depth(CStack *this);
-uint64_t CStack_get_capacity(CStack *this);
-
+#ifdef __cpluscplus
+}
 #endif

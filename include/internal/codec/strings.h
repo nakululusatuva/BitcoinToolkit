@@ -1,7 +1,9 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _STRINGS_
 #define _STRINGS_
 
 #include "internal/common.h"
+/** AUTOHEADER TAG: DELETE END **/
 
 #define BYTEARRAY_ALL_ZERO (void *)0x000001
 
@@ -37,4 +39,6 @@ void hexstr_reverse(uint8_t *str, size_t len);
 void * lsrtip(const void *arr, size_t arr_size, size_t *r_size);
 void * rsrtip(const void *arr, size_t arr_size, size_t *r_size);
 
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #endif
+/** AUTOHEADER TAG: DELETE END **/

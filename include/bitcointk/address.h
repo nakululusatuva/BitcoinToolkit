@@ -1,9 +1,32 @@
-/** AUTOHEADER TAG: DELETE BEGIN **/
-#ifndef _BTC_ADDRESS_
-#define _BTC_ADDRESS_
-
+/** 
+*  MIT LICENSE
+*  Copyright (c) 2018 Yirain Suen
+*  Permission is hereby granted, free of charge, to any person obtaining a copy
+*  of this software and associated documentation files (the "Software"), to
+*  deal in the Software without restriction, including without limitation the
+*  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+*  sell copies of the Software, and to permit persons to whom the Software is
+*  furnished to do so, subject to the following conditions:
+*  
+*  The above copyright notice and this permission notice shall be included in
+*  all copies or substantial portions of the Software.
+*  
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+*  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+*  IN THE SOFTWARE.
+**/
+/** 
+*  AUTO-GENERATED CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
+*  Maintainers: Do not include this header internal to this library.
+**/
+#ifdef __cpluscplus
+extern "C" {
+#endif
 #include "common.h"
-/** AUTOHEADER TAG: DELETE END **/
 
 // Type defines.
 typedef enum prefix {
@@ -133,6 +156,6 @@ Status delete_P2SH_Test(P2SH_Test_Address *self);
 Status Initialize_P2SH_Test(P2SH_Test_Address *addr, bool compress);
 Status Abandon_P2SH_Test(P2SH_Test_Address *addr);
 
-/** AUTOHEADER TAG: DELETE BEGIN **/
+#ifdef __cpluscplus
+}
 #endif
-/** AUTOHEADER TAG: DELETE END **/

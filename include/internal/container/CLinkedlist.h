@@ -1,7 +1,9 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _CLINKEDLIST_
 #define _CLINKEDLIST_
 
 #include "internal/common.h"
+/** AUTOHEADER TAG: DELETE END **/
 
 /* 0x1000 ~ 0x100f : CLinkedlist */
 #define CLINKEDLIST_EMPTY (void *)0x1000
@@ -40,6 +42,7 @@ struct CLinkedlist
 CLinkedlist * new_CLinkedlist();
 void delete_CLinkedlist(CLinkedlist *self);
 
+/** AUTOHEADER TAG: DELETE BEGIN **/
 /** Member Fuctions **/
 /** Add a data's pointer to the linked list.
 *   \param  data        Data's pointer.
@@ -137,3 +140,4 @@ CLinkedlistNode * CLinkedlist_get_node(CLinkedlist *self, uint64_t index);
 uint64_t CLinkedlist_get_length(CLinkedlist *self);
 
 #endif
+/** AUTOHEADER TAG: DELETE END **/

@@ -1,8 +1,33 @@
-#ifndef _SCRIPT_
-#define _SCRIPT_
-
-#include "internal/common.h"
-#include "internal/container/CLinkedlist.h"
+/** 
+*  MIT LICENSE
+*  Copyright (c) 2018 Yirain Suen
+*  Permission is hereby granted, free of charge, to any person obtaining a copy
+*  of this software and associated documentation files (the "Software"), to
+*  deal in the Software without restriction, including without limitation the
+*  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+*  sell copies of the Software, and to permit persons to whom the Software is
+*  furnished to do so, subject to the following conditions:
+*  
+*  The above copyright notice and this permission notice shall be included in
+*  all copies or substantial portions of the Software.
+*  
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+*  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+*  IN THE SOFTWARE.
+**/
+/** 
+*  AUTO-GENERATED CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
+*  Maintainers: Do not include this header internal to this library.
+**/
+#ifdef __cpluscplus
+extern "C" {
+#endif
+#include "common.h"
+#include "container.h"
 
 /* 0x1020 ~ 0x103f : Script */
 #define SCRIPT_MULTISIG_M_BIGGER_N              (void *)0x1020
@@ -18,7 +43,7 @@
 #define MAX_SCRIPT_SIZE            10000 // Maximum script length in bytes
 #define MAX_SCRIPT_STACK_SIZE       1000 // Maximum number of values on script interpreter stack
 
-// Threshold for nLockTime: below this value it is interpreted as block number,
+// Threshold for nLockTime: below self value it is interpreted as block number,
 // otherwise as UNIX timestamp.
 #define LOCKTIME_THRESHOLD 500000000; // Tue Nov  5 00:53:20 1985 UTC
 
@@ -170,7 +195,7 @@ typedef enum opcode
 /* New an opcode object, value range: 0x00~0xFF, return NULL on error */
 Opcode * new_Opcode(BYTE value);
 /* Delete an opcode object that created by new_opcode() */
-void delete_Opcode(Opcode *this);
+void delete_Opcode(Opcode *self);
 /* Return the opcode name string */
 const char * get_op_name(Opcode op);
 
@@ -274,87 +299,9 @@ Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size);
 Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size);
 Script * new_Script_null_data(BYTE *data, size_t size);
 /* Delete an Script object which created by construct function */
-void delete_Script(Script *this);
+void delete_Script(Script *self);
 
-/** Member Functions **/
-/** Add an opcode.
-*   \param  op          An opcode.
-*   \return error codes:
-*           MEMORY_ALLOCATE_FAILED
-*           PASSING_NULL_POINTER
-*   \SUCCESS on success.
-*   Parameter 'op' must be allocated by new_opcode(), once Script_add_opcode() returns true,
-*   do not add 'op' to another Script or free 'op' by delete_Opcode() manually,
-*   the destruct function will do the job.
-**/
-Status Script_add_opcode(Script *this, Opcode *op);
 
-/** Add data bytes.
-*   \param  data        The data bytes.
-*   \param  size        Data size, how many bytes.
-*   \return error codes:
-*           MEMORY_ALLOCATE_FAILED
-*           PASSING_NULL_POINTER
-*   \SUCCESS on success.
-*   Parameter 'data' must point to heap memory, passing a pointer points to stack memory will cause errors.
-*   Once Script_add_data() returns true, do not add 'data' to another Script or free 'data' manually,
-*   the destruct function will do the job.
-**/
-Status Script_add_data(Script *this, BYTE *data, size_t size);
-
-/** Script to string.
-*   \param  size        Store the string's size, how many bytes.
-*   \return error codes:
-*           SCRIPT_HAS_NO_STATEMENTS
-*           MEMORY_ALLOCATE_FAILED
-*   \else on success.
-*   The returned string must be freed manually.
-**/
-uint8_t * Script_to_string(Script *this, size_t *size);
-
-/** Script to byte array.
-*   \param  size        Store the byte array's size, how many bytes.
-*   \return error codes:
-*           SCRIPT_HAS_NO_STATEMENTS
-*           MEMORY_ALLOCATE_FAILED
-*   \else on success.
-*   The returned byte array must be freed manually.
-**/
-BYTE * Script_to_bytes(Script *this, size_t *size);
-/* Check if a valid P2PKH script */
-Status Script_is_p2pkh(Script *this);
-/* Check if a valid P2PK script */
-Status Script_is_p2pk(Script *this);
-/* Check if a valid P2SH script */
-Status Script_is_p2sh(Script *this);
-/* Check if a valid multisig script */
-Status Script_is_p2sh_multisig(Script *this);
-Status Script_is_p2wsh(Script *this);
-Status Script_is_p2wpkh(Script *this);
-Status Script_is_null_data(Script *this);
-/* Check if the script has no statements */
-bool Script_is_empty(Script *this);
-/* How many statements */
-uint64_t Script_get_length(Script *this);
-
-/** Get an element's pointer from script
-*   \param  index       Position of the element.
-*   \param  size        Store the element's size, how many bytes.
-*   \return error codes:
-*           SCRIPT_HAS_NO_STATEMENTS
-*           INDEX_OUT_RANGE
-*   \else on success.
-**/
-Status Script_get_element(Script *this, uint64_t index, size_t *size);
-size_t Script_total_size(Script *this);
-uint64_t Script_check_element_size(Script *this);
-
-#endif#ifndef _INTERPRETER_
-#define _INTERPRETER_
-
-#include "internal/common.h"
-#include "internal/machine/script.h"
-#include "internal/container/CStack.h"
 
 /* 0x1040 ~ 0x1050 : Interpreter */
 // Opcode execution status.
@@ -389,78 +336,9 @@ struct Interpreter
 };
 
 Interpreter * new_Interpreter();
-Status delete_Interpreter(Interpreter *this);
-Status Interpreter_dump_data_stack(Interpreter *this);
-Status Interpreter_dump_alt_stack(Interpreter *this);
-Status Interpreter_launch(Interpreter *this, uint64_t pos);
-Status Interpreter_load_script(Interpreter *this, Script *feed);
-Script * Interpreter_unload_script(Interpreter *this);
+Status delete_Interpreter(Interpreter *self);
 
-#endif#ifndef _OPERATION_
-#define _OPERATION_
 
-#include "internal/machine/script.h"
-#include "internal/machine/interpreter.h"
-#include "internal/container/CStack.h"
-
-// EXC returns OPERATION_EXECUTED     : no error and executed,
-//             OPERATION_NOT_EXECUTED : no error but not executed,
-//             else                   : error while executing.
-
-// Constants
-Status EXC_OP_0_FALSE(CStack *stack);
-Status EXC_OP_1_TRUE(CStack *stack);
-Status EXC_OP_PUSHDATA(CStack *stack, Script *script, uint64_t *pos);
-Status EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos);
-Status EXC_OP_1NEGATE(CStack *stack);
-Status EXC_OP_2_TO_16(CStack *stack, BYTE number);
-
-// Flow control
-Status EXC_OP_NOP();
-Status EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos);
-Status EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos);
-Status EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_status);
-Status EXC_OP_ENDIF(CStack *stack, Script *script, uint64_t *pos);
-Status EXC_OP_VERIFY(CStack *stack);
-Status EXC_OP_RETURN(Script *script, uint64_t pos);
-
-// Stack
-Status EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack);
-Status EXC_OP_FROMALTSTACK(CStack *data_stack, CStack *alt_stack);
-Status EXC_OP_IFDUP(CStack *stack);
-Status EXC_OP_DEPTH(CStack *stack);
-Status EXC_OP_DROP(CStack *stack);
-Status EXC_OP_DUP(CStack *stack);
-Status EXC_OP_NIP(CStack *stack);
-Status EXC_OP_OVER(CStack *stack);
-Status EXC_OP_PICK(CStack *stack, uint64_t index);
-Status EXC_OP_ROLL(CStack *stack, uint64_t index);
-Status EXC_OP_ROT(CStack *stack);
-Status EXC_OP_SWAP(CStack *stack);
-Status EXC_OP_TUCK(CStack *stack);
-Status EXC_OP_2DROP(CStack *stack);
-Status EXC_OP_2DUP(CStack *stack);
-Status EXC_OP_3DUP(CStack *stack);
-Status EXC_OP_2OVER(CStack *stack);
-Status EXC_OP_2ROT(CStack *stack);
-Status EXC_OP_2SWAP(CStack *stack);
-
-// Splice
-Status EXC_OP_CAT(CStack *stack);    // Disabled
-Status EXC_OP_SUBSTR(CStack *stack); // Disabled
-Status EXC_OP_LEFT(CStack *stack);   // Disabled
-Status EXC_OP_RIGHT(CStack *stack);  // Disabled
-Status EXC_OP_SIZE(CStack *stack);
-
-// Bitwise logic
-Status EXC_OP_INVERT(CStack *stack); // Disabled
-Status EXC_OP_AND(CStack *stack);    // Disabled
-Status EXC_OP_OR(CStack *stack);     // Disabled
-Status EXC_OP_XOR(CStack *stack);    // Disabled
-Status EXC_OP_EQUAL(CStack *stack);
-Status EXC_OP_EQUALVERIFY(CStack *stack);
-
-// Arithmetic
-Status EXC_OP_1ADD(CStack *stack);
-
+#ifdef __cpluscplus
+}
 #endif

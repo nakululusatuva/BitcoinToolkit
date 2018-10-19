@@ -1,7 +1,9 @@
+/** AUTOHEADER TAG: DELETE BEGIN **/
 #ifndef _CSTACK_
 #define _CSTACK_
 
 #include "internal/common.h"
+/** AUTOHEADER TAG: DELETE END **/
 
 /* 0x001010 ~ 0x00101f : CStack */
 #define CSTACK_EMPTY            (void *)0x1010
@@ -37,6 +39,7 @@ struct CStack
 CStack * new_CStack(const uint64_t capacity);
 void delete_CStack(CStack *self);
 
+/** AUTOHEADER TAG: DELETE BEGIN **/
 // Member Fuctions.
 /** Push data onto stack.
 *   \param  data        Data's pointer.
@@ -74,3 +77,4 @@ uint64_t CStack_get_depth(CStack *self);
 uint64_t CStack_get_capacity(CStack *self);
 
 #endif
+/** AUTOHEADER TAG: DELETE END **/
