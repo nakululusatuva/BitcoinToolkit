@@ -35,6 +35,16 @@ CStack * new_CStack(const uint64_t capacity)
 		return MEMORY_ALLOCATE_FAILED;
 	}
 
+	stack->autofree = (bool *)calloc(capacity, sizeof(bool));
+	if (stack->autofree == NULL)
+	{
+		free(stack->size);
+		free(stack->base);
+		free(stack->type);
+		free(stack);
+		return MEMORY_ALLOCATE_FAILED;
+	}
+
 	stack->top  = stack->base;
 	stack->capacity = capacity;
 
@@ -53,15 +63,17 @@ void delete_CStack(CStack *self)
 {
 	for (int i = 0; i < self->top - self->base; ++i)
 	{
-		if ((self->base)[i]) free((self->base)[i]);
+		if ((self->base)[i] && (self->autofree)[i])
+			free((self->base)[i]);
 	}
 	free(self->base);
 	free(self->size);
 	free(self->type);
+	free(self->autofree);
 	free(self);
 }
 
-Status CStack_push(CStack *self, void *data, size_t size, void *type)
+Status CStack_push(CStack *self, void *data, size_t size, void *type, bool autofree)
 {
 	if (CStack_is_full(self))
 		return CSTACK_FULL;
@@ -73,12 +85,13 @@ Status CStack_push(CStack *self, void *data, size_t size, void *type)
 		else
 			(self->size)[self->top - self->base] = size;
 		(self->type)[self->top - self->base] = type;
+		(self->autofree)[self->top - self->base] = autofree;
 		self->top++;
 		return SUCCEEDED;
 	}
 }
 
-Status CStack_pop(CStack *self, size_t *size, void **type)
+Status CStack_pop(CStack *self, size_t *size, void **type, bool *autofree)
 {
 	if (CStack_is_empty(self))
 		return CSTACK_EMPTY;
@@ -90,9 +103,11 @@ Status CStack_pop(CStack *self, size_t *size, void **type)
 		void *to_pop = *(self->top);
 		*(self->top) = NULL;
 		if (size != NULL)
-			*size = (self->size)[self->top - self->base];
+			size[0] = (self->size)[self->top - self->base];
 		if (type != NULL)
 			type[0] = (self->type)[self->top - self->base];
+		if (autofree != NULL)
+			autofree[0] = (self->autofree)[self->top - self->base];
 		return to_pop;
 	}
 }

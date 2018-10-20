@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "internal/common.h"
+#include "internal/codec/strings.h"
 #include "internal/container/CStack.h"
 #include "internal/container/CLinkedlist.h"
 #include "internal/machine/script.h"
@@ -384,7 +385,7 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(data, p1_list[i]->data, size);
-		if (new->script->add(new->script, data, size, BYTE_TYPE) == false)
+		if (new->script->add(new->script, data, size, BYTE_TYPE, true) == false)
 		{
 			delete_Script(new);
 			free(p1_list);
@@ -406,7 +407,7 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(data, p2_list[i]->data, size);
-		if (new->script->add(new->script, data, size, BYTE_TYPE) == false)
+		if (new->script->add(new->script, data, size, BYTE_TYPE, true) == false)
 		{
 			delete_Script(new);
 			free(p1_list);
@@ -975,7 +976,7 @@ Status Script_add_opcode(Script *self, Opcode *op)
 {
 	if (self == NULL || op == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (self->script->add(self->script, op, 1, BYTE_TYPE)) == SUCCEEDED )
+	else if ( (self->script->add(self->script, op, 1, BYTE_TYPE, true)) == SUCCEEDED )
 		return SUCCEEDED;
 	else return MEMORY_ALLOCATE_FAILED;
 }
@@ -984,7 +985,7 @@ Status Script_add_data(Script *self, BYTE *data, size_t size)
 {
 	if (self == NULL || data == NULL)
 		return PASSING_NULL_POINTER;
-	else if ( (self->script->add(self->script, data, size, BYTE_TYPE)) == SUCCEEDED )
+	else if ( (self->script->add(self->script, data, size, BYTE_TYPE, true)) == SUCCEEDED )
 		return SUCCEEDED;
 	else return MEMORY_ALLOCATE_FAILED;
 }
@@ -1034,7 +1035,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 		PUSHDATA[8] = '('; PUSHDATA[9] = '0'; PUSHDATA[10] = 'x';
 		PUSHDATA[11] = size_str[0]; PUSHDATA[12] = size_str[1]; PUSHDATA[13] = ')';
 
-		if (elements_str->add(elements_str, PUSHDATA, 14 * sizeof(uint8_t), BYTE_TYPE) == false)
+		if (elements_str->add(elements_str, PUSHDATA, 14 * sizeof(uint8_t), BYTE_TYPE, true) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1071,7 +1072,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 		memcpy(bracketed+1, str, str_len-3);
 		bracketed[str_len - 2] = ']';
 		bracketed[str_len - 1] = ' ';
-		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t), BYTE_TYPE) == false)
+		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t), BYTE_TYPE, true) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1092,7 +1093,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 		memcpy(PUSHDATA, op_name, opname_len);
-		if (elements_str->add(elements_str, PUSHDATA, opname_len * sizeof(uint8_t), BYTE_TYPE) == false)
+		if (elements_str->add(elements_str, PUSHDATA, opname_len * sizeof(uint8_t), BYTE_TYPE, true) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1159,7 +1160,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 		memcpy(bracketed+1, str, str_len-3);
 		bracketed[str_len - 2] = ']';
 		bracketed[str_len - 1] = ' ';
-		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t), BYTE_TYPE) == false)
+		if (elements_str->add(elements_str, bracketed, str_len * sizeof(uint8_t), BYTE_TYPE, true) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1182,7 +1183,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 		}
 		memcpy(OPCODE, op_name, len);
 		OPCODE[len - 1] = ' ';
-		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t), BYTE_TYPE) == false)
+		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t), BYTE_TYPE, true) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);
@@ -1203,7 +1204,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 		}
 		memcpy(OPCODE, op_name, len);
 		OPCODE[len - 1] = ' ';
-		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t), BYTE_TYPE) == false)
+		if (elements_str->add(elements_str, OPCODE, len * sizeof(uint8_t), BYTE_TYPE, true) == false)
 		{
 			free(elements);
 			delete_CLinkedlist(elements_str);

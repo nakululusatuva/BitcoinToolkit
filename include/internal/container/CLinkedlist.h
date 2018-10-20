@@ -17,6 +17,7 @@ struct CLinkedlistNode
 	size_t size; // How many bytes.
 	void *type;
 	CLinkedlistNode *next;
+	bool autofree;
 };
 typedef struct CLinkedlist CLinkedlist;
 struct CLinkedlist
@@ -24,10 +25,10 @@ struct CLinkedlist
 	CLinkedlistNode *head;
 	uint64_t length;
 
-	Status (*add)(CLinkedlist *, void *, size_t, void *);
-	Status (*delete)(CLinkedlist *, uint64_t);
-	Status (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *);
-	Status (*change)(CLinkedlist *, uint64_t, void *, size_t, void *);
+	Status (*add)(CLinkedlist *, void *, size_t, void *, bool);
+	Status (*del)(CLinkedlist *, uint64_t);
+	Status (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *, bool);
+	Status (*change)(CLinkedlist *, uint64_t, void *, size_t, void *, bool);
 	CLinkedlistNode ** (*forward_iter)(CLinkedlist *);
 	CLinkedlistNode ** (*backward_iter)(CLinkedlist *);
 	void * (*reverse)(CLinkedlist *);
@@ -49,6 +50,7 @@ void delete_CLinkedlist(CLinkedlist *self);
 *   \param  size        Data's size, how many bytes.
 *   \param  type        A pointer that prompt the data type, check ./src/status.h
 *                       NULL is allowed if you don't need to mark the data type.
+*   \param  autofree    If you want the CLinkedlist handle the memory.
 *   \return success: SUCCEEDED
 *           errors:  MEMORY_ALLOCATE_FAILED
 *   Parameter 'data' must be allocated on heap memory, NULL is allowed.
@@ -56,7 +58,7 @@ void delete_CLinkedlist(CLinkedlist *self);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-Status CLinkedlist_add(CLinkedlist *self, void *data, size_t size, void *type);
+Status CLinkedlist_add(CLinkedlist *self, void *data, size_t size, void *type, bool autofree);
 
 /** Delete a node.
 *   \param  index       Node's position, start from zero.
@@ -81,7 +83,7 @@ Status CLinkedlist_delete(CLinkedlist *self, uint64_t index);
 *   1. Do not add or insert 'data' to another CLinkedlist.
 *   2. Do not free 'data' manually, the destruct function will do the job.
 **/
-Status CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t size, void *type);
+Status CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t size, void *type, bool autofree);
 
 /** Change change node's data.
 *   \param  index       Node's position.
@@ -98,7 +100,7 @@ Status CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t 
 *   2. Do not free 'data' manually, the destruct function will do the job.
 *   3. The old data will be freed automatically.
 **/
-Status CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t size, void *type);
+Status CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t size, void *type, bool autofree);
 
 /** Forward iterate the linked list.
 *   \return errors: CLINKEDLIST_EMPTY

@@ -41,6 +41,7 @@ struct CLinkedlistNode
 	size_t size; // How many bytes.
 	void *type;
 	CLinkedlistNode *next;
+	bool autofree;
 };
 typedef struct CLinkedlist CLinkedlist;
 struct CLinkedlist
@@ -48,10 +49,10 @@ struct CLinkedlist
 	CLinkedlistNode *head;
 	uint64_t length;
 
-	Status (*add)(CLinkedlist *, void *, size_t, void *);
-	Status (*delete)(CLinkedlist *, uint64_t);
-	Status (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *);
-	Status (*change)(CLinkedlist *, uint64_t, void *, size_t, void *);
+	Status (*add)(CLinkedlist *, void *, size_t, void *, bool);
+	Status (*del)(CLinkedlist *, uint64_t);
+	Status (*insert)(CLinkedlist *, uint64_t, void *, size_t, void *, bool);
+	Status (*change)(CLinkedlist *, uint64_t, void *, size_t, void *, bool);
 	CLinkedlistNode ** (*forward_iter)(CLinkedlist *);
 	CLinkedlistNode ** (*backward_iter)(CLinkedlist *);
 	void * (*reverse)(CLinkedlist *);

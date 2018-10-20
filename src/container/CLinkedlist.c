@@ -24,18 +24,18 @@ CLinkedlist * new_CLinkedlist()
 
 	new->length = 0;
 
-	new->add                 = &CLinkedlist_add;
-	new->delete              = &CLinkedlist_delete;
-	new->insert              = &CLinkedlist_insert;
-	new->change              = &CLinkedlist_change;
+	new->add           = &CLinkedlist_add;
+	new->del           = &CLinkedlist_delete;
+	new->insert        = &CLinkedlist_insert;
+	new->change        = &CLinkedlist_change;
 	new->forward_iter  = &CLinkedlist_forward_iter;
 	new->backward_iter = &CLinkedlist_backward_iter;
-	new->reverse             = &CLinkedlist_reverse;
-	new->is_empty            = &CLinkedlist_is_empty;
-	new->total_size          = &CLinkedlist_total_size;
-	new->last_node           = &CLinkedlist_last_node;
-	new->get_node       = &CLinkedlist_get_node;
-	new->get_length          = &CLinkedlist_get_length;
+	new->reverse       = &CLinkedlist_reverse;
+	new->is_empty      = &CLinkedlist_is_empty;
+	new->total_size    = &CLinkedlist_total_size;
+	new->last_node     = &CLinkedlist_last_node;
+	new->get_node      = &CLinkedlist_get_node;
+	new->get_length    = &CLinkedlist_get_length;
 
 	return new;
 }
@@ -57,13 +57,15 @@ void delete_CLinkedlist(CLinkedlist *self)
 		{
 			if (start->next != NULL)
 			{	// If not the last one.
-				free(start->data);
+				if (start->autofree)
+					free(start->data);
 				start = start->next;
 				free(start->previous);
 			}
 			else if (start->next == NULL)
 			{	// If the last one.
-				free(start->data);
+				if (start->autofree)
+					free(start->data);
 				free(start);
 				break;
 			}
@@ -110,7 +112,7 @@ CLinkedlistNode * CLinkedlist_get_node(CLinkedlist *self, uint64_t index)
 	return buffer;
 }
 
-Status CLinkedlist_add(CLinkedlist *self, void *data, size_t size, void *type)
+Status CLinkedlist_add(CLinkedlist *self, void *data, size_t size, void *type, bool autofree)
 {
 	CLinkedlistNode *last = CLinkedlist_last_node(self);
 	// If empty, the last one will be the head.
@@ -120,6 +122,7 @@ Status CLinkedlist_add(CLinkedlist *self, void *data, size_t size, void *type)
 	CLinkedlistNode *new  = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
 	if (new == NULL)
 		return MEMORY_ALLOCATE_FAILED;
+	new->autofree = autofree;
 
 	// Re-link the nodes.
 	last->next = new;
@@ -146,7 +149,8 @@ Status CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	else if (target->previous->previous == NULL && target->next == NULL)
 	{
 		self->head->next = NULL;
-		free(target->data);
+		if (target->autofree)
+			free(target->data);
 		free(target);
 		self->length--;
 		return SUCCEEDED;
@@ -157,7 +161,8 @@ Status CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	{
 		self->head->next = target->next;
 		target->next->previous = self->head;
-		free(target->data);
+		if (target->autofree)
+			free(target->data);
 		free(target);
 		self->length--;
 		return SUCCEEDED;
@@ -168,7 +173,8 @@ Status CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	{
 		target->previous->next = NULL;
 		self->length--;
-		free(target->data);
+		if (target->autofree)
+			free(target->data);
 		free(target);
 		return SUCCEEDED;
 	}
@@ -179,18 +185,20 @@ Status CLinkedlist_delete(CLinkedlist *self, uint64_t index)
 	{
 		target->previous->next = target->next;
 		target->next->previous = target->previous;
-		free(target->data);
+		if (target->autofree)
+			free(target->data);
 		free(target);
 		self->length--;
 		return SUCCEEDED;
 	}
 }
 
-Status CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t size, void *type)
+Status CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t size, void *type, bool autofree)
 {
 	CLinkedlistNode *new_node   = (CLinkedlistNode *)calloc(1, sizeof(CLinkedlistNode));
 	if (new_node == NULL)
 		return MEMORY_ALLOCATE_FAILED;
+	new_node->autofree = autofree;
 
 	CLinkedlistNode *after_node = CLinkedlist_get_node(self, after);
 
@@ -220,7 +228,7 @@ Status CLinkedlist_insert(CLinkedlist *self, uint64_t after, void *data, size_t 
 	}
 }
 
-Status CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t size, void *type)
+Status CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t size, void *type, bool autofree)
 {
 	CLinkedlistNode *target = CLinkedlist_get_node(self, index);
 
@@ -233,6 +241,7 @@ Status CLinkedlist_change(CLinkedlist *self, uint64_t index, void *data, size_t 
 		target->data = data;
 		target->size = size;
 		target->type = type;
+		target->autofree = autofree;
 		return SUCCEEDED;
 	}
 }

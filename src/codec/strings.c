@@ -1,5 +1,6 @@
 #include "internal/codec/strings.h"
 #include <string.h>
+#include <stdlib.h>
 /**
 int32_t get_strlen(uint8_t *string)
 {

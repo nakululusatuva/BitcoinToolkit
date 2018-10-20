@@ -11,7 +11,7 @@ Status EXC_OP_0_FALSE(CStack *stack)
 {
 	if (stack->is_full) return CSTACK_FULL;
 	BYTE *num = NULL;
-	stack->push(stack, num, 0, BYTE_TYPE);
+	stack->push(stack, num, 0, BYTE_TYPE, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -21,7 +21,7 @@ Status EXC_OP_1_TRUE(CStack *stack)
 	BYTE *num = (BYTE *)malloc(1);
 	if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 	num[0] = 0x01;
-	stack->push(stack, num, 1, BYTE_TYPE);
+	stack->push(stack, num, 1, BYTE_TYPE, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -42,7 +42,7 @@ Status EXC_OP_PUSHDATA(CStack *stack, Script *script, uint64_t *pos)
 	memcpy(copy, data, size);
 
 	// Push to stack.
-	stack->push(stack, copy, size, BYTE_TYPE);
+	stack->push(stack, copy, size, BYTE_TYPE, true);
 	*pos = (*pos) + 2;
 	return OPERATION_EXECUTED;
 }
@@ -93,7 +93,7 @@ Status EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
 	memcpy(copy, data, size);
 
 	// Push to stack.
-	stack->push(stack, data, size, BYTE_TYPE);
+	stack->push(stack, data, size, BYTE_TYPE, true);
 	*pos = (*pos) + 3;
 	return OPERATION_EXECUTED;
 }
@@ -104,7 +104,7 @@ Status EXC_OP_1NEGATE(CStack *stack)
 	BYTE *num = (BYTE *)malloc(1);
 	if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 	num[0] = 0x81;
-	stack->push(stack, num, 1, BYTE_TYPE);
+	stack->push(stack, num, 1, BYTE_TYPE, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -114,7 +114,7 @@ Status EXC_OP_2_TO_16(CStack *stack, BYTE number)
 	BYTE *num = (BYTE *)malloc(1);
 	if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 	num[0] = number;
-	stack->push(stack, num, 1, BYTE_TYPE);
+	stack->push(stack, num, 1, BYTE_TYPE, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -139,7 +139,7 @@ Status EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
 
 	// If the top stack value is not False, execute the statments.
 	size_t top_size = 0;
-	BYTE *top = stack->pop(stack, &top_size, NULL);
+	BYTE *top = stack->pop(stack, &top_size, NULL, NULL);
 	if (top_size == 0 && top == NULL)
 	{	// Stack top element is NULL.
 		*pos = (*pos) + length;
@@ -183,7 +183,7 @@ Status EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
 
 	// If the top stack value is False, execute the statments.
 	size_t top_size = 0;
-	BYTE *top = stack->pop(stack, &top_size, NULL);
+	BYTE *top = stack->pop(stack, &top_size, NULL, NULL);
 	if (top_size == 0 && top == NULL)
 	{	// Stack top element is NULL.
 		return OPERATION_EXECUTED;
@@ -258,7 +258,7 @@ Status EXC_OP_VERIFY(CStack *stack)
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	// Marks transaction as invalid if top stack value is not true. The top stack value is removed.
 	size_t size;
-	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL);
+	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL, NULL);
 
 	if (size == 0 && top == NULL) return INTERPRETER_FALSE;
 	else if (size == 1 && top[0] == 0x00)
@@ -291,8 +291,8 @@ Status EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack)
 	else if (alt_stack->is_full(alt_stack)) return CSTACK_FULL;
 	size_t size;
 	void *type;
-	BYTE *top = data_stack->pop(data_stack, &size, &type);
-	alt_stack->push(alt_stack, top, size, type);
+	BYTE *top = data_stack->pop(data_stack, &size, &type, NULL);
+	alt_stack->push(alt_stack, top, size, type, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -302,8 +302,8 @@ Status EXC_OP_FROMALTSTACK(CStack *data_stack, CStack *alt_stack)
 	else if (alt_stack->is_empty(alt_stack)) return CSTACK_EMPTY;
 	size_t size;
 	void *type = NULL;
-	BYTE *top = alt_stack->pop(alt_stack, &size, &type);
-	data_stack->push(data_stack, top, size, type);
+	BYTE *top = alt_stack->pop(alt_stack, &size, &type, NULL);
+	data_stack->push(data_stack, top, size, type, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -314,16 +314,16 @@ Status EXC_OP_IFDUP(CStack *stack)
 	// If the top stack value is not 0, duplicate it.
 	size_t size;
 	void *type;
-	BYTE *top = (BYTE *)stack->pop(stack, &size, &type);
+	BYTE *top = (BYTE *)stack->pop(stack, &size, &type, NULL);
 
 	if (size == 0 && top == NULL)
 	{
-		stack->push(stack, top, size, type);
+		stack->push(stack, top, size, type, true);
 		return OPERATION_NOT_EXECUTED;
 	}
 	else if (size == 1 && top[0] == 0x00)
 	{
-		stack->push(stack, top, size, type);
+		stack->push(stack, top, size, type, true);
 		return OPERATION_NOT_EXECUTED;
 	}
 	else
@@ -339,17 +339,17 @@ Status EXC_OP_IFDUP(CStack *stack)
 					return MEMORY_ALLOCATE_FAILED;
 				}
 				memcpy(copy, top, size);
-				stack->push(stack, top, size, type);
+				stack->push(stack, top, size, type, true);
 				if (stack->is_full(stack))
 				{
 					free(copy);
 					return CSTACK_FULL;
 				}
-				stack->push(stack, copy, size, type);
+				stack->push(stack, copy, size, type, true);
 				return OPERATION_EXECUTED;
 			}
 		}
-		stack->push(stack, top, size, type);
+		stack->push(stack, top, size, type, true);
 		return OPERATION_NOT_EXECUTED;
 	}
 }
@@ -374,7 +374,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 		BYTE *num = (BYTE *)malloc(1);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		num[0] = 0x00;
-		stack->push(stack, num, 1, BYTE_TYPE);
+		stack->push(stack, num, 1, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 
@@ -386,7 +386,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len-1);
 		num[bytes_len-1] = 0x00;
-		stack->push(stack, num, bytes_len, BYTE_TYPE);
+		stack->push(stack, num, bytes_len, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 
@@ -396,7 +396,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 		BYTE *num = (BYTE *)malloc(bytes_len);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len);
-		stack->push(stack, num, bytes_len, BYTE_TYPE);
+		stack->push(stack, num, bytes_len, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 }
@@ -404,7 +404,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 Status EXC_OP_DROP(CStack *stack)
 {
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
-	void *popped = stack->pop(stack, NULL, NULL);
+	void *popped = stack->pop(stack, NULL, NULL, NULL);
 	if (popped != NULL) free(popped);
 	return OPERATION_EXECUTED;
 }
@@ -415,7 +415,7 @@ Status EXC_OP_DUP(CStack *stack)
 	else if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	size_t size;
 	void *type;
-	void *top = stack->pop(stack, &size, &type);
+	void *top = stack->pop(stack, &size, &type, NULL);
 	void *copy = NULL;
 	if (top != NULL)
 	{
@@ -427,8 +427,8 @@ Status EXC_OP_DUP(CStack *stack)
 		}
 		memcpy(copy, top, size);
 	}
-	stack->push(stack, top, size, type);
-	stack->push(stack, copy, size, type);
+	stack->push(stack, top, size, type, true);
+	stack->push(stack, copy, size, type, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -437,10 +437,10 @@ Status EXC_OP_NIP(CStack *stack)
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	size_t top_size;
 	void *top_type;
-	void *top = stack->pop(stack, &top_size, &top_type);
-	void *second = stack->pop(stack, NULL, NULL);
+	void *top = stack->pop(stack, &top_size, &top_type, NULL);
+	void *second = stack->pop(stack, NULL, NULL, NULL);
 	if (second != NULL) free(second);
-	stack->push(stack, top, top_size, top_type);
+	stack->push(stack, top, top_size, top_type, true);
 	return OPERATION_EXECUTED;
 }
 
@@ -455,7 +455,7 @@ Status EXC_OP_OVER(CStack *stack)
 	
 	// Pop the elements.
 	for (uint64_t i = 1; i < 3; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Copy the second-top element.
 	ptrs[0] = NULL;
@@ -472,7 +472,7 @@ Status EXC_OP_OVER(CStack *stack)
 
 	// Push back.
 	for (uint64_t i = 0; i < 3; ++i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
 
 	return OPERATION_EXECUTED;
 }
@@ -488,7 +488,7 @@ Status EXC_OP_PICK(CStack *stack, uint64_t index)
 
 	// Pop the elements.
 	for (uint64_t i = 0; i <= index; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Copy the target element.
 	void *copy = NULL;
@@ -505,9 +505,9 @@ Status EXC_OP_PICK(CStack *stack, uint64_t index)
 
 	// Push back.
 	for (uint64_t i = index; i > 0; --i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
-	stack->push(stack, ptrs[0], sizes[0], types[0]);
-	stack->push(stack, copy, sizes[index], types[index]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
+	stack->push(stack, ptrs[0], sizes[0], types[0], true);
+	stack->push(stack, copy, sizes[index], types[index], true);
 
 	return OPERATION_EXECUTED;
 }
@@ -520,11 +520,11 @@ Status EXC_OP_ROLL(CStack *stack, uint64_t index)
 	void *types[index+1];
 
 	for (uint64_t i = 0; i <= index; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 	for (uint64_t i = index-1; i >= 0; --i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
-	stack->push(stack, ptrs[0], sizes[0], types[0]);
-	stack->push(stack, ptrs[index], sizes[index], types[index]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
+	stack->push(stack, ptrs[0], sizes[0], types[0], true);
+	stack->push(stack, ptrs[index], sizes[index], types[index], true);
 
 	return OPERATION_EXECUTED;
 }
@@ -536,10 +536,10 @@ Status EXC_OP_ROT(CStack *stack)
 	size_t sizes[3];
 	void *types[3];
 	for (uint64_t i = 0; i < 3; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
-	stack->push(stack, ptrs[1], sizes[1], types[1]);
-	stack->push(stack, ptrs[0], sizes[0], types[0]);
-	stack->push(stack, ptrs[2], sizes[2], types[2]);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
+	stack->push(stack, ptrs[1], sizes[1], types[1], true);
+	stack->push(stack, ptrs[0], sizes[0], types[0], true);
+	stack->push(stack, ptrs[2], sizes[2], types[2], true);
 	return OPERATION_EXECUTED;
 }
 
@@ -550,9 +550,9 @@ Status EXC_OP_SWAP(CStack *stack)
 	size_t sizes[2];
 	void *types[2];
 	for (uint64_t i = 0; i < 2; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
-	stack->push(stack, ptrs[1], sizes[1], types[1]);
-	stack->push(stack, ptrs[0], sizes[0], types[0]);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
+	stack->push(stack, ptrs[1], sizes[1], types[1], true);
+	stack->push(stack, ptrs[0], sizes[0], types[0], true);
 	return OPERATION_EXECUTED;
 }
 
@@ -566,7 +566,7 @@ Status EXC_OP_TUCK(CStack *stack)
 
 	// Pop the elements.
 	for (uint64_t i = 0; i < 2; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Copy the top element.
 	ptrs[2] = NULL;
@@ -583,7 +583,7 @@ Status EXC_OP_TUCK(CStack *stack)
 
 	// Push back.
 	for (uint64_t i = 0; i < 3; ++i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
 
 	return OPERATION_EXECUTED;
 }
@@ -596,7 +596,7 @@ Status EXC_OP_2DROP(CStack *stack)
 	void *types[3];
 	for (uint64_t i = 0; i < 2; ++i)
 	{
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 		if (ptrs[i] != NULL) free(ptrs[i]);
 	}
 	return OPERATION_EXECUTED;
@@ -612,7 +612,7 @@ Status EXC_OP_2DUP(CStack *stack)
 
 	// Pop the elements.
 	for (uint64_t i = 0; i < 2; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Duplicate the elements.
 	for (uint64_t i = 2; i < 4; ++i)
@@ -634,7 +634,7 @@ Status EXC_OP_2DUP(CStack *stack)
 
 	// Push back.
 	for (uint64_t i = 0; i < 4; ++i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
 	return OPERATION_EXECUTED;
 }
 
@@ -649,7 +649,7 @@ Status EXC_OP_3DUP(CStack *stack)
 
 	// Pop the elements.
 	for (uint64_t i = 0; i < 3; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Duplicate the elements.
 	for (uint64_t i = 3; i < 6; ++i)
@@ -671,7 +671,7 @@ Status EXC_OP_3DUP(CStack *stack)
 
 	// Push back.
 	for (uint64_t i = 0; i < 6; ++i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
 	return OPERATION_EXECUTED;
 }
 
@@ -686,7 +686,7 @@ Status EXC_OP_2OVER(CStack *stack)
 
 	// Pop the elements.
 	for (uint64_t i = 2; i < 6; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Copy the elements.
 	for (uint64_t i = 0; i < 2; ++i)
@@ -711,9 +711,9 @@ Status EXC_OP_2OVER(CStack *stack)
 	for (uint64_t i = 5; i > 0; --i)
 	{
 		if (stack->is_full(stack)) return CSTACK_FULL;
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
 	}
-	stack->push(stack, ptrs[0], sizes[0], types[0]);
+	stack->push(stack, ptrs[0], sizes[0], types[0], true);
 
 	return OPERATION_EXECUTED;
 }
@@ -728,13 +728,13 @@ Status EXC_OP_2ROT(CStack *stack)
 
 	// Pop the elements.
 	for (uint64_t i = 2; i < 6; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 	for (uint64_t i = 0; i < 2; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Push back.
 	for (uint64_t i = 0; i < 6; ++i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
 
 	return OPERATION_EXECUTED;
 }
@@ -749,13 +749,13 @@ Status EXC_OP_2SWAP(CStack *stack)
 
 	// Pop the elements.
 	for (uint64_t i = 2; i < 4; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 	for (uint64_t i = 0; i < 2; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Push back.
 	for (uint64_t i = 0; i < 4; ++i)
-		stack->push(stack, ptrs[i], sizes[i], types[i]);
+		stack->push(stack, ptrs[i], sizes[i], types[i], true);
 
 	return OPERATION_EXECUTED;
 }
@@ -799,7 +799,7 @@ Status EXC_OP_SIZE(CStack *stack)
 		BYTE *num = (BYTE *)malloc(1);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		num[0] = 0x00;
-		stack->push(stack, num, 1, BYTE_TYPE);
+		stack->push(stack, num, 1, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 
@@ -811,7 +811,7 @@ Status EXC_OP_SIZE(CStack *stack)
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len-1);
 		num[bytes_len-1] = 0x00;
-		stack->push(stack, num, bytes_len, BYTE_TYPE);
+		stack->push(stack, num, bytes_len, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 
@@ -821,7 +821,7 @@ Status EXC_OP_SIZE(CStack *stack)
 		BYTE *num = (BYTE *)malloc(bytes_len);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len);
-		stack->push(stack, num, bytes_len, BYTE_TYPE);
+		stack->push(stack, num, bytes_len, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 }
@@ -856,13 +856,13 @@ Status EXC_OP_EQUAL(CStack *stack)
 
 	// Pop the elements.
 	for (uint64_t i = 0; i < 2; ++i)
-		ptrs[i] = stack->pop(stack, sizes+i, types+i);
+		ptrs[i] = stack->pop(stack, sizes+i, types+i, NULL);
 
 	// Size not equal.
 	if (sizes[0] != sizes[1])
 	{
 		free(ptrs[0]); free(ptrs[1]);
-		stack->push(stack, NULL, 0, BYTE_TYPE);
+		stack->push(stack, NULL, 0, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 
@@ -874,7 +874,7 @@ Status EXC_OP_EQUAL(CStack *stack)
 			if ( ((BYTE *)ptrs[0])[i] != ((BYTE *)ptrs[1])[i] )
 			{
 				free(ptrs[0]); free(ptrs[1]);
-				stack->push(stack, NULL, 0, BYTE_TYPE);
+				stack->push(stack, NULL, 0, BYTE_TYPE, true);
 				return OPERATION_EXECUTED;
 			}
 		}
@@ -883,7 +883,7 @@ Status EXC_OP_EQUAL(CStack *stack)
 		BYTE *num = (BYTE *)malloc(1);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		num[0] = 0x01;
-		stack->push(stack, num, 1, BYTE_TYPE);
+		stack->push(stack, num, 1, BYTE_TYPE, true);
 		return OPERATION_EXECUTED;
 	}
 }
@@ -900,7 +900,7 @@ Status EXC_OP_EQUALVERIFY(CStack *stack)
 Status EXC_OP_1ADD(CStack *stack)
 {
 	size_t size;
-	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL);
+	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL, NULL);
 
 	
 }
