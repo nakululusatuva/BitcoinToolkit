@@ -83,9 +83,10 @@ struct CStack
 	uint64_t capacity;
 	uint32_t *size;
 	void   **type;
+	bool    *autofree;
 
-	Status (*push)(CStack *, void *, size_t, void *);
-	Status (*pop)(CStack *, size_t *, void **);
+	Status (*push)(CStack *, void *, size_t, void *, bool);
+	Status (*pop)(CStack *, size_t *, void **, bool *);
 	bool (*is_empty)(CStack *);
 	bool (*is_full)(CStack *);
 	size_t (*total_size)(CStack *);
