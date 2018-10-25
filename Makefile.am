@@ -6,6 +6,7 @@ includedir = /usr/include/bitcointk
 projectlib_PROGRAMS = libbitcointk.so
 
 libbitcointk_so_SOURCES = src/address.c \
+	src/crypto/ntt.c \
 	src/crypto/bigint.c \
 	src/codec/base.c \
 	src/codec/strings.c \

@@ -29,9 +29,10 @@ extern "C" {
 #include "common.h"
 
 
+
 typedef struct Bigint_st Bigint;
 struct Bigint_st {
-	uint32_t *d;
+	uint32_t *d; // Little-endian.
 	uint32_t len;
 	bool neg;
 };
