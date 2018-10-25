@@ -1,9 +1,10 @@
+#include "internal/crypto/ntt.h"
 #include "internal/crypto/bigint.h"
 #include "internal/codec/strings.h"
 #include <stdlib.h>
 #include <string.h>
 
-// Vertical calculation
+// Vertical calculation O(n)
 // r's max length = the longest + 1.
 void d_add(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len, uint32_t *r)
 {
@@ -33,7 +34,7 @@ void d_add(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len,
 	}
 }
 
-// Vertical calculation
+// Vertical calculation O(n)
 // r's max length = the longest.
 void d_sub(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len, uint32_t *r)
 {
@@ -57,7 +58,7 @@ void d_sub(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len,
 	{
 		uint64_t buff = bigger[i] - (uint64_t)borrow;
 		if (i < shorts) // Iterator doesn't reach the end of the lower number yet.
-		{	
+		{
 			if (bigger[i] > 0 && buff >= smaller[i])
 			{
 				r[i] = buff - smaller[i];
@@ -95,14 +96,14 @@ void d_sub(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len,
 	}
 }
 
-// Vertical calculation
+// NTT algorithm O(nlogn)
 // r's max length = a_len + b_len.
 void d_mul(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len, uint32_t *r)
 {
-
+	
 }
 
-// Vertical calculation
+// Vertical calculation O(n^2)
 // r's max length = the longest.
 void d_div(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len, uint32_t *r)
 {

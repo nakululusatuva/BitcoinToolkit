@@ -14,7 +14,7 @@ int8_t d_equal(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_
 
 typedef struct Bigint_st Bigint;
 struct Bigint_st {
-	uint32_t *d;
+	uint32_t *d; // Little-endian.
 	uint32_t len;
 	bool neg;
 };
