@@ -98,9 +98,43 @@ void d_sub(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len,
 
 // NTT algorithm O(nlogn)
 // r's max length = a_len + b_len.
+// Using base32768 (2^15)
 void d_mul(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len, uint32_t *r)
 {
+	// Base2^32 to Base2^15
 	
+	
+	// Get expanded length.
+	uint32_t expand_len = 1;
+	while (expand_len <= 2 * a_len || expand_len <= 2 * b_len)
+		expand_len <<= 1;
+
+	// Expand.
+	uint64_t expand_a[expand_len];
+	uint64_t expand_b[expand_len];
+	memset(expand_a, 0, expand_len * sizeof(uint64_t));
+	memset(expand_b, 0, expand_len * sizeof(uint64_t));
+	for (uint32_t i = 0; i < a_len; ++i)
+	{
+		expand_a[i] = a[i];
+	}
+	for (uint32_t i = 0; i < b_len; ++i)
+	{
+		expand_b[i] = b[i];
+	}
+
+	// Convert.
+	ntt(expand_a, expand_len, false);
+	ntt(expand_b, expand_len, false);
+	for (uint32_t i = 0; i < expand_len; ++i)
+		expand_a[i] = expand_a[i] * expand_b[i] % P;
+	ntt(expand_a, expand_len, true);
+
+	// Base2^15 to Base2^32
+	for (uint32_t i = 0; i < expand_len; ++i)
+	{
+		printf("%08x ", expand_a[i]);
+	}printf("\n");
 }
 
 // Vertical calculation O(n^2)
@@ -199,22 +233,7 @@ Bigint * Bigint_add(Bigint *a, Bigint *b)
 	bn->len = a->len + b->len + 1; // Temp.
 	bn->d = (uint32_t *)calloc(bn->len, sizeof(uint32_t)); // Temp.
 
-	if (a->neg && b->neg)
-	{
-
-	}
-	else if (!a->neg && b->neg)
-	{
-
-	}
-	else if (a->neg && !b->neg)
-	{
-
-	}
-	else // !a->neg && !b->neg
-	{
-
-	}
+	int8_t ret = d_equal((const uint32_t*)a->d, a->len, (const uint32_t*)b->d, b->len);
 
 	// Strip the ending 0 in bn->d and reset bn->len.
 

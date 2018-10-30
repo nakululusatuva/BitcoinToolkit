@@ -38,6 +38,7 @@ void bytearr_reverse(BYTE *arr, size_t size);
 void hexstr_reverse(uint8_t *str, size_t len);
 void * lsrtip(const void *arr, size_t arr_size, size_t *r_size);
 void * rsrtip(const void *arr, size_t arr_size, size_t *r_size);
+Status integer_swap(void *a, void *b, void *dtype);
 
 /** AUTOHEADER TAG: DELETE BEGIN **/
 #endif

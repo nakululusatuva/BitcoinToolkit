@@ -59,6 +59,7 @@ typedef void* Status;
 #define INVALID_PRIVKEY_SIZE   (void *)0x0104
 #define PASSING_NULL_POINTER   (void *)0x0105
 #define MEMORY_ALLOCATE_FAILED (void *)0x0102
+#define UNSUPPORTED_DATATYPE   (void *)0x0103
 
 #endif
 #ifdef __cpluscplus

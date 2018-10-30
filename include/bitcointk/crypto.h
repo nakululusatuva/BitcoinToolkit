@@ -28,7 +28,13 @@ extern "C" {
 #endif
 #include "common.h"
 
+// a^b (mod m)
+uint64_t quick_power_mod(uint64_t a, uint64_t b, uint64_t m);
+// overflow when point > 0xaf45
+void ntt(uint64_t *a, uint32_t len, bool on);
 
+
+void d_mul(const uint32_t *a, uint32_t a_len, const uint32_t *b, uint32_t b_len, uint32_t *r);
 
 typedef struct Bigint_st Bigint;
 struct Bigint_st {

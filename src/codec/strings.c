@@ -95,6 +95,7 @@ void bytearr_reverse(BYTE *arr, size_t size)
 	}
 }
 
+// finish it.
 void hexstr_reverse(uint8_t *str, size_t len)
 {
 
@@ -121,21 +122,101 @@ void * lstrip(const void *arr, size_t arr_size, size_t *r_size)
 
 void * rsrtip(const void *arr, size_t arr_size, size_t *r_size)
 {
-	size_t count = 0;
-	for (size_t i = arr_size-1; i > 0; --i)
+	size_t i, count = 0;
+	for (i = arr_size-1; i > 0; --i)
 	{
 		if ( ((BYTE *)arr)[i] == 0x00 )
 			count++;
 	}
-	if ( ((BYTE *)arr)[0] == 0x00 )
+	if ( ((BYTE *)arr)[0] == 0x00 && i == 0 )
 		count++;
-	r_size[0] = arr_size-count;
-
 	if (count == arr_size) return BYTEARRAY_ALL_ZERO; // All zero.
 
-	void *r = (void *)malloc(r_size[0]);
+	*r_size = arr_size-count;
+
+	void *r = (void *)malloc(*r_size);
 	if (!r) return MEMORY_ALLOCATE_FAILED;
-	memcpy(r, arr, r_size[0]);
+	memcpy(r, arr, *r_size);
 
 	return r;
+}
+
+Status integer_swap(void *a, void *b, void *dtype)
+{
+	switch ((uintptr_t)dtype)
+	{
+		case (0): return PASSING_NULL_POINTER;
+		case (uintptr_t)BYTE_TYPE:
+		{
+			*(BYTE*)a = *(BYTE*)a ^ *(BYTE*)b;
+			*(BYTE*)b = *(BYTE*)b ^ *(BYTE*)a;
+			*(BYTE*)a = *(BYTE*)a ^ *(BYTE*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)INT8_TYPE:
+		{
+			*(int8_t*)a = *(int8_t*)a ^ *(int8_t*)b;
+			*(int8_t*)b = *(int8_t*)b ^ *(int8_t*)a;
+			*(int8_t*)a = *(int8_t*)a ^ *(int8_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)INT16_TYPE:
+		{
+			*(int16_t*)a = *(int16_t*)a ^ *(int16_t*)b;
+			*(int16_t*)b = *(int16_t*)b ^ *(int16_t*)a;
+			*(int16_t*)a = *(int16_t*)a ^ *(int16_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)INT32_TYPE:
+		{
+			*(int32_t*)a = *(int32_t*)a ^ *(int32_t*)b;
+			*(int32_t*)b = *(int32_t*)b ^ *(int32_t*)a;
+			*(int32_t*)a = *(int32_t*)a ^ *(int32_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)INT64_TYPE:
+		{
+			*(int64_t*)a = *(int64_t*)a ^ *(int64_t*)b;
+			*(int64_t*)b = *(int64_t*)b ^ *(int64_t*)a;
+			*(int64_t*)a = *(int64_t*)a ^ *(int64_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)UINT8_TYPE:
+		{
+			*(uint8_t*)a = *(uint8_t*)a ^ *(uint8_t*)b;
+			*(uint8_t*)b = *(uint8_t*)b ^ *(uint8_t*)a;
+			*(uint8_t*)a = *(uint8_t*)a ^ *(uint8_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)UINT16_TYPE:
+		{
+			*(uint16_t*)a = *(uint16_t*)a ^ *(uint16_t*)b;
+			*(uint16_t*)b = *(uint16_t*)b ^ *(uint16_t*)a;
+			*(uint16_t*)a = *(uint16_t*)a ^ *(uint16_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)UINT32_TYPE:
+		{
+			*(uint32_t*)a = *(uint32_t*)a ^ *(uint32_t*)b;
+			*(uint32_t*)b = *(uint32_t*)b ^ *(uint32_t*)a;
+			*(uint32_t*)a = *(uint32_t*)a ^ *(uint32_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)UINT64_TYPE:
+		{
+			*(uint64_t*)a = *(uint64_t*)a ^ *(uint64_t*)b;
+			*(uint64_t*)b = *(uint64_t*)b ^ *(uint64_t*)a;
+			*(uint64_t*)a = *(uint64_t*)a ^ *(uint64_t*)b;
+			return SUCCEEDED;
+		}
+		case (uintptr_t)BOOL_TYPE:
+		{
+			*(bool*)a = *(bool*)a ^ *(bool*)b;
+			*(bool*)b = *(bool*)b ^ *(bool*)a;
+			*(bool*)a = *(bool*)a ^ *(bool*)b;
+			return SUCCEEDED;
+		}
+		default: 
+			return UNSUPPORTED_DATATYPE;
+	}
 }
