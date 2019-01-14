@@ -6,7 +6,7 @@
 #include "internal/container/CLinkedlist.h"
 #include "internal/machine/script.h"
 
-Opcode * new_Opcode(BYTE value)
+Opcode * new_Opcode(byte value)
 {
 	Opcode *new = (Opcode *)malloc(sizeof(Opcode));
 	if (new == NULL)
@@ -54,7 +54,7 @@ Script * new_Script()
 	}
 }
 
-Script * new_Script_from_bytes(BYTE *bytes, size_t size)
+Script * new_Script_from_bytes(byte *bytes, size_t size)
 {
 	Script *new = new_Script();
 	if (new == NULL)
@@ -88,7 +88,7 @@ while (true)
 		}
 
 		// Add bytes.
-		BYTE *data = (BYTE *)malloc(expected);
+		byte *data = (byte *)malloc(expected);
 		if (data == NULL)
 		{
 			delete_Script(new);
@@ -136,7 +136,7 @@ while (true)
 				}
 
 				// Add next one byte.
-				BYTE *next_one_byte = (BYTE *)malloc(1);
+				byte *next_one_byte = (byte *)malloc(1);
 				if (next_one_byte == NULL)
 				{
 					delete_Script(new);
@@ -151,7 +151,7 @@ while (true)
 				}
 
 				// Add bytes.
-				BYTE *data = (BYTE *)malloc(expected);
+				byte *data = (byte *)malloc(expected);
 				if (data == NULL)
 				{
 					delete_Script(new);
@@ -196,7 +196,7 @@ while (true)
 				}
 
 				// Add next two bytes.
-				BYTE *next_two_bytes = (BYTE *)malloc(2);
+				byte *next_two_bytes = (byte *)malloc(2);
 				if (next_two_bytes == NULL)
 				{
 					delete_Script(new);
@@ -212,7 +212,7 @@ while (true)
 				}
 
 				// Add bytes.
-				BYTE *data = (BYTE *)malloc(expected);
+				byte *data = (byte *)malloc(expected);
 				if (data == NULL)
 				{
 					delete_Script(new);
@@ -259,7 +259,7 @@ while (true)
 				}
 
 				// Add next four bytes.
-				BYTE *next_four_bytes = (BYTE *)malloc(4);
+				byte *next_four_bytes = (byte *)malloc(4);
 				if (next_four_bytes == NULL)
 				{
 					delete_Script(new);
@@ -277,7 +277,7 @@ while (true)
 				}
 
 				// Add bytes.
-				BYTE *data = (BYTE *)malloc(expected);
+				byte *data = (byte *)malloc(expected);
 				if (data == NULL)
 				{
 					delete_Script(new);
@@ -423,7 +423,7 @@ Script * new_Script_assembled(Script *p1, Script *p2)
 	return new;
 }
 
-Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
+Script * new_Script_p2pkh(byte *pubkey_hash, size_t size)
 {
 	if (size != 20)
 		return INVALID_RIPEMD160_SIZE;
@@ -458,7 +458,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 		return MEMORY_ALLOCATE_FAILED;
 	}
 
-	BYTE *data = (BYTE *)malloc(size);
+	byte *data = (byte *)malloc(size);
 	if (data == NULL)
 	{
 		delete_Script(new);
@@ -548,7 +548,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size)
 	return NULL;
 }
 
-Script * new_Script_p2pk(BYTE *pubkey, size_t size)
+Script * new_Script_p2pk(byte *pubkey, size_t size)
 {
 	if (size != 65 || size != 33)
 		return INVALID_PUBKEY_SIZE;
@@ -566,7 +566,7 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 		return MEMORY_ALLOCATE_FAILED;
 	}
 
-	BYTE *pub = (BYTE *)malloc(size);
+	byte *pub = (byte *)malloc(size);
 	if (pub == NULL)
 	{
 		delete_Script(new);
@@ -610,7 +610,7 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size)
 	return new;
 }
 
-Script * new_Script_p2sh(BYTE *hash, size_t size)
+Script * new_Script_p2sh(byte *hash, size_t size)
 {
 	if (size != 20)
 		return INVALID_RIPEMD160_SIZE;
@@ -636,7 +636,7 @@ Script * new_Script_p2sh(BYTE *hash, size_t size)
 		return MEMORY_ALLOCATE_FAILED;
 	}
 
-	BYTE *script_hash = (BYTE *)malloc(size);
+	byte *script_hash = (byte *)malloc(size);
 	if (script_hash == NULL)
 	{
 		delete_Script(new);
@@ -731,7 +731,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 	for (uint32_t i = 0; i < n; ++i)
 	{
 		// Add PUSHDATA().
-		BYTE *op_pushdata = (BYTE *)calloc(1, sizeof(BYTE));
+		byte *op_pushdata = (byte *)calloc(1, sizeof(byte));
 		if (op_pushdata == NULL)
 		{
 			delete_Script(new);
@@ -748,7 +748,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 		}
 
 		// Add public key bytes.
-		BYTE *pub = (BYTE *)malloc(keys[i]->size);
+		byte *pub = (byte *)malloc(keys[i]->size);
 		if (pub == NULL)
 		{
 			delete_Script(new);
@@ -797,7 +797,7 @@ Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys)
 	return new;
 }
 
-Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size)
+Script * new_Script_p2wsh(byte ver, byte *sha256, size_t size)
 {
 	/*
 	if (size != 32)
@@ -808,7 +808,7 @@ Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size)
 	return NULL;
 }
 
-Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size)
+Script * new_Script_p2wpkh(byte ver, byte *hash160, size_t size)
 {
 	/*
 	if (size != 20)
@@ -819,7 +819,7 @@ Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size)
 	return NULL;
 }
 
-Script * new_Script_null_data(BYTE *data, size_t size)
+Script * new_Script_null_data(byte *data, size_t size)
 {
 	/*
 	if (data == NULL)
@@ -981,7 +981,7 @@ Status Script_add_opcode(Script *self, Opcode *op)
 	else return MEMORY_ALLOCATE_FAILED;
 }
 
-Status Script_add_data(Script *self, BYTE *data, size_t size)
+Status Script_add_data(Script *self, byte *data, size_t size)
 {
 	if (self == NULL || data == NULL)
 		return PASSING_NULL_POINTER;
@@ -1013,13 +1013,13 @@ uint8_t * Script_to_string(Script *self, size_t *size)
 // Data bytes element which doesn't have a PUSHDATA element before will cause and return an error code.
 for (uint32_t i = 0; i < self->get_length(self); ++i)
 {
-	BYTE buffer = ((BYTE *)(elements[i]->data))[0];
+	byte buffer = ((byte *)(elements[i]->data))[0];
 	size_t buffer_size = elements[i]->size;
 
 	if (buffer_size == 1 && BYTE_IS_NONAME_PUSHDATA(buffer))
-	{	// PUSHDATA BYTE
+	{	// PUSHDATA byte
 		uint8_t size_str[3];
-		BYTE  size_byte[1];
+		byte  size_byte[1];
 		size_byte[0] = buffer;
 		bytearr_to_hexstr(size_byte, 1, size_str);
 
@@ -1060,7 +1060,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 			return SCRIPT_ELEMENT_SIZE_OVERLIMIT;
 		}
 
-		bytearr_to_hexstr((BYTE *)(elements[i+1]->data), expected, str);
+		bytearr_to_hexstr((byte *)(elements[i+1]->data), expected, str);
 		uint8_t *bracketed = (uint8_t *)calloc(str_len, sizeof(uint8_t));
 		if (bracketed == NULL)
 		{
@@ -1109,25 +1109,25 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 		{
 			case OP_PUSHDATA1:
 			{
-				expected = ((BYTE *)(elements[i+1]->data))[0];
+				expected = ((byte *)(elements[i+1]->data))[0];
 				str_len = expected * 2 + 3;
 				str = (uint8_t *)malloc(str_len);
 				break;
 			}
 			case OP_PUSHDATA2:
 			{
-				expected = ((BYTE *)(elements[i+1]->data))[1];
-				expected = (expected << 8) + ((BYTE *)(elements[i+1]->data))[0];
+				expected = ((byte *)(elements[i+1]->data))[1];
+				expected = (expected << 8) + ((byte *)(elements[i+1]->data))[0];
 				str_len = expected * 2 + 3;
 				str = (uint8_t *)malloc(str_len);
 				break;
 			}
 			case OP_PUSHDATA4:
 			{
-				expected = ((BYTE *)(elements[i+1]->data))[3];
-				expected = (expected << 8) + ((BYTE *)(elements[i+1]->data))[2];
-				expected = (expected << 8) + ((BYTE *)(elements[i+1]->data))[1];
-				expected = (expected << 8) + ((BYTE *)(elements[i+1]->data))[0];
+				expected = ((byte *)(elements[i+1]->data))[3];
+				expected = (expected << 8) + ((byte *)(elements[i+1]->data))[2];
+				expected = (expected << 8) + ((byte *)(elements[i+1]->data))[1];
+				expected = (expected << 8) + ((byte *)(elements[i+1]->data))[0];
 				str_len = expected * 2 + 3;
 				str = (uint8_t *)malloc(str_len * sizeof(uint8_t));
 				break;
@@ -1147,7 +1147,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 			return MEMORY_ALLOCATE_FAILED;
 		}
 
-		bytearr_to_hexstr((BYTE *)(elements[i+2]->data), expected, str);
+		bytearr_to_hexstr((byte *)(elements[i+2]->data), expected, str);
 		uint8_t *bracketed = (uint8_t *)calloc(str_len, sizeof(uint8_t));
 		if (bracketed == NULL)
 		{
@@ -1247,7 +1247,7 @@ for (uint32_t i = 0; i < self->get_length(self); ++i)
 	return string;
 }
 
-BYTE * Script_to_bytes(Script *self, size_t *size)
+byte * Script_to_bytes(Script *self, size_t *size)
 {
 	if (self == NULL || size == NULL)
 		return PASSING_NULL_POINTER;
@@ -1258,7 +1258,7 @@ BYTE * Script_to_bytes(Script *self, size_t *size)
 	size_t   total_size = self->total_size(self);
 	size[0] = total_size;
 
-	BYTE *bytes = (BYTE *)malloc(total_size);
+	byte *bytes = (byte *)malloc(total_size);
 	if (bytes == NULL)
 		return MEMORY_ALLOCATE_FAILED;
 	CLinkedlistNode **list = self->script->forward_iter(self->script);
@@ -1287,12 +1287,12 @@ Status Script_is_p2pkh(Script *self)
 	else if (self->get_length(self) != 6)
 		return FAILED;
 
-	BYTE op_dup      = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
-	BYTE op_hash160  = ((BYTE *)(self->script->get_node(self->script, 1)->data))[0];
-	BYTE pushdata    = ((BYTE *)(self->script->get_node(self->script, 2)->data))[0];
+	byte op_dup      = ((byte *)(self->script->get_node(self->script, 0)->data))[0];
+	byte op_hash160  = ((byte *)(self->script->get_node(self->script, 1)->data))[0];
+	byte pushdata    = ((byte *)(self->script->get_node(self->script, 2)->data))[0];
 	size_t data_size = self->script->get_node(self->script, 3)->size;
-	BYTE op_equalverify = ((BYTE *)(self->script->get_node(self->script, 4)->data))[0];
-	BYTE op_checksig = ((BYTE *)(self->script->get_node(self->script, 5)->data))[0];
+	byte op_equalverify = ((byte *)(self->script->get_node(self->script, 4)->data))[0];
+	byte op_checksig = ((byte *)(self->script->get_node(self->script, 5)->data))[0];
 
 	if (pushdata != 0x14 || data_size != 0x14)
 		return INVALID_RIPEMD160_SIZE;
@@ -1314,9 +1314,9 @@ Status Script_is_p2pk(Script *self)
 	else if (self->get_length(self) != 3)
 		return FAILED;
 
-	BYTE pushdata = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
+	byte pushdata = ((byte *)(self->script->get_node(self->script, 0)->data))[0];
 	size_t data_size = self->script->get_node(self->script, 1)->size;
-	BYTE op_checksig = ((BYTE *)(self->script->get_node(self->script, 2)->data))[0];
+	byte op_checksig = ((byte *)(self->script->get_node(self->script, 2)->data))[0];
 
 	if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)
 		return INVALID_PUBKEY_SIZE;
@@ -1338,10 +1338,10 @@ Status Script_is_p2sh(Script *self)
 	else if (self->get_length(self) != 4)
 		return FAILED;
 
-	BYTE op_hash160 = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
-	BYTE pushdata = ((BYTE *)(self->script->get_node(self->script, 1)->data))[0];
+	byte op_hash160 = ((byte *)(self->script->get_node(self->script, 0)->data))[0];
+	byte pushdata = ((byte *)(self->script->get_node(self->script, 1)->data))[0];
 	size_t data_size = self->script->get_node(self->script, 2)->size;
-	BYTE op_equal = ((BYTE *)(self->script->get_node(self->script, 3)->data))[0];
+	byte op_equal = ((byte *)(self->script->get_node(self->script, 3)->data))[0];
 
 	if (pushdata != 0x14 || data_size != 0x14)
 		return INVALID_RIPEMD160_SIZE;
@@ -1364,9 +1364,9 @@ Status Script_is_p2sh_multisig(Script *self)
 	if (self->get_length(self) != 3 + n * 2 )
 		return FAILED;
 
-	BYTE op_n = ((BYTE *)(self->script->get_node(self->script, 0)->data))[0];
-	BYTE op_m = ((BYTE *)(self->script->last_node(self->script)->previous->data))[0];
-	BYTE op_checkmultisig = ((BYTE *)(self->script->last_node(self->script)->data))[0];
+	byte op_n = ((byte *)(self->script->get_node(self->script, 0)->data))[0];
+	byte op_m = ((byte *)(self->script->last_node(self->script)->previous->data))[0];
+	byte op_checkmultisig = ((byte *)(self->script->last_node(self->script)->data))[0];
 
 	// Check op_n/op_m/op_checkmultisig.
 	if (op_n > OP_0 && op_n < OP_16 && op_m > OP_0 && op_m < OP_16 &&
@@ -1376,7 +1376,7 @@ Status Script_is_p2sh_multisig(Script *self)
 		uint32_t i;
 		for (i = 1; i <= n * 2; ++i)
 		{
-			BYTE pushdata = ((BYTE *)(self->script->get_node(self->script, i)->data))[0];
+			byte pushdata = ((byte *)(self->script->get_node(self->script, i)->data))[0];
 			size_t data_size = self->script->get_node(self->script, i+1)->size;
 
 			if (pushdata != 65 || pushdata != 33 || data_size != 65 || data_size != 33)

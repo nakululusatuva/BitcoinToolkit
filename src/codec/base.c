@@ -18,7 +18,7 @@ const uint8_t base64table[64] =
 	't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
 	'8', '9', '+', '/'};
 
-size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base6encode(byte *payload, size_t payload_len, uint8_t *encoded)
 {
 	uint8_t payload_hexstr[payload_len*2];
 	uint8_t raw_encoded[payload_len*2];
@@ -66,7 +66,7 @@ size_t base6encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	return 0;
 }
 
-size_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base6decode(uint8_t *payload, size_t payload_len, byte *decoded)
 {
 	uint8_t raw_payload[payload_len];
 
@@ -140,7 +140,7 @@ size_t base6decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	return 0;
 }
 
-size_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base58encode(byte *payload, size_t payload_len, uint8_t *encoded)
 {
 	uint8_t payload_hexstr[payload_len*2];
 	uint8_t raw_encoded[payload_len*2];
@@ -205,7 +205,7 @@ size_t base58encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	return 0;
 }
 
-size_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base58decode(uint8_t *payload, size_t payload_len, byte *decoded)
 {
 	// Get the count of leading '1' charater.
 	size_t leading_one_count = 0;
@@ -300,10 +300,10 @@ size_t base58decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	return 0;
 }
 
-size_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base58check_encode(byte *payload, size_t payload_len, uint8_t *encoded)
 {
 	int32_t to_base58_len = payload_len + 4;
-	BYTE first_sha256[32], second_sha256[32], to_base58[to_base58_len];
+	byte first_sha256[32], second_sha256[32], to_base58[to_base58_len];
 
 	SHA256(payload, payload_len, first_sha256);
 	SHA256(first_sha256, 32, second_sha256);
@@ -323,18 +323,18 @@ size_t base58check_encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	return 0;
 }
 
-size_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base58check_decode(uint8_t *payload, size_t payload_len, byte *decoded)
 {
 	int32_t b58decoded_len = base58decode(payload, payload_len, NULL);
 	if (b58decoded_len == -1)
 		return -1; // 0xffffffffffffffff
 	int32_t data_len = b58decoded_len-4;
-	BYTE b58decoded[b58decoded_len];
+	byte b58decoded[b58decoded_len];
 
 	base58decode(payload, payload_len, b58decoded);
 
-	BYTE payload_data[data_len], payload_checksum[4];
-	BYTE first_sha256[32], second_sha256[32];
+	byte payload_data[data_len], payload_checksum[4];
+	byte first_sha256[32], second_sha256[32];
 
 	for (int32_t i = 0; i < data_len; ++i)
 		payload_data[i] = b58decoded[i];
@@ -362,7 +362,7 @@ size_t base58check_decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 	return 0;
 }
 
-size_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
+size_t base64encode(byte *payload, size_t payload_len, uint8_t *encoded)
 {
 	int32_t encoded_len;
 	int32_t ending = payload_len % 3;
@@ -392,7 +392,7 @@ size_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	if (ending != 0)
 	{	
 		int32_t start = (payload_len - ending)/3 + (payload_len - ending);
-		BYTE buffer[3] = {0x00, 0x00, 0x00};
+		byte buffer[3] = {0x00, 0x00, 0x00};
 		for (int32_t i = 0; i < ending; ++i)
 			buffer[i] = payload[payload_len - ending + i];
 
@@ -407,7 +407,7 @@ size_t base64encode(BYTE *payload, size_t payload_len, uint8_t *encoded)
 	else return 0;
 }
 
-size_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
+size_t base64decode(uint8_t *payload, size_t payload_len, byte *decoded)
 {
 	int32_t ending = 0;
 	for (int32_t i = payload_len - 1; i >= 0; --i )
@@ -423,7 +423,7 @@ size_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 		return decoded_len;
 
 	int32_t payload_copy_len = (ending == 0 ? payload_len : payload_len - 4);
-	BYTE payload_copy[payload_copy_len];
+	byte payload_copy[payload_copy_len];
 
 	// Get b64 value of each charaters in payload string, and check the validation.
 	for (int32_t i = 0; i < payload_copy_len; ++i)
@@ -451,7 +451,7 @@ size_t base64decode(uint8_t *payload, size_t payload_len, BYTE *decoded)
 
 	if (ending != 0)
 	{	
-		BYTE payload_copy_end[4] = {0x00, 0x00, 0x00, 0x00};
+		byte payload_copy_end[4] = {0x00, 0x00, 0x00, 0x00};
 		for (int32_t i = 0; i < 4-ending; ++i)
 		{
 			int32_t j = 0;

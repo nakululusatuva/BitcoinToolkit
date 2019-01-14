@@ -22,7 +22,7 @@ struct Bigint_st {
 Bigint * new_Bigint(void);
 void delete_Bigint(Bigint *bn);
 // Receive a byte array in little-endian.
-Bigint * Bigint_set_bytearr(BYTE *arr, size_t len, bool neg);
+Bigint * Bigint_set_bytearr(byte *arr, size_t len, bool neg);
 // Receive a hexadecimal string in little-endian, first charater '-' means negative.
 Bigint Bigint_set_hexstr(Bigint *bn, uint8_t *str, size_t len);
 Bigint * Bigint_add(Bigint *a, Bigint *b);

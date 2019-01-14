@@ -180,7 +180,7 @@ void delete_Bigint(Bigint *self)
 	free(self);
 }
 
-Bigint * Bigint_set_bytearr(BYTE *arr, size_t len, bool neg)
+Bigint * Bigint_set_bytearr(byte *arr, size_t len, bool neg)
 {
 	Bigint *bn = new_Bigint();
 	if (bn == MEMORY_ALLOCATE_FAILED)
@@ -188,7 +188,7 @@ Bigint * Bigint_set_bytearr(BYTE *arr, size_t len, bool neg)
 
 	// Strip the ending 0x00, and get the real length.
 	size_t stripped_len;
-	BYTE *stripped = (BYTE *)rsrtip((const BYTE *)arr, len, &stripped_len);
+	byte *stripped = (byte *)rsrtip((const byte *)arr, len, &stripped_len);
 	if (stripped == MEMORY_ALLOCATE_FAILED)
 		return MEMORY_ALLOCATE_FAILED;
 

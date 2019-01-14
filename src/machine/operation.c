@@ -10,7 +10,7 @@
 Status EXC_OP_0_FALSE(CStack *stack)
 {
 	if (stack->is_full) return CSTACK_FULL;
-	BYTE *num = NULL;
+	byte *num = NULL;
 	stack->push(stack, num, 0, BYTE_TYPE, true);
 	return OPERATION_EXECUTED;
 }
@@ -18,7 +18,7 @@ Status EXC_OP_0_FALSE(CStack *stack)
 Status EXC_OP_1_TRUE(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
-	BYTE *num = (BYTE *)malloc(1);
+	byte *num = (byte *)malloc(1);
 	if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 	num[0] = 0x01;
 	stack->push(stack, num, 1, BYTE_TYPE, true);
@@ -29,15 +29,15 @@ Status EXC_OP_PUSHDATA(CStack *stack, Script *script, uint64_t *pos)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	// Get the expected size (current element).
-	size_t expected = ((BYTE *)script->get_element(script, *pos, NULL))[0];
+	size_t expected = ((byte *)script->get_element(script, *pos, NULL))[0];
 
 	// Get the actual size and check (next element).
 	size_t size;
-	BYTE *data = (BYTE *)(script->get_element(script, (*pos)+1, &size));
+	byte *data = (byte *)(script->get_element(script, (*pos)+1, &size));
 	if (expected != size) return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
 
 	// Copy the data.
-	BYTE *copy = (BYTE *)malloc(size);
+	byte *copy = (byte *)malloc(size);
 	if (copy == NULL) return MEMORY_ALLOCATE_FAILED;
 	memcpy(copy, data, size);
 
@@ -53,10 +53,10 @@ Status EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
 	// Check if data size equal to expected.
 	size_t expected = 0;
 	size_t next_size = 0;
-	BYTE *next_element = (BYTE *)script->get_element(script, (*pos)+1, &next_size);
+	byte *next_element = (byte *)script->get_element(script, (*pos)+1, &next_size);
 
 	// Get the expected size (next element).
-	switch (((BYTE *)script->get_element(script, *pos, NULL))[0])
+	switch (((byte *)script->get_element(script, *pos, NULL))[0])
 	{
 		case OP_PUSHDATA1:
 		{
@@ -84,11 +84,11 @@ Status EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
 
 	// Get the actual size and check (next next element).
 	size_t size;
-	BYTE *data = (BYTE *)script->get_element(script, (*pos)+2, &size);
+	byte *data = (byte *)script->get_element(script, (*pos)+2, &size);
 	if (expected != size) return SCRIPT_SIZE_TO_PUSH_NOT_EQUAL_EXPECTED;
 
 	// Copy the data.
-	BYTE *copy = (BYTE *)malloc(size);
+	byte *copy = (byte *)malloc(size);
 	if (copy == NULL) return MEMORY_ALLOCATE_FAILED;
 	memcpy(copy, data, size);
 
@@ -101,17 +101,17 @@ Status EXC_OP_PUSHDATAN(CStack *stack, Script *script, uint64_t *pos)
 Status EXC_OP_1NEGATE(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
-	BYTE *num = (BYTE *)malloc(1);
+	byte *num = (byte *)malloc(1);
 	if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 	num[0] = 0x81;
 	stack->push(stack, num, 1, BYTE_TYPE, true);
 	return OPERATION_EXECUTED;
 }
 
-Status EXC_OP_2_TO_16(CStack *stack, BYTE number)
+Status EXC_OP_2_TO_16(CStack *stack, byte number)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
-	BYTE *num = (BYTE *)malloc(1);
+	byte *num = (byte *)malloc(1);
 	if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 	num[0] = number;
 	stack->push(stack, num, 1, BYTE_TYPE, true);
@@ -130,7 +130,7 @@ Status EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
 	for (uint64_t i = (*pos)+1; i < script->get_length(script); ++i)
 	{
 		size_t size = 0;
-		BYTE *element = (BYTE *)script->get_element(script, i, &size);
+		byte *element = (byte *)script->get_element(script, i, &size);
 		if (size == 1 && (element[0] == OP_IF || element[0] == OP_ELSE || \
 		    element[0] == OP_NOTIF || element[0] == OP_ENDIF))
 			break;
@@ -139,7 +139,7 @@ Status EXC_OP_IF(CStack *stack, Script *script, uint64_t *pos)
 
 	// If the top stack value is not False, execute the statments.
 	size_t top_size = 0;
-	BYTE *top = stack->pop(stack, &top_size, NULL, NULL);
+	byte *top = stack->pop(stack, &top_size, NULL, NULL);
 	if (top_size == 0 && top == NULL)
 	{	// Stack top element is NULL.
 		*pos = (*pos) + length;
@@ -174,7 +174,7 @@ Status EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
 	for (uint64_t i = (*pos)+1; i < script->get_length(script); ++i)
 	{
 		size_t size = 0;
-		BYTE *element = (BYTE *)script->get_element(script, i, &size);
+		byte *element = (byte *)script->get_element(script, i, &size);
 		if (size == 1 && (element[0] == OP_IF || element[0] == OP_ELSE || \
 		    element[0] == OP_NOTIF || element[0] == OP_ENDIF))
 			break;
@@ -183,7 +183,7 @@ Status EXC_OP_NOTIF(CStack *stack, Script *script, uint64_t *pos)
 
 	// If the top stack value is False, execute the statments.
 	size_t top_size = 0;
-	BYTE *top = stack->pop(stack, &top_size, NULL, NULL);
+	byte *top = stack->pop(stack, &top_size, NULL, NULL);
 	if (top_size == 0 && top == NULL)
 	{	// Stack top element is NULL.
 		return OPERATION_EXECUTED;
@@ -216,7 +216,7 @@ Status EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_
 	for (i = (*pos)-1; i >= 0; --i)
 	{
 		size_t size;
-		BYTE *element = script->get_element(script, i, &size);
+		byte *element = script->get_element(script, i, &size);
 		if (size != 1) continue;
 		else if (size == 1 && (element[0] == OP_IF || element[0] == OP_ELSE || \
 		         element[0] == OP_NOTIF || element[0] == OP_ENDIF))
@@ -229,7 +229,7 @@ Status EXC_OP_ELSE(CStack *stack, Script *script, uint64_t *pos, void *previous_
 	for (uint64_t i = (*pos)+1; i < script->get_length(script); ++i)
 	{
 		size_t size = 0;
-		BYTE *element = (BYTE *)script->get_element(script, i, &size);
+		byte *element = (byte *)script->get_element(script, i, &size);
 		if (size == 1 && (element[0] == OP_IF || element[0] == OP_ELSE || \
 		    element[0] == OP_NOTIF || element[0] == OP_ENDIF))
 			break;
@@ -258,7 +258,7 @@ Status EXC_OP_VERIFY(CStack *stack)
 	if (stack->is_empty(stack)) return CSTACK_EMPTY;
 	// Marks transaction as invalid if top stack value is not true. The top stack value is removed.
 	size_t size;
-	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL, NULL);
+	byte *top = (byte *)stack->pop(stack, &size, NULL, NULL);
 
 	if (size == 0 && top == NULL) return INTERPRETER_FALSE;
 	else if (size == 1 && top[0] == 0x00)
@@ -291,7 +291,7 @@ Status EXC_OP_TOALTSTACK(CStack *data_stack, CStack *alt_stack)
 	else if (alt_stack->is_full(alt_stack)) return CSTACK_FULL;
 	size_t size;
 	void *type;
-	BYTE *top = data_stack->pop(data_stack, &size, &type, NULL);
+	byte *top = data_stack->pop(data_stack, &size, &type, NULL);
 	alt_stack->push(alt_stack, top, size, type, true);
 	return OPERATION_EXECUTED;
 }
@@ -302,7 +302,7 @@ Status EXC_OP_FROMALTSTACK(CStack *data_stack, CStack *alt_stack)
 	else if (alt_stack->is_empty(alt_stack)) return CSTACK_EMPTY;
 	size_t size;
 	void *type = NULL;
-	BYTE *top = alt_stack->pop(alt_stack, &size, &type, NULL);
+	byte *top = alt_stack->pop(alt_stack, &size, &type, NULL);
 	data_stack->push(data_stack, top, size, type, true);
 	return OPERATION_EXECUTED;
 }
@@ -314,7 +314,7 @@ Status EXC_OP_IFDUP(CStack *stack)
 	// If the top stack value is not 0, duplicate it.
 	size_t size;
 	void *type;
-	BYTE *top = (BYTE *)stack->pop(stack, &size, &type, NULL);
+	byte *top = (byte *)stack->pop(stack, &size, &type, NULL);
 
 	if (size == 0 && top == NULL)
 	{
@@ -332,7 +332,7 @@ Status EXC_OP_IFDUP(CStack *stack)
 		{
 			if (top[i] != 0x00)
 			{
-				BYTE *copy = (BYTE *)malloc(size);
+				byte *copy = (byte *)malloc(size);
 				if (copy == NULL)
 				{	
 					free(top);
@@ -358,7 +358,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 {
 	if (stack->is_full(stack)) return CSTACK_FULL;
 	uint64_t depth = stack->get_depth(stack);
-	BYTE little_endian[8];
+	byte little_endian[8];
 	uint8_t bytes_len = 0;
 
 	// Convert a uint64_t number to an 8-byte length byte array.
@@ -371,7 +371,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 	// Depth is zero.
 	if (bytes_len == 0)
 	{
-		BYTE *num = (BYTE *)malloc(1);
+		byte *num = (byte *)malloc(1);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		num[0] = 0x00;
 		stack->push(stack, num, 1, BYTE_TYPE, true);
@@ -382,7 +382,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 	else if (bytes_len > 0 && little_endian[bytes_len-1] >= 0x80)
 	{
 		bytes_len += 1;
-		BYTE *num = (BYTE *)malloc(bytes_len);
+		byte *num = (byte *)malloc(bytes_len);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len-1);
 		num[bytes_len-1] = 0x00;
@@ -393,7 +393,7 @@ Status EXC_OP_DEPTH(CStack *stack)
 	// The highest byte is smaller than 0x80(11111111).
 	else
 	{
-		BYTE *num = (BYTE *)malloc(bytes_len);
+		byte *num = (byte *)malloc(bytes_len);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len);
 		stack->push(stack, num, bytes_len, BYTE_TYPE, true);
@@ -783,7 +783,7 @@ Status EXC_OP_RIGHT(CStack *stack)
 Status EXC_OP_SIZE(CStack *stack)
 {
 	uint32_t size = stack->size[stack->get_depth(stack) - 1];
-	BYTE little_endian[4];
+	byte little_endian[4];
 	uint8_t bytes_len = 0;
 
 	// Convert a uint32_t number to an 8-byte length byte array.
@@ -796,7 +796,7 @@ Status EXC_OP_SIZE(CStack *stack)
 	// Size is zero.
 	if (bytes_len == 0)
 	{
-		BYTE *num = (BYTE *)malloc(1);
+		byte *num = (byte *)malloc(1);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		num[0] = 0x00;
 		stack->push(stack, num, 1, BYTE_TYPE, true);
@@ -807,7 +807,7 @@ Status EXC_OP_SIZE(CStack *stack)
 	else if (bytes_len > 0 && little_endian[bytes_len-1] >= 0x80)
 	{
 		bytes_len += 1;
-		BYTE *num = (BYTE *)malloc(bytes_len);
+		byte *num = (byte *)malloc(bytes_len);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len-1);
 		num[bytes_len-1] = 0x00;
@@ -818,7 +818,7 @@ Status EXC_OP_SIZE(CStack *stack)
 	// The highest byte is smaller than 0x80(11111111).
 	else
 	{
-		BYTE *num = (BYTE *)malloc(bytes_len);
+		byte *num = (byte *)malloc(bytes_len);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		memcpy(num, little_endian, bytes_len);
 		stack->push(stack, num, bytes_len, BYTE_TYPE, true);
@@ -871,7 +871,7 @@ Status EXC_OP_EQUAL(CStack *stack)
 	{
 		for (uint64_t i = 0; i < sizes[0]; ++i)
 		{	// Elements not equal.
-			if ( ((BYTE *)ptrs[0])[i] != ((BYTE *)ptrs[1])[i] )
+			if ( ((byte *)ptrs[0])[i] != ((byte *)ptrs[1])[i] )
 			{
 				free(ptrs[0]); free(ptrs[1]);
 				stack->push(stack, NULL, 0, BYTE_TYPE, true);
@@ -880,7 +880,7 @@ Status EXC_OP_EQUAL(CStack *stack)
 		}
 		// Elements are equal.
 		free(ptrs[0]); free(ptrs[1]);
-		BYTE *num = (BYTE *)malloc(1);
+		byte *num = (byte *)malloc(1);
 		if (num == NULL) return MEMORY_ALLOCATE_FAILED;
 		num[0] = 0x01;
 		stack->push(stack, num, 1, BYTE_TYPE, true);
@@ -900,7 +900,7 @@ Status EXC_OP_EQUALVERIFY(CStack *stack)
 Status EXC_OP_1ADD(CStack *stack)
 {
 	size_t size;
-	BYTE *top = (BYTE *)stack->pop(stack, &size, NULL, NULL);
+	byte *top = (byte *)stack->pop(stack, &size, NULL, NULL);
 
 	
 }

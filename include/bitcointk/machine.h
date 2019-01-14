@@ -193,7 +193,7 @@ typedef enum opcode
 #define OPCODE_IS_DISABLED(OPC) ( (OPC >= 0X7e && OPC <= 0x81) || (OPC >= 0X83 && OPC <= 0x86) || \
                                   (OPC >= 0X8d && OPC <= 0x8e) || (OPC >= 0X95 && OPC <= 0x99) ) ? true : false
 /* New an opcode object, value range: 0x00~0xFF, return NULL on error */
-Opcode * new_Opcode(BYTE value);
+Opcode * new_Opcode(byte value);
 /* Delete an opcode object that created by new_opcode() */
 void delete_Opcode(Opcode *self);
 /* Return the opcode name string */
@@ -206,9 +206,9 @@ struct Script
 	CLinkedlist *script;
 
 	Status (*add_opcode)(Script *, Opcode *);
-	Status (*add_data)(Script *, BYTE *, size_t);
+	Status (*add_data)(Script *, byte *, size_t);
 	uint8_t * (*to_string)(Script *, size_t *);
-	BYTE * (*to_bytes)(Script *, size_t *);
+	byte * (*to_bytes)(Script *, size_t *);
 	Status (*is_p2pkh)(Script *);
 	Status (*is_p2pk)(Script *);
 	Status (*is_p2sh)(Script *);
@@ -238,7 +238,7 @@ Script * new_Script();
 *           MEMORY_ALLOCATE_FAILED
 *   \else on success.
 **/
-Script * new_Script_from_bytes(BYTE *bytes, size_t size);
+Script * new_Script_from_bytes(byte *bytes, size_t size);
 
 /** Create a Script object from two other Script.
 *   \param  p1          Part 1, the first Script.
@@ -261,7 +261,7 @@ Script * new_Script_assembled(Script *p1, Script *p2);
 *           MEMORY_ALLOCATE_FAILED
 *   \else on success.
 **/
-Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size);
+Script * new_Script_p2pkh(byte *pubkey_hash, size_t size);
 
 /** Create a P2PK Script.
 *   \param  pubkey       Byte array.
@@ -271,7 +271,7 @@ Script * new_Script_p2pkh(BYTE *pubkey_hash, size_t size);
 *           MEMORY_ALLOCATE_FAILED
 *   \else on success.
 **/
-Script * new_Script_p2pk(BYTE *pubkey, size_t size);
+Script * new_Script_p2pk(byte *pubkey, size_t size);
 
 /** Create a P2SH Script.
 *   \param  hash         Byte array, script hash.
@@ -280,7 +280,7 @@ Script * new_Script_p2pk(BYTE *pubkey, size_t size);
 *           MEMORY_ALLOCATE_FAILED
 *   \else on success.
 **/
-Script * new_Script_p2sh(BYTE *hash, size_t size);
+Script * new_Script_p2sh(byte *hash, size_t size);
 
 /** Create a multisig Script.
 *   \param  m            How many keys to unlock, must smaller than or equal to total pubkey number.
@@ -295,9 +295,9 @@ Script * new_Script_p2sh(BYTE *hash, size_t size);
 *   Notice that 'pubkeys' is a 'template', still, need to be freed by delete_CLinkedlist() manually.
 **/
 Script * new_Script_p2sh_multisig(uint8_t m, CLinkedlist *pubkeys);
-Script * new_Script_p2wsh(BYTE ver, BYTE *sha256, size_t size);
-Script * new_Script_p2wpkh(BYTE ver, BYTE *hash160, size_t size);
-Script * new_Script_null_data(BYTE *data, size_t size);
+Script * new_Script_p2wsh(byte ver, byte *sha256, size_t size);
+Script * new_Script_p2wpkh(byte ver, byte *hash160, size_t size);
+Script * new_Script_null_data(byte *data, size_t size);
 /* Delete an Script object which created by construct function */
 void delete_Script(Script *self);
 

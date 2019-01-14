@@ -17,7 +17,7 @@ int32_t get_strlen(uint8_t *string)
 }
 **/
 // fix it
-Status hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
+Status hexstr_to_bytearr(uint8_t *str, size_t str_len, byte *arr)
 {
 	uint8_t high, low;
 
@@ -52,7 +52,7 @@ Status hexstr_to_bytearr(uint8_t *str, size_t str_len, BYTE *arr)
 }
 
 // fix it
-Status bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
+Status bytearr_to_hexstr(byte *arr, size_t arr_len, uint8_t *str)
 {
 	uint8_t high, low;
 
@@ -83,13 +83,13 @@ Status bytearr_to_hexstr(BYTE *arr, size_t arr_len, uint8_t *str)
 	return SUCCEEDED;
 }
 
-void bytearr_reverse(BYTE *arr, size_t size)
+void bytearr_reverse(byte *arr, size_t size)
 {
 	size_t len = 0;
 	if (size % 2 != 0) len = (size-1)/2;
 	for (size_t i = 0; i < len; ++i)
 	{
-		BYTE buffer = arr[i];
+		byte buffer = arr[i];
 		arr[i] = arr[size-1-i];
 		arr[size-1-i] = buffer;
 	}
@@ -106,7 +106,7 @@ void * lstrip(const void *arr, size_t arr_size, size_t *r_size)
 	size_t count = 0;
 	for (size_t i = 0; i < arr_size; ++i)
 	{
-		if ( ((BYTE *)arr)[i] == 0x00 )
+		if ( ((byte *)arr)[i] == 0x00 )
 			count++;
 	}
 	r_size[0] = arr_size-count;
@@ -125,10 +125,10 @@ void * rsrtip(const void *arr, size_t arr_size, size_t *r_size)
 	size_t i, count = 0;
 	for (i = arr_size-1; i > 0; --i)
 	{
-		if ( ((BYTE *)arr)[i] == 0x00 )
+		if ( ((byte *)arr)[i] == 0x00 )
 			count++;
 	}
-	if ( ((BYTE *)arr)[0] == 0x00 && i == 0 )
+	if ( ((byte *)arr)[0] == 0x00 && i == 0 )
 		count++;
 	if (count == arr_size) return BYTEARRAY_ALL_ZERO; // All zero.
 
@@ -148,9 +148,9 @@ Status integer_swap(void *a, void *b, void *dtype)
 		case (0): return PASSING_NULL_POINTER;
 		case (uintptr_t)BYTE_TYPE:
 		{
-			*(BYTE*)a = *(BYTE*)a ^ *(BYTE*)b;
-			*(BYTE*)b = *(BYTE*)b ^ *(BYTE*)a;
-			*(BYTE*)a = *(BYTE*)a ^ *(BYTE*)b;
+			*(byte*)a = *(byte*)a ^ *(byte*)b;
+			*(byte*)b = *(byte*)b ^ *(byte*)a;
+			*(byte*)a = *(byte*)a ^ *(byte*)b;
 			return SUCCEEDED;
 		}
 		case (uintptr_t)INT8_TYPE:

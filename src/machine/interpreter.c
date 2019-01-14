@@ -60,7 +60,7 @@ Status Interpreter_dump_alt_stack(Interpreter *self)
 Status Interpreter_launch(Interpreter *self, uint64_t start_point)
 {
 	void *status = NULL;
-	BYTE *element = NULL;
+	byte *element = NULL;
 	size_t size = 0;
 	uint64_t cursor = start_point;
 	
@@ -179,7 +179,7 @@ while (cursor < self->script->get_length(self->script))
 	cursor++;
 }
 	size_t top_size;
-	BYTE *top = (BYTE *)self->data_stack->pop(self->data_stack, &top_size, NULL, NULL);
+	byte *top = (byte *)self->data_stack->pop(self->data_stack, &top_size, NULL, NULL);
 	if ( (top_size == 1 && top == 0x00) || (top == NULL) )
 	{
 		free(top);
