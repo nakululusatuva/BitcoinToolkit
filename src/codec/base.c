@@ -450,7 +450,7 @@ size_t base64decode(uint8_t *payload, size_t payload_len, byte *decoded)
 	}
 
 	if (ending != 0)
-	{	
+	{
 		byte payload_copy_end[4] = {0x00, 0x00, 0x00, 0x00};
 		for (int32_t i = 0; i < 4-ending; ++i)
 		{
@@ -469,6 +469,156 @@ size_t base64decode(uint8_t *payload, size_t payload_len, byte *decoded)
 	}
 
 	decoded[decoded_len] = '\0';
+
+	return 0;
+}
+
+size_t base2p8_to_base2p32(uint8_t *payload, size_t payload_len, uint32_t *converted)
+{
+	size_t remain = payload_len % 4;
+	size_t converted_len = (payload_len / 4) + (payload_len % 4 ? 1 : 0);
+
+	// If remains are all 0, the length after conversion should minus 1.
+	size_t i;
+	for (i = 0; i < remain; ++i)
+	{
+		if (payload[payload_len-remain+i])
+			break;
+	}
+	if (i == remain && remain != 0)
+		--converted_len;
+
+	// If null return the length after conversion.
+	if (converted == NULL)
+	{
+		return converted_len;
+	}
+
+	// Fill the array with zero to prevent errors while bits operating.
+	memset(converted, 0x00, converted_len * sizeof(uint32_t));
+
+	for (int i = 0; i < payload_len; ++i)
+	{
+		converted[i/4] |= (i%4) ? payload[i]<<(8*(i%4)) : payload[i];
+	}
+
+	return 0;
+}
+
+size_t base2p32_to_base2p8(uint32_t *payload, size_t payload_len, uint8_t *converted)
+{
+	uint32_t payload_last = payload[payload_len-1];
+	size_t converted_len = (payload_len * 4);
+
+	// If the last element of payload is 0, the length after conversion should minus 4.
+	// If the last element of payload is smaller than a specific number,
+	// the length after conversion should be shortter, usually 1 to 3.
+	if (!payload_last)
+		converted_len -= 4;
+	else if (payload_last < (1<<8))
+		converted_len -= 3;
+	else if (payload_last < (1<<16))
+		converted_len -= 2;
+	else if (payload_last < (1<<24))
+		converted_len -= 1;
+
+	// If null return the length after conversion.
+	if (converted == NULL)
+	{
+		return converted_len;
+	}
+
+	// Fill the array with zero to prevent errors while bits operating.
+	memset(converted, 0x00, converted_len * sizeof(uint16_t));  // Necessary.
+
+	for (int i = 0; i < payload_len; ++i)
+	{
+		if ( !(i == payload_len - 1 && payload_last == 0) )
+		{
+			converted[i*4] = payload[i] << 24 >> 24;
+		}
+		if ( !(i == payload_len - 1 && payload_last < (1<<8)) )
+		{
+			converted[i*4+1] = payload[i] << 16 >> 24;
+		}
+		if ( !(i == payload_len - 1 && payload_last < (1<<16)) )
+		{
+			converted[i*4+2] = payload[i] << 8 >> 24;
+		}
+		if ( !(i == payload_len - 1 && payload_last < (1<<24)) )
+		{
+			converted[i*4+3] = payload[i] >> 24;
+		}
+	}
+
+	return 0;
+}
+
+size_t base2p16_to_base2p32(uint16_t *payload, size_t payload_len, uint32_t *converted)
+{
+	size_t remain = payload_len % 2;
+	size_t converted_len = (payload_len / 2) + (payload_len % 2);
+
+	// If remains are all 0, the length after conversion should minus 1.
+	size_t i;
+	for (i = 0; i < remain; ++i)
+	{
+		if (payload[payload_len-remain+i])
+			break;
+	}
+	if (i == remain && remain != 0)
+		--converted_len;
+
+	// If null return the length after conversion.
+	if (converted == NULL)
+	{
+		return converted_len;
+	}
+
+	// Fill the array with zero to prevent errors while bits operating.
+	memset(converted, 0x00, converted_len * sizeof(uint32_t));
+
+	for (int i = 0; i < payload_len; ++i)
+	{
+		converted[i/2] |= (i%2) ? payload[i]<<16 : payload[i];
+	}
+
+	return 0;
+}
+
+size_t base2p32_to_base2p16(uint32_t *payload, size_t payload_len, uint16_t *converted)
+{
+	uint32_t payload_last = payload[payload_len-1];
+	size_t converted_len = payload_len * 2;
+
+	// If the last element of payload is 0, the length after conversion should minus 2.
+	// Else if the last element of payload is smaller than a specific number,
+	// the length after conversion should minus 1.
+	if (!payload_last)
+		converted_len -= 2;
+	else
+		converted_len -= payload_last < (1<<16) ? 1 : 0;
+
+	// If null return the length after conversion.
+	if (converted == NULL)
+	{
+		return converted_len;
+	}
+
+	// Fill the array with zero to prevent errors while bits operating.
+	memset(converted, 0x00, converted_len * sizeof(uint16_t));
+
+	for (int i = 0; i < payload_len; ++i)
+	{
+		if ( !(i == payload_len - 1 && payload_last == 0) )
+		{
+			converted[i*2] = payload[i] << 16 >> 16;
+		}
+		if ( !(i == payload_len - 1 && payload_last < (1<<16)) )
+		{
+			converted[i*2+1] = payload[i] >> 16;
+		}
+	}
 
 	return 0;
 }

@@ -146,6 +146,29 @@ size_t base64encode(byte *payload, size_t payload_len, uint8_t *encoded);
 **/
 size_t base64decode(uint8_t *payload, size_t payload_len, byte *decoded);
 
+size_t base2p8_to_base2p32(uint8_t *payload, size_t payload_len, uint32_t *converted);
+size_t base2p32_to_base2p8(uint32_t *payload, size_t payload_len, uint8_t *converted);
+
+/** Base 2^16 to Base 2^32
+ *  \param  payload     An integer represented in an base 2^16 array (Little-endian).
+ *  \param  payload_len Length of the payload.
+ *  \param  converted   Store the converted number, represented in an base 2^32 array (Little-endian).
+ *                      Array's item will be reset to zero by memset().
+ *  \return  0 on success.
+ *        else on converted array's length, if param 'converted' is NULL.
+**/
+size_t base2p16_to_base2p32(uint16_t *payload, size_t payload_len, uint32_t *converted);
+
+/** Base 2^16 to Base 2^32
+ *  \param  payload     An integer represented in an base 2^16 array (Little-endian).
+ *  \param  payload_len Length of the payload.
+ *  \param  converted   Store the converted number, represented in an base 2^32 array (Little-endian).
+ *                      Array's item will be reset to zero by memset().
+ *  \return  0 on success.
+ *        else on converted array's length, if param 'converted' is NULL.
+**/
+size_t base2p32_to_base2p16(uint32_t *payload, size_t payload_len, uint16_t *converted);
+
 #ifdef __cpluscplus
 }
 #endif
